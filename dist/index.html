@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EL LEGADO - Catering y Eventos | Haz Eterno Cada Momento</title>
+    <meta name="description" content="Servicio de catering premium para eventos inolvidable. Elegancia, cercanía y alta gastronoma en cada detalle. Cotiza tu evento hoy.">
+    <meta name="keywords" content="catering premium, eventos, bocados gourmet, el legado, servicio de comida, eventos sociales">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.ellegado.cl/">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.ellegado.cl/">
+    <meta property="og:title" content="EL LEGADO - Catering y Eventos Premium">
+    <meta property="og:description" content="Servicio de catering premium para eventos inolvidables. Haz eterno cada momento con elegancia y gastronomía de alta gama.">
+    <meta property="og:image" content="https://www.ellegado.cl/og-image.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.ellegado.cl/">
+    <meta property="twitter:title" content="EL LEGADO - Catering y Eventos Premium">
+    <meta property="twitter:description" content="Servicio de catering premium para eventos inolvidable. Elegancia, cercanía y alta gastronomía.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-copper': '#AF7A54',
+                        'brand-copper-light': '#D9A78B',
+                        'cream': '#FAF9F6',
+                        'dark-elegant': '#1A1A1A',
+                    },
+                    fontFamily: {
+                        'serif': ['"Cormorant Garamond"', 'serif'],
+                        'sans': ['Montserrat', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        .text-gradient {
+            background: linear-gradient(to right, #AF7A54, #D9A78B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .fade-in {
+            animation: fadeIn 1.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .menu-item:hover {
+            color: #AF7A54;
+            transform: translateX(5px);
+            transition: all 0.3s ease;
+        }
+        .logo-glow {
+            filter: drop-shadow(0 0 8px rgba(175, 122, 84, 0.3));
+        }
+        .glass-nav {
+            background: rgba(250, 249, 246, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        .float-whatsapp {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #25d366;
+            color: white;
+            border-radius: 50px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+        .float-whatsapp:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 30px rgba(37, 211, 102, 0.5);
+        }
+
+        /* Transiciones de Menú Filtrado Premium */
+        .menu-item-transition {
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.5s cubic-bezier(0.4, 0, 0.2, 1), margin 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: top;
+            overflow: hidden;
+        }
+        .menu-item-transition.filtered-out {
+            display: none !important;
+            opacity: 0;
+            transform: scale(0.95) translateY(-10px);
+            max-height: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            border: none !important;
+            pointer-events: none;
+        }
+
+        /* Personalización del Deslizador (Range Slider) */
+        input[type="range"].custom-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(175, 122, 84, 0.2);
+            border-radius: 9999px;
+            outline: none;
+        }
+        input[type="range"].custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #AF7A54;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(175, 122, 84, 0.5);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        input[type="range"].custom-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #D9A78B;
+        }
+        input[type="range"].custom-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border: none;
+            border-radius: 50%;
+            background: #AF7A54;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(175, 122, 84, 0.5);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        input[type="range"].custom-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            background: #D9A78B;
+        }
+    </style>
+<!-- Schema.org LocalBusiness -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "El Legado - Catering y Eventos",
+        "description": "Servicio de catering premium para eventos inolvidables",
+        "telephone": "+56-tu-numero-aqui",
+        "email": "contacto@ellegado.cl",
+        "url": "https://www.ellegado.cl",
+        "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "CL",
+            "addressRegion": "Chile"
+        },
+        "priceRange": "$$$",
+        "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "09:00",
+            "closes": "20:00"
+        },
+        "sameAs": []
+    }
+    </script>
+</head>
+<body class="bg-cream text-dark-elegant font-sans selection:bg-brand-copper/20">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-nav border-b border-brand-copper/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#inicio" class="flex items-center gap-3 group" aria-label="Volver al inicio">
+                <img src="assets/img/logo.jpg" alt="Logo EL LEGADO" class="h-10 w-auto logo-glow" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                <div class="hidden h-10 w-10 bg-brand-copper rounded-full items-center justify-center text-white font-serif font-bold text-xl">L</div>
+                <span class="font-serif font-semibold text-xl tracking-widest uppercase text-brand-copper group-hover:text-brand-copper-light transition-colors">EL LEGADO</span>
+            </a>
+            <!-- Simple Nav -->
+            <div class="flex items-center space-x-4 md:space-x-8 text-[10px] md:text-xs font-medium tracking-[0.2em] uppercase">
+                <a href="#inicio" class="hidden sm:block hover:text-brand-copper transition-colors">Inicio</a>
+                <a href="#filosofia" class="hidden sm:block hover:text-brand-copper transition-colors">Filosofía</a>
+                <a href="#festin" class="hidden sm:block hover:text-brand-copper transition-colors">El Festín</a>
+                <a href="#contacto" class="px-3 py-2 md:px-4 md:py-2 bg-brand-copper text-white rounded-sm hover:bg-brand-copper-light transition-all shadow-md" aria-label="Contactar por WhatsApp">Contacto</a>
+                
+                <!-- Botón Hamburguesa -->
+                <button id="mobile-menu-btn" class="sm:hidden text-brand-copper p-2 focus:outline-none" aria-label="Abrir menú">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menú Móvil -->
+        <div id="mobile-menu" class="hidden fixed inset-0 z-40 bg-white/95 backdrop-blur-xl flex-row flex-wrap items-center justify-center gap-4 text-xs font-medium tracking-widest uppercase transition-all duration-300 text-center px-2">
+            <a href="#inicio" class="mobile-link hover:text-brand-copper">Inicio</a>
+            <a href="#filosofia" class="mobile-link hover:text-brand-copper">Filosofía</a>
+            <a href="#festin" class="mobile-link hover:text-brand-copper">El Festín</a>
+            <a href="#contacto" class="mobile-link px-4 py-2 bg-brand-copper text-white rounded-full">Contacto</a>
+            
+            <button id="close-menu-btn" class="absolute top-6 right-6 text-brand-copper" aria-label="Cerrar menú">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="inicio" class="min-h-screen flex flex-col justify-center items-center text-center px-6 pt-40 pb-20 relative overflow-hidden">
+            <!-- Background Image with Overlay -->
+            <div class="absolute inset-0 z-0">
+                <img src="assets/img/hero_catering.png" alt="" class="w-full h-full object-cover opacity-20">
+                <div class="absolute inset-0 bg-gradient-to-b from-cream via-transparent to-cream"></div>
+            </div>
+
+            <div class="fade-in max-w-4xl relative z-10">
+                <!-- Logo Protagonista -->
+                <div class="mb-12 flex flex-col items-center">
+                    <img src="assets/img/logo.jpg" alt="Logo EL LEGADO" class="w-64 md:w-80 h-auto mb-4 logo-glow">
+                </div>
+                
+                <h1 class="font-serif text-5xl md:text-7xl font-light mb-6 leading-tight">
+                    Haz Eterno <br> <span class="italic text-brand-copper text-gradient font-medium">Cada Momento</span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-slate-500 font-light mb-12 max-w-2xl mx-auto italic">
+                    Servicio de catering premium para eventos inolvidables, con la cercanía que tú te mereces.
+                </p>
+                
+                <a href="#" data-whatsapp class="inline-block px-10 py-5 bg-brand-copper text-white font-semibold rounded-full shadow-xl shadow-brand-copper/30 hover:shadow-brand-copper/50 hover:scale-105 transition-all duration-300 uppercase tracking-widest text-sm" aria-label="Cotizar evento por WhatsApp">
+                    Cotiza tu Evento por WhatsApp
+                </a>
+            </div>
+            
+            <div class="absolute bottom-10 animate-bounce">
+                <svg class="w-6 h-6 text-brand-copper/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Filosofía -->
+        <section id="filosofia" class="py-32 bg-white border-y border-brand-copper/5 relative">
+            <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+                <div class="text-center md:text-left">
+                    <h2 class="font-serif text-3xl md:text-4xl mb-12 text-brand-copper italic tracking-widest uppercase">Nuestra Filosofía</h2>
+                    <p class="text-xl md:text-3xl font-serif leading-relaxed text-slate-700 italic">
+                        "En <span class="font-bold text-brand-copper underline decoration-brand-copper/20 underline-offset-8">El Legado</span>, entendemos que tu evento no es solo una fecha; es la construcción de un recuerdo."
+                    </p>
+                    <p class="mt-8 text-lg text-slate-500 font-sans tracking-wide">
+                        Nos especializamos en eventos de mediana envergadura, ofreciendo una experiencia gastronómica de alta gama con un trato cercano y profesional.
+                    </p>
+                </div>
+                <div class="relative group">
+                    <div class="absolute -inset-4 bg-brand-copper/10 rounded-2xl blur-xl group-hover:bg-brand-copper/20 transition-all"></div>
+                    <img src="assets/img/event_vibe.png" alt="Atmósfera de evento" class="relative rounded-2xl shadow-2xl border border-brand-copper/10 grayscale-[30%] hover:grayscale-0 transition-all duration-700">
+                </div>
+            </div>
+        </section>
+
+        <!-- Cotizador / Presupuestador Interactivo (Oportunidad 80/20) -->
+        <section id="cotizador" class="py-32 bg-cream border-t border-brand-copper/5 relative">
+            <div class="max-w-4xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <span class="text-brand-copper font-medium tracking-[0.4em] uppercase text-xs mb-4 block">Cotización Express</span>
+                    <h2 class="font-serif text-4xl md:text-5xl mb-6">Planifica tu Evento en Segundos</h2>
+                    <p class="text-slate-500 font-light italic max-w-xl mx-auto">Selecciona tus preferencias y obtén una estimación de presupuesto inmediata para tu celebración.</p>
+                    <div class="w-16 h-px bg-brand-copper/30 mx-auto mt-6"></div>
+                </div>
+
+                <div class="bg-white rounded-3xl p-8 md:p-12 shadow-2xl border border-brand-copper/10 relative overflow-hidden">
+                    <div class="absolute -right-16 -top-16 w-32 h-32 bg-brand-copper/5 rounded-full blur-2xl"></div>
+                    <div class="absolute -left-16 -bottom-16 w-32 h-32 bg-brand-copper/5 rounded-full blur-2xl"></div>
+
+                    <div class="grid md:grid-cols-2 gap-12 relative z-10 text-left">
+                        <!-- Controles -->
+                        <div class="space-y-8">
+                            <!-- Paso 1: Tipo de Evento -->
+                            <div>
+                                <label for="event-type" class="block font-serif text-lg text-brand-copper italic mb-3">1. Tipo de Evento</label>
+                                <select id="event-type" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 font-sans text-sm focus:outline-none focus:border-brand-copper transition-colors">
+                                    <option value="Matrimonio">Matrimonio</option>
+                                    <option value="Evento Corporativo">Evento Corporativo</option>
+                                    <option value="Celebración Social">Celebración Social / Particular</option>
+                                </select>
+                            </div>
+
+                            <!-- Paso 2: Invitados -->
+                            <div>
+                                <div class="flex justify-between items-center mb-3">
+                                    <label for="guests-range" class="font-serif text-lg text-brand-copper italic">2. Invitados: <span id="guests-value" class="font-sans font-bold text-dark-elegant">50</span></label>
+                                </div>
+                                <input type="range" id="guests-range" min="20" max="300" value="50" step="5" class="custom-slider w-full cursor-pointer">
+                                <div class="flex justify-between text-[10px] text-slate-400 mt-2 font-medium tracking-wider">
+                                    <span>20 INVITADOS</span>
+                                    <span>150</span>
+                                    <span>300 INVITADOS</span>
+                                </div>
+                            </div>
+
+                            <!-- Paso 3: Servicios -->
+                            <div>
+                                <span class="block font-serif text-lg text-brand-copper italic mb-3">3. Menú y Servicios</span>
+                                <div class="space-y-3 text-sm font-medium">
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="checkbox" id="service-salado" checked class="w-4 h-4 accent-brand-copper rounded cursor-pointer">
+                                        <span class="text-slate-600 group-hover:text-dark-elegant transition-colors">Festín Bocados Salados <span class="text-[10px] text-slate-400 ml-1">($15.000 p/p)</span></span>
+                                    </label>
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="checkbox" id="service-dulce" checked class="w-4 h-4 accent-brand-copper rounded cursor-pointer">
+                                        <span class="text-slate-600 group-hover:text-dark-elegant transition-colors">Variedad Dulce Tentación <span class="text-[10px] text-slate-400 ml-1">($10.000 p/p)</span></span>
+                                    </label>
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="checkbox" id="service-staff" class="w-4 h-4 accent-brand-copper rounded cursor-pointer">
+                                        <span class="text-slate-600 group-hover:text-dark-elegant transition-colors">Servicio Vajilla & Garzones <span class="text-[10px] text-slate-400 ml-1">($6.000 p/p)</span></span>
+                                    </label>
+                                    <label class="flex items-center gap-3 cursor-pointer group">
+                                        <input type="checkbox" id="service-decor" class="w-4 h-4 accent-brand-copper rounded cursor-pointer">
+                                        <span class="text-slate-600 group-hover:text-dark-elegant transition-colors">Decoración & Montaje <span class="text-[10px] text-slate-400 ml-1">($4.000 p/p)</span></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Visualización del Presupuesto -->
+                        <div class="bg-cream rounded-2xl p-6 md:p-8 flex flex-col justify-between border border-brand-copper/10">
+                            <div>
+                                <span class="text-xs font-semibold tracking-widest text-slate-400 uppercase block mb-2">Presupuesto Estimado</span>
+                                <div class="text-3xl md:text-4xl font-serif text-brand-copper font-semibold mb-4" id="budget-range">
+                                    $1.250.000 - $1.350.000
+                                </div>
+                                <p class="text-xs text-slate-400 leading-relaxed font-light">
+                                    *Este valor es una estimación aproximada basada en valores promedio por persona. No constituye una cotización definitiva.
+                                </p>
+                            </div>
+
+                            <div class="mt-8 space-y-4">
+                                <a href="#" id="whatsapp-cotizar-btn" target="_blank" class="w-full text-center block px-6 py-4 bg-brand-copper text-white font-semibold rounded-full shadow-lg shadow-brand-copper/20 hover:shadow-brand-copper/40 hover:scale-[1.02] transition-all duration-300 uppercase tracking-widest text-xs" aria-label="Cotizar por WhatsApp">
+                                    Cotizar por WhatsApp
+                                </a>
+                                <p class="text-[10px] text-center text-slate-400 uppercase tracking-wider font-medium">
+                                    Recibe tu propuesta de menú formal en minutos.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- El Festín (Menú) -->
+        <section id="festin" class="py-32 px-6 max-w-7xl mx-auto">
+            <div class="text-center mb-24">
+                <span class="text-brand-copper font-medium tracking-[0.4em] uppercase text-xs mb-4 block">Propuesta Gastronómica</span>
+                <h2 class="font-serif text-5xl md:text-6xl mb-6">El Festín</h2>
+                <div class="w-24 h-px bg-gradient-to-r from-transparent via-brand-copper to-transparent mx-auto mb-12"></div>
+                
+                <!-- Filtros Dietéticos e Interactivos (Oportunidad 80/20) -->
+                <div class="flex flex-wrap justify-center gap-3 font-sans text-[10px] tracking-widest uppercase">
+                    <button class="filter-btn active px-5 py-3 border border-brand-copper bg-brand-copper text-white rounded-full transition-all duration-300 shadow-md font-semibold" data-filter="all" role="button" aria-pressed="true">Todos</button>
+                    <button class="filter-btn px-5 py-3 border border-brand-copper/20 hover:border-brand-copper text-dark-elegant hover:text-brand-copper rounded-full transition-all duration-300 font-semibold" data-filter="salado" role="button" aria-pressed="false">Salados</button>
+                    <button class="filter-btn px-5 py-3 border border-brand-copper/20 hover:border-brand-copper text-dark-elegant hover:text-brand-copper rounded-full transition-all duration-300 font-semibold" data-filter="dulce" role="button" aria-pressed="false">Dulces</button>
+                    <button class="filter-btn px-5 py-3 border border-brand-copper/20 hover:border-brand-copper text-dark-elegant hover:text-brand-copper rounded-full transition-all duration-300 font-semibold" data-filter="vegan" role="button" aria-pressed="false">Vegano</button>
+                    <button class="filter-btn px-5 py-3 border border-brand-copper/20 hover:border-brand-copper text-dark-elegant hover:text-brand-copper rounded-full transition-all duration-300 font-semibold" data-filter="gluten-free" role="button" aria-pressed="false">Sin Gluten</button>
+                </div>
+            </div>
+
+            <!-- Image Break -->
+            <div class="mb-24 rounded-3xl overflow-hidden h-[400px] shadow-2xl border border-brand-copper/10">
+                <img src="assets/img/gourmet_canapes.png" alt="Canapés Gourmet" class="w-full h-full object-cover">
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-16 lg:gap-32">
+                <!-- Bocados Salados -->
+                <div class="space-y-12">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-12 h-px bg-brand-copper/30"></div>
+                        <h3 class="font-serif text-3xl text-brand-copper italic tracking-wide">Bocados Salados</h3>
+                    </div>
+                    
+                    <ul id="menu-salado-list" class="space-y-5 font-serif text-lg text-slate-600">
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="salado" data-diet="vegan gluten-free">
+                            <span>Canapés premium</span>
+                            <span class="text-[9px] font-sans font-medium text-brand-copper-light bg-brand-copper/5 px-2 py-0.5 rounded-full tracking-wider uppercase">Vegano • Sin Gluten</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="salado" data-diet="">
+                            <span>Mini Churrascos</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="salado" data-diet="">
+                            <span>Mini Empanaditas</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="salado" data-diet="">
+                            <span>Mini Pizzas</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="salado" data-diet="vegan">
+                            <span>Mini Sopaipillas con Pebre</span>
+                            <span class="text-[9px] font-sans font-medium text-brand-copper-light bg-brand-copper/5 px-2 py-0.5 rounded-full tracking-wider uppercase">Vegano</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="salado" data-diet="">
+                            <span>Mini Sándwiches de Miga</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="salado" data-diet="">
+                            <span>Fosforitos</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="salado" data-diet="">
+                            <span>Piononos</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="salado" data-diet="gluten-free">
+                            <span>Brochetas saladas</span>
+                            <span class="text-[9px] font-sans font-medium text-brand-copper-light bg-brand-copper/5 px-2 py-0.5 rounded-full tracking-wider uppercase">Sin Gluten</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-start flex-col sm:flex-row sm:items-center" data-category="salado" data-diet="">
+                            <span>Mini Conitos de Fajita</span>
+                            <span class="text-xs font-sans text-brand-copper/50 italic">(pastas de pollo, atún, carne)</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-start flex-col sm:flex-row sm:items-center" data-category="salado" data-diet="vegan">
+                            <span>Grisines con Tofu artesanal</span>
+                            <span class="text-xs font-sans text-brand-copper/50 italic">(garbanzos, lentejas, hummus)</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="salado" data-diet="">
+                            <span>Mini Hamburguesitas Gourmet</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Variedad Dulce -->
+                <div class="space-y-12">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-12 h-px bg-brand-copper/30"></div>
+                        <h3 class="font-serif text-3xl text-brand-copper italic tracking-wide">Variedad Dulce</h3>
+                    </div>
+                    
+                    <ul id="menu-dulce-list" class="space-y-5 font-serif text-lg text-slate-600 text-left">
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="dulce" data-diet="">
+                            <span>Canastitas</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="dulce" data-diet="gluten-free">
+                            <span>Shots variados</span>
+                            <span class="text-[9px] font-sans font-medium text-brand-copper-light bg-brand-copper/5 px-2 py-0.5 rounded-full tracking-wider uppercase">Sin Gluten</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="dulce" data-diet="">
+                            <span>Tacitas rellenas</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="dulce" data-diet="">
+                            <span>Conitos dulces</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="dulce" data-diet="vegan">
+                            <span>Galletas artesanales</span>
+                            <span class="text-[9px] font-sans font-medium text-brand-copper-light bg-brand-copper/5 px-2 py-0.5 rounded-full tracking-wider uppercase">Vegano</span>
+                        </li>
+                        <li class="menu-item menu-item-transition border-b border-brand-copper/5 pb-2 flex justify-between items-center" data-category="dulce" data-diet="">
+                            <span>Mini Donas bañadas en chocolate</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Casos de Éxito / Prueba Social (Oportunidad 80/20) -->
+        <section id="testimonios" class="py-32 bg-white border-t border-brand-copper/5">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="text-center mb-24">
+                    <span class="text-brand-copper font-medium tracking-[0.4em] uppercase text-xs mb-4 block">Experiencias Reales</span>
+                    <h2 class="font-serif text-5xl md:text-6xl mb-6">Momentos Eternos</h2>
+                    <p class="text-slate-500 font-light italic max-w-xl mx-auto">Lo que dicen quienes han confiado su celebración y recuerdos en nuestras manos.</p>
+                    <div class="w-24 h-px bg-gradient-to-r from-transparent via-brand-copper to-transparent mx-auto mt-6"></div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12 lg:gap-16 text-left">
+                    <!-- Caso 1 -->
+                    <div class="bg-cream rounded-3xl p-8 border border-brand-copper/10 hover:shadow-xl hover:scale-[1.01] transition-all duration-500 flex flex-col justify-between group">
+                        <div class="space-y-6">
+                            <!-- Estrellas y Detalles -->
+                            <div class="flex justify-between items-center border-b border-brand-copper/10 pb-4">
+                                <div>
+                                    <h4 class="font-serif text-2xl font-semibold text-brand-copper italic">Boda de Sofía & Diego</h4>
+                                    <span class="text-[10px] text-slate-400 tracking-wider uppercase font-medium">Boda al Aire Libre • 120 Invitados</span>
+                                </div>
+                                <div class="flex text-amber-500 text-sm">
+                                    ★★★★★
+                                </div>
+                            </div>
+                            <!-- Opinión -->
+                            <p class="font-serif text-lg text-slate-600 italic leading-relaxed">
+                                "El servicio de El Legado fue sencillamente excepcional. Nuestros invitados no pararon de elogiar los mini churrascos gourmet y la fina variedad dulce. El trato tan humano y profesional del personal nos dio una tranquilidad impagable en nuestro gran día. ¡Hicieron eterno nuestro momento!"
+                            </p>
+                        </div>
+                        <div class="mt-8 pt-4 border-t border-brand-copper/5 flex items-center justify-between text-[10px] font-semibold text-brand-copper tracking-widest uppercase">
+                            <span>Menú: Salado + Dulce + Staff</span>
+                            <span class="text-[9px] text-slate-400 font-normal normal-case">Vía Google Reviews</span>
+                        </div>
+                    </div>
+
+                    <!-- Caso 2 -->
+                    <div class="bg-cream rounded-3xl p-8 border border-brand-copper/10 hover:shadow-xl hover:scale-[1.01] transition-all duration-500 flex flex-col justify-between group">
+                        <div class="space-y-6">
+                            <!-- Estrellas y Detalles -->
+                            <div class="flex justify-between items-center border-b border-brand-copper/10 pb-4">
+                                <div>
+                                    <h4 class="font-serif text-2xl font-semibold text-brand-copper italic">Lanzamiento Corporativo Tech</h4>
+                                    <span class="text-[10px] text-slate-400 tracking-wider uppercase font-medium">Evento Empresarial • 80 Invitados</span>
+                                </div>
+                                <div class="flex text-amber-500 text-sm">
+                                    ★★★★★
+                                </div>
+                            </div>
+                            <!-- Opinión -->
+                            <p class="font-serif text-lg text-slate-600 italic leading-relaxed">
+                                "Organizar el catering para eventos corporativos suele ser complejo, pero con El Legado todo fluyó a la perfección. La presentación de los canapés fue impecable y elegante, los sabores exquisitos y el servicio de vajilla y garzones sumamente profesional. Un éxito total recomendado al 100%."
+                            </p>
+                        </div>
+                        <div class="mt-8 pt-4 border-t border-brand-copper/5 flex items-center justify-between text-[10px] font-semibold text-brand-copper tracking-widest uppercase">
+                            <span>Menú: Salado + Staff + Decoración</span>
+                            <span class="text-[9px] text-slate-400 font-normal normal-case">Vía LinkedIn Reviews</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section id="contacto" class="py-40 bg-brand-copper text-white text-center px-6 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10 pointer-events-none">
+                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white"></path>
+                </svg>
+            </div>
+            <div class="max-w-3xl mx-auto relative z-10">
+                <h2 class="font-serif text-4xl md:text-6xl mb-8">Déjanos ser parte de tu historia</h2>
+                <p class="text-xl mb-12 text-white/90 font-light italic">Tu celebración merece la elegancia y el cuidado de El Legado.</p>
+                
+                <a href="#" data-whatsapp class="inline-block px-12 py-6 bg-white text-brand-copper font-bold text-xl rounded-full shadow-2xl hover:scale-110 hover:shadow-white/20 transition-all duration-300 uppercase tracking-widest" aria-label="Enviar mensaje a WhatsApp">
+                    ¡Hablemos de tu próximo evento!
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-20 bg-cream text-center border-t border-brand-copper/10 px-6">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-3 gap-12 items-center text-slate-500 text-sm">
+            <div class="text-left">
+                <p class="font-bold text-brand-copper mb-2 uppercase tracking-widest">Contacto</p>
+                <p>Catering & Eventos</p>
+                <p>Email: contacto@ellegado.cl</p>
+            </div>
+            <div class="flex flex-col items-center">
+                <div class="font-serif text-2xl text-brand-copper tracking-[0.3em] font-bold mb-2 uppercase">EL LEGADO</div>
+                <p class="italic">Haz Eterno Cada Momento</p>
+            </div>
+            <div class="text-right flex flex-col items-end">
+                <p class="font-bold text-brand-copper mb-2 uppercase tracking-widest">Legales</p>
+                <a href="aviso-legal.html" class="hover:text-brand-copper transition-colors">Aviso Legal</a>
+                <a href="privacidad.html" class="hover:text-brand-copper transition-colors">Política de Privacidad</a>
+            </div>
+        </div>
+        <div class="mt-16 pt-8 border-t border-brand-copper/5 text-[10px] text-slate-400 uppercase tracking-[0.2em]">
+            &copy; 2026 El Legado. Todos los derechos reservados. | Diseñado por WebMaster
+        </div>
+    </footer>
+
+    <!-- Botón Flotante WhatsApp -->
+    <a href="#" data-whatsapp class="float-whatsapp" aria-label="Contactar por WhatsApp">
+        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.438 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"></path>
+        </svg>
+    </a>
+
+    <!-- Botón Volver Arriba -->
+    <button id="back-to-top" class="fixed bottom-32 right-8 bg-white/80 backdrop-blur-md text-brand-copper p-3 rounded-full shadow-lg border border-brand-copper/20 opacity-0 transition-all duration-500 z-40 hover:bg-brand-copper hover:text-white" aria-label="Volver arriba">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+    </button>
+
+    <!-- Scripts -->
+    <script src="../assets/js/config.js" defer></script>
+    <script src="../assets/js/main.js" defer></script>
+
+</body>
+</html>
