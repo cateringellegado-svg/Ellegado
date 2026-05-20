@@ -83,13 +83,6 @@
                     <span class="text-sm font-medium">Menús</span>
                 </a>
                 
-                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-brand-copper/10 transition-colors" data-section="eventos">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    <span class="text-sm font-medium">Eventos</span>
-                </a>
-                
                 <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-brand-copper/10 transition-colors" data-section="config">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -249,19 +242,27 @@
                     </button>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Salados -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Experiencia Clásica -->
                     <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
-                        <h2 class="font-serif text-2xl text-brand-copper mb-6">Bocados Salados</h2>
-                        <div id="menu-salados" class="space-y-4">
+                        <h2 class="font-serif text-xl text-brand-copper mb-4">Experiencia Clásica</h2>
+                        <div id="menu-clasica" class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
                             <p class="text-slate-400 text-sm">Cargando...</p>
                         </div>
                     </div>
                     
-                    <!-- Dulces -->
+                    <!-- Experiencia Premium -->
                     <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
-                        <h2 class="font-serif text-2xl text-brand-copper mb-6">Variedad Dulce</h2>
-                        <div id="menu-dulces" class="space-y-4">
+                        <h2 class="font-serif text-xl text-brand-copper mb-4">Experiencia Premium</h2>
+                        <div id="menu-premium" class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                            <p class="text-slate-400 text-sm">Cargando...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Experiencia Dulce -->
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+                        <h2 class="font-serif text-xl text-brand-copper mb-4">Experiencia Dulce</h2>
+                        <div id="menu-dulce" class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
                             <p class="text-slate-400 text-sm">Cargando...</p>
                         </div>
                     </div>
@@ -381,8 +382,9 @@
                     <div>
                         <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Categoría</label>
                         <select id="menu-categoria" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper">
-                            <option value="salado">Salado</option>
-                            <option value="dulce">Dulce</option>
+                            <option value="clasica">Experiencia Clásica</option>
+                            <option value="premium">Experiencia Premium</option>
+                            <option value="dulce">Experiencia Dulce</option>
                         </select>
                     </div>
                     <div>
@@ -485,7 +487,7 @@
             });
         })();
     </script>
-    <script src="js/config.js?v=6"></script>
-    <script src="js/app.js?v=6"></script>
+    <script src="js/config.js?v=7"></script>
+    <script src="js/app.js?v=7"></script>
 </body>
 </html>

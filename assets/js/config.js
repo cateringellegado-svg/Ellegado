@@ -27,6 +27,7 @@ const CONFIG = {
     },
     productos: {
         clasicos: [],
+        premium: [],
         dulce: []
     }
 };
@@ -41,27 +42,46 @@ async function loadProductsFromDB() {
     }
     
     try {
-        const { data: salados, error: err1 } = await supabaseClient
+        const { data: clasicos, error: err1 } = await supabaseClient
             .from('menu_items')
             .select('*')
-            .eq('categoria', 'salado')
+            .eq('categoria', 'clasica')
             .eq('activo', true)
             .order('orden');
         
-        const { data: dulces, error: err2 } = await supabaseClient
+        const { data: premium, error: err2 } = await supabaseClient
+            .from('menu_items')
+            .select('*')
+            .eq('categoria', 'premium')
+            .eq('activo', true)
+            .order('orden');
+        
+        const { data: dulces, error: err3 } = await supabaseClient
             .from('menu_items')
             .select('*')
             .eq('categoria', 'dulce')
             .eq('activo', true)
             .order('orden');
         
-        if (err1 || err2) {
-            console.error('Error cargando productos:', err1, err2);
+        if (err1 || err2 || err3) {
+            console.error('Error cargando productos:', err1, err2, err3);
             loadFallbackProducts();
             return;
         }
         
-        CONFIG.productos.clasicos = (salados || []).map(item => ({
+        CONFIG.productos.clasicos = (clasicos || []).map(item => ({
+            id: item.id,
+            nombre: item.nombre,
+            descripcion: item.descripcion || '',
+            precio: item.precio > 0 ? item.precio : null,
+            unidad: 'unidad',
+            minimo: item.minimo || 50,
+            incremento: item.incremento || 10,
+            pendiente: item.pendiente || false,
+            imagen_url: item.imagen_url || ''
+        }));
+        
+        CONFIG.productos.premium = (premium || []).map(item => ({
             id: item.id,
             nombre: item.nombre,
             descripcion: item.descripcion || '',
@@ -85,7 +105,7 @@ async function loadProductsFromDB() {
             imagen_url: item.imagen_url || ''
         }));
         
-        console.log(`Productos cargados desde DB: ${CONFIG.productos.clasicos.length} salados, ${CONFIG.productos.dulce.length} dulces`);
+        console.log(`Productos cargados: ${CONFIG.productos.clasicos.length} clasicos, ${CONFIG.productos.premium.length} premium, ${CONFIG.productos.dulce.length} dulces`);
     } catch (err) {
         console.error('Error cargando productos desde DB:', err);
         loadFallbackProducts();
@@ -147,7 +167,7 @@ function formatARS(value) {
 }
 
 function getAllProducts() {
-    return [...CONFIG.productos.clasicos, ...CONFIG.productos.dulce];
+    return [...CONFIG.productos.clasicos, ...CONFIG.productos.premium, ...CONFIG.productos.dulce];
 }
 
 function getProductById(id) {

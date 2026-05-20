@@ -310,36 +310,49 @@ async function loadClientes() {
 }
 
 async function loadMenus() {
-    const { data: salados, error: err1 } = await supabase
+    const { data: clasica, error: err1 } = await supabase
         .from('menu_items')
         .select('*')
-        .eq('categoria', 'salado')
+        .eq('categoria', 'clasica')
         .order('orden');
     
-    const { data: dulces, error: err2 } = await supabase
+    const { data: premium, error: err2 } = await supabase
+        .from('menu_items')
+        .select('*')
+        .eq('categoria', 'premium')
+        .order('orden');
+    
+    const { data: dulce, error: err3 } = await supabase
         .from('menu_items')
         .select('*')
         .eq('categoria', 'dulce')
         .order('orden');
     
-    if (err1 || err2) {
-        console.error('Error cargando menús:', err1, err2);
+    if (err1 || err2 || err3) {
+        console.error('Error cargando menús:', err1, err2, err3);
         return;
     }
     
-    const saladosContainer = document.getElementById('menu-salados');
-    const dulcesContainer = document.getElementById('menu-dulces');
+    const clasicaContainer = document.getElementById('menu-clasica');
+    const premiumContainer = document.getElementById('menu-premium');
+    const dulceContainer = document.getElementById('menu-dulce');
     
-    if (salados && salados.length > 0) {
-        saladosContainer.innerHTML = salados.map(item => createMenuItemHTML(item)).join('');
-    } else {
-        saladosContainer.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No hay items. Usa "+ Agregar Item" para crear uno.</p>';
+    if (clasicaContainer) {
+        clasicaContainer.innerHTML = (clasica && clasica.length > 0) 
+            ? clasica.map(item => createMenuItemHTML(item)).join('')
+            : '<p class="text-slate-400 text-sm text-center py-4">No hay items. Usa "+ Agregar Item" para crear uno.</p>';
     }
     
-    if (dulces && dulces.length > 0) {
-        dulcesContainer.innerHTML = dulces.map(item => createMenuItemHTML(item)).join('');
-    } else {
-        dulcesContainer.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No hay items. Usa "+ Agregar Item" para crear uno.</p>';
+    if (premiumContainer) {
+        premiumContainer.innerHTML = (premium && premium.length > 0) 
+            ? premium.map(item => createMenuItemHTML(item)).join('')
+            : '<p class="text-slate-400 text-sm text-center py-4">No hay items. Usa "+ Agregar Item" para crear uno.</p>';
+    }
+    
+    if (dulceContainer) {
+        dulceContainer.innerHTML = (dulce && dulce.length > 0) 
+            ? dulce.map(item => createMenuItemHTML(item)).join('')
+            : '<p class="text-slate-400 text-sm text-center py-4">No hay items. Usa "+ Agregar Item" para crear uno.</p>';
     }
 }
 

@@ -59,6 +59,7 @@ function initExperienceTabs() {
 
 function loadProductsToDOM() {
     const clasicosContainer = document.getElementById('productos-clasicos');
+    const premiumContainer = document.getElementById('productos-premium');
     const dulcesContainer = document.getElementById('productos-dulces');
     
     if (!clasicosContainer || !dulcesContainer) {
@@ -69,6 +70,11 @@ function loadProductsToDOM() {
     
     try {
         clasicosContainer.innerHTML = CONFIG.productos.clasicos.map(p => createProductCard(p)).join('');
+        
+        if (premiumContainer) {
+            premiumContainer.innerHTML = CONFIG.productos.premium.map(p => createProductCard(p, false, true)).join('');
+        }
+        
         dulcesContainer.innerHTML = CONFIG.productos.dulce.map(p => createProductCard(p, true)).join('');
         
         for (const [id, data] of Object.entries(cotizacionSeleccion)) {
@@ -85,7 +91,7 @@ function loadProductsToDOM() {
     }
 }
 
-function createProductCard(producto, esDulce = false) {
+function createProductCard(producto, esDulce = false, esPremium = false) {
     const precioMostrar = producto.precio ? formatARS(producto.precio) : 'Por definir';
     const disabled = producto.pendiente ? 'opacity-60 grayscale-[50%]' : '';
     const inputDisabled = producto.pendiente ? 'disabled' : '';
@@ -95,18 +101,26 @@ function createProductCard(producto, esDulce = false) {
         ? `<div class="mb-3 rounded-xl overflow-hidden h-32 border border-brand-copper/5"><img src="${escapeAttr(producto.imagen_url)}" alt="${escapeAttr(producto.nombre)}" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
         : '';
     
+    const cardClass = esPremium 
+        ? 'relative bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-brand-copper/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group'
+        : `relative bg-white rounded-2xl border border-brand-copper/10 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group ${disabled}`;
+    
+    const textColor = esPremium ? 'text-slate-100' : 'text-dark-elegant';
+    const descColor = esPremium ? 'text-slate-400' : 'text-slate-500';
+    const iconBg = esPremium ? 'bg-brand-copper/20' : 'bg-cream';
+    
     return `
-        <div class="relative bg-white rounded-2xl border border-brand-copper/10 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group ${disabled}">
+        <div class="${cardClass}">
             ${badge}
             ${imagenHTML}
             <div class="p-5 flex flex-col flex-1">
                 <div class="mb-3 flex gap-3 items-start">
-                    <div class="p-2 bg-cream rounded-xl border border-brand-copper/5 group-hover:bg-brand-copper/5 transition-colors flex-shrink-0">
+                    <div class="p-2 ${iconBg} rounded-xl border border-brand-copper/5 group-hover:bg-brand-copper/5 transition-colors flex-shrink-0">
                         <svg class="w-5 h-5 text-brand-copper/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
                     </div>
-                    <h4 class="font-serif text-lg text-dark-elegant font-medium leading-tight">${escapeAttr(producto.nombre)}</h4>
+                    <h4 class="font-serif text-lg ${textColor} font-medium leading-tight">${escapeAttr(producto.nombre)}</h4>
                 </div>
-                <p class="text-xs text-slate-500 mb-5 flex-grow font-light leading-relaxed">${escapeAttr(producto.descripcion || '')}</p>
+                <p class="text-xs ${descColor} mb-5 flex-grow font-light leading-relaxed">${escapeAttr(producto.descripcion || '')}</p>
                 
                 <div class="flex justify-between items-end mt-auto pt-4 border-t border-brand-copper/5">
                     <div>
