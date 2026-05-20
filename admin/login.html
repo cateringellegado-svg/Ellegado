@@ -82,30 +82,34 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        window.supabase = supabase;
-    </script>
     <script src="js/config.js"></script>
     <script>
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error-message');
-            
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password
-                });
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const errorDiv = document.getElementById('error-message');
                 
-                if (error) throw error;
-                
-                window.location.href = 'index.html';
-            } catch (error) {
-                errorDiv.textContent = error.message;
-                errorDiv.classList.remove('hidden');
-            }
+                try {
+                    if (!supabase) {
+                        throw new Error('Supabase no está configurado correctamente. Verifica las credenciales.');
+                    }
+                    
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email,
+                        password
+                    });
+                    
+                    if (error) throw error;
+                    
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Error de autenticación:', error);
+                    errorDiv.textContent = error.message || 'Error al iniciar sesión';
+                    errorDiv.classList.remove('hidden');
+                }
+            });
         });
     </script>
 </body>
