@@ -6,6 +6,8 @@ if (typeof window !== 'undefined' && window.supabase) {
     try {
         if (SUPABASE_URL && SUPABASE_URL !== 'TU_SUPABASE_URL' && SUPABASE_URL.startsWith('http')) {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            // Expose client globally so inline scripts can use it
+            window.supabase = supabase;
             console.log('Cliente de Supabase inicializado correctamente en admin');
         } else {
             console.warn('Supabase URL no está configurada o es inválida en el administrador.');
