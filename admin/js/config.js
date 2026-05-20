@@ -1,23 +1,31 @@
 const SUPABASE_URL = 'https://nebstosmaahdbivndlqq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5lYnN0b3NtYWFoZGJpdm5kbHFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDM1NzMsImV4cCI6MjA5NDg3OTU3M30.wGEwTshOJe2mSA-mg0dTmOd6nZz4JH0s9ZIA26TbVUI';
 
-let supabase = null;
-if (typeof window !== 'undefined' && window.supabase) {
+var supabase = null;
+
+(function initSupabase() {
+    if (typeof window.supabaseLib === 'undefined' && typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
+        window.supabaseLib = window.supabase;
+    }
+
     try {
         if (SUPABASE_URL && SUPABASE_URL !== 'TU_SUPABASE_URL' && SUPABASE_URL.startsWith('http')) {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            // Expose client globally so inline scripts can use it
-            window.supabase = supabase;
-            console.log('Cliente de Supabase inicializado correctamente en admin');
+            var lib = window.supabaseLib || window.supabase;
+            if (lib && typeof lib.createClient === 'function') {
+                supabase = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                window.supabaseClient = supabase;
+                window.supabase = supabase;
+                console.log('Supabase client initialized');
+            } else {
+                console.warn('Supabase library not loaded yet');
+            }
         } else {
-            console.warn('Supabase URL no está configurada o es inválida en el administrador.');
+            console.warn('Supabase URL not configured');
         }
     } catch (err) {
-        console.error('Error al inicializar el cliente de Supabase en el administrador:', err);
+        console.error('Error initializing Supabase:', err);
     }
-}
-
-window.supabaseClient = supabase;
+})();
 
 const APP_CONFIG = {
     sitio: {
@@ -39,42 +47,41 @@ const APP_CONFIG = {
 
 async function getAuthSession() {
     if (!supabase) return null;
-    const { data: { session } } = await supabase.auth.getSession();
-    return session;
+    var result = await supabase.auth.getSession();
+    return result.data.session;
 }
 
 async function signIn(email, password) {
-    if (!supabase) throw new Error('Supabase no inicializado');
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    return data;
+    if (!supabase) throw new Error('Supabase not initialized');
+    var result = await supabase.auth.signInWithPassword({ email: email, password: password });
+    if (result.error) throw result.error;
+    return result.data;
 }
 
 async function signOut() {
     if (!supabase) return;
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    var result = await supabase.auth.signOut();
+    if (result.error) throw result.error;
 }
 
 async function checkAuth() {
-    const session = await getAuthSession();
+    var session = await getAuthSession();
     if (!session) {
         window.location.href = 'login.html';
     }
     return session;
 }
 
-function showNotification(message, type = 'success') {
-    const existing = document.querySelector('.admin-notification');
+function showNotification(message, type) {
+    if (type === undefined) type = 'success';
+    var existing = document.querySelector('.admin-notification');
     if (existing) existing.remove();
     
-    const notification = document.createElement('div');
-    notification.className = `admin-notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-[100] transition-all duration-300 ${
-        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-    }`;
+    var notification = document.createElement('div');
+    notification.className = 'admin-notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-[100] transition-all duration-300 ' + (type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white');
     notification.textContent = message;
     document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
+    setTimeout(function() { notification.remove(); }, 3000);
 }
 
 function formatCLP(value) {
@@ -84,7 +91,7 @@ function formatCLP(value) {
 
 function formatDate(dateString) {
     if (!dateString) return '-';
-    const date = new Date(dateString);
+    var date = new Date(dateString);
     return date.toLocaleDateString('es-CL', { 
         year: 'numeric', 
         month: 'short',
