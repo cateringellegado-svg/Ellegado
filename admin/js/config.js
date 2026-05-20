@@ -1,19 +1,29 @@
 const SUPABASE_URL = 'https://nebstosmaahdbivndlqq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5lYnN0b3NtYWFoZGJpdm5kbHFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDM1NzMsImV4cCI6MjA5NDg3OTU3M30.wGEwTshOJe2mSA-mg0dTmOd6nZz4JH0s9ZIA26TbVUI';
 
-var supabase = null;
+var supabase = window.supabaseClient || window.supabase || null;
 
-(function initSupabase() {
-    if (typeof window.supabaseLib === 'undefined' && typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
-        window.supabaseLib = window.supabase;
-    }
+if (!supabase) {
+    (function initSupabase() {
+        try {
+            if (SUPABASE_URL && SUPABASE_URL !== 'TU_SUPABASE_URL' && SUPABASE_URL.startsWith('http')) {
+                var lib = window.supabaseLib || window.supabase;
+                if (lib && typeof lib.createClient === 'function') {
+                    supabase = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    window.supabaseClient = supabase;
+                    window.supabase = supabase;
+                    console.log('Supabase client initialized');
+                }
+            }
+        } catch (err) {
+            console.error('Error initializing Supabase:', err);
+        }
+    })();
+} else {
+    console.log('Supabase client already initialized');
+}
 
-    try {
-        if (SUPABASE_URL && SUPABASE_URL !== 'TU_SUPABASE_URL' && SUPABASE_URL.startsWith('http')) {
-            var lib = window.supabaseLib || window.supabase;
-            if (lib && typeof lib.createClient === 'function') {
-                supabase = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                window.supabaseClient = supabase;
+window.supabaseClient = supabase;
                 window.supabase = supabase;
                 console.log('Supabase client initialized');
             } else {

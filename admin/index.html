@@ -455,8 +455,37 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>window.supabase = supabase;</script>
-    <script src="js/config.js"></script>
-    <script src="js/app.js"></script>
+    <script>
+        (function() {
+            var SUPABASE_URL = 'https://nebstosmaahdbivndlqq.supabase.co';
+            var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5lYnN0b3NtYWFoZGJpdm5kbHFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDM1NzMsImV4cCI6MjA5NDg3OTU3M30.wGEwTshOJe2mSA-mg0dTmOd6nZz4JH0s9ZIA26TbVUI';
+
+            function waitForSupabase(callback) {
+                if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+                    callback();
+                } else if (window.supabaseLoadAttempts < 20) {
+                    window.supabaseLoadAttempts = (window.supabaseLoadAttempts || 0) + 1;
+                    setTimeout(function() { waitForSupabase(callback); }, 200);
+                } else {
+                    window.location.href = 'login.html';
+                }
+            }
+
+            waitForSupabase(function() {
+                var client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                window.supabase = client;
+                window.supabaseClient = client;
+                console.log('Supabase OK');
+
+                client.auth.getSession().then(function(result) {
+                    if (!result.data.session) {
+                        window.location.href = 'login.html';
+                    }
+                });
+            });
+        })();
+    </script>
+    <script src="js/config.js?v=4"></script>
+    <script src="js/app.js?v=4"></script>
 </body>
 </html>
