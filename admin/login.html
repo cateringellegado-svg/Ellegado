@@ -27,11 +27,6 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        .text-gradient {
-            background: linear-gradient(to right, #AF7A54, #D9A78B);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -83,56 +78,69 @@
     </div>
 
     <script>
-        var SUPABASE_URL = 'https://nebstosmaahdbivndlqq.supabase.co';
-        var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5lYnN0b3NtYWFoZGJpdm5kbHFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDM1NzMsImV4cCI6MjA5NDg3OTU3M30.wGEwTshOJe2mSA-mg0dTmOd6nZz4JH0s9ZIA26TbVUI';
+        (function() {
+            var SUPABASE_URL = 'https://nebstosmaahdbivndlqq.supabase.co';
+            var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5lYnN0b3NtYWFoZGJpdm5kbHFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDM1NzMsImV4cCI6MjA5NDg3OTU3M30.wGEwTshOJe2mSA-mg0dTmOd6nZz4JH0s9ZIA26TbVUI';
+            var client = null;
 
-        var client = null;
-        try {
-            if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
-                client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('Supabase client OK');
-            } else {
-                console.error('Supabase library not loaded');
+            function waitForSupabase(callback) {
+                if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+                    callback();
+                } else if (window.supabaseLoadAttempts < 20) {
+                    window.supabaseLoadAttempts = (window.supabaseLoadAttempts || 0) + 1;
+                    setTimeout(function() { waitForSupabase(callback); }, 200);
+                } else {
+                    document.getElementById('error-message').textContent = 'No se pudo cargar Supabase. Revisa tu conexion a internet.';
+                    document.getElementById('error-message').classList.remove('hidden');
+                    document.getElementById('login-btn').disabled = false;
+                }
             }
-        } catch (e) {
-            console.error('Supabase init error:', e);
-        }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            var form = document.getElementById('login-form');
-            var errorDiv = document.getElementById('error-message');
-            var loadingMsg = document.getElementById('loading-msg');
-            var loginBtn = document.getElementById('login-btn');
-
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                errorDiv.classList.add('hidden');
-                loadingMsg.classList.remove('hidden');
-                loginBtn.disabled = true;
-
-                var email = document.getElementById('email').value;
-                var password = document.getElementById('password').value;
-
+            waitForSupabase(function() {
                 try {
-                    if (!client) {
-                        throw new Error('Supabase no se pudo inicializar');
-                    }
-                    var result = await client.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-                    if (result.error) throw result.error;
-                    window.location.href = 'index.html';
-                } catch (error) {
-                    console.error('Auth error:', error);
-                    errorDiv.textContent = error.message || 'Error al iniciar sesion';
-                    errorDiv.classList.remove('hidden');
-                } finally {
-                    loadingMsg.classList.add('hidden');
-                    loginBtn.disabled = false;
+                    client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('Supabase OK');
+                } catch (e) {
+                    console.error('Supabase init error:', e);
                 }
             });
-        });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                var form = document.getElementById('login-form');
+                var errorDiv = document.getElementById('error-message');
+                var loadingMsg = document.getElementById('loading-msg');
+                var loginBtn = document.getElementById('login-btn');
+
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    errorDiv.classList.add('hidden');
+                    loadingMsg.classList.remove('hidden');
+                    loginBtn.disabled = true;
+
+                    var email = document.getElementById('email').value;
+                    var password = document.getElementById('password').value;
+
+                    try {
+                        if (!client) {
+                            throw new Error('Supabase no se inicializo. Espera un momento e intenta de nuevo.');
+                        }
+                        var result = await client.auth.signInWithPassword({
+                            email: email,
+                            password: password
+                        });
+                        if (result.error) throw result.error;
+                        window.location.href = 'index.html';
+                    } catch (error) {
+                        console.error('Auth error:', error);
+                        errorDiv.textContent = error.message || 'Error al iniciar sesion';
+                        errorDiv.classList.remove('hidden');
+                    } finally {
+                        loadingMsg.classList.add('hidden');
+                        loginBtn.disabled = false;
+                    }
+                });
+            });
+        })();
     </script>
 </body>
 </html>
