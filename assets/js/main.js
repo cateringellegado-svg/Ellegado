@@ -1,14 +1,12 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadProductsFromDB();
+    loadProductsToDOM();
     initBackToTop();
     initMobileMenu();
     initExperienceTabs();
     initCateringCotizador();
     initWhatsAppLinks();
     initScrollAnimations();
-    
-    setTimeout(() => {
-        loadProductsToDOM();
-    }, 100);
 });
 
 function initScrollAnimations() {
@@ -16,8 +14,6 @@ function initScrollAnimations() {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');
-                // Opcional: si queremos que la animación ocurra solo la primera vez:
-                // observer.unobserve(entry.target);
             }
         });
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
@@ -61,8 +57,6 @@ function initExperienceTabs() {
     });
 }
 
-
-
 function loadProductsToDOM() {
     const clasicosContainer = document.getElementById('productos-clasicos');
     const dulcesContainer = document.getElementById('productos-dulces');
@@ -77,7 +71,6 @@ function loadProductsToDOM() {
         clasicosContainer.innerHTML = CONFIG.productos.clasicos.map(p => createProductCard(p)).join('');
         dulcesContainer.innerHTML = CONFIG.productos.dulce.map(p => createProductCard(p, true)).join('');
         
-        // Restore values from localStorage
         for (const [id, data] of Object.entries(cotizacionSeleccion)) {
             const input = document.getElementById(`input-${id}`);
             if (input) {
@@ -86,7 +79,7 @@ function loadProductsToDOM() {
         }
         updateCotizador();
         
-        console.log('Productos cargados correctamente desde la configuración global');
+        console.log('Productos cargados correctamente');
     } catch (err) {
         console.error('Error cargando productos:', err);
     }
@@ -97,48 +90,56 @@ function createProductCard(producto, esDulce = false) {
     const disabled = producto.pendiente ? 'opacity-60 grayscale-[50%]' : '';
     const inputDisabled = producto.pendiente ? 'disabled' : '';
     const badge = producto.pendiente ? '<span class="absolute top-3 right-3 text-[10px] bg-amber-100/80 text-amber-700 px-3 py-1 rounded-full font-medium tracking-wider uppercase border border-amber-200 backdrop-blur-sm z-10">Próximamente</span>' : '';
-    const icon = esDulce 
-        ? `<svg class="w-5 h-5 text-brand-copper/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 15.546c-.523 0-1.046.523-1.046 1.046s.523 1.046 1.046 1.046 1.046-.523 1.046-1.046-.523-1.046-1.046-1.046zM9.684 13.536a3 3 0 104.632 4.632m-4.632-4.632a3 3 0 014.632 4.632m-4.632-4.632a3 3 0 014.632-4.632M9.684 13.536V6.404M21 15.546V9.404m-9.316 4.132a3 3 0 11-4.632-4.632m4.632 4.632a3 3 0 11-4.632 4.632m4.632-4.632a3 3 0 114.632-4.632"></path></svg>`
-        : `<svg class="w-5 h-5 text-brand-copper/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>`;
+    
+    const imagenHTML = producto.imagen_url 
+        ? `<div class="mb-3 rounded-xl overflow-hidden h-32 border border-brand-copper/5"><img src="${escapeAttr(producto.imagen_url)}" alt="${escapeAttr(producto.nombre)}" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
+        : '';
     
     return `
-        <div class="relative bg-white rounded-2xl p-5 border border-brand-copper/10 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group ${disabled}">
+        <div class="relative bg-white rounded-2xl border border-brand-copper/10 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group ${disabled}">
             ${badge}
-            <div class="mb-3 flex gap-3 items-start">
-                <div class="p-2 bg-cream rounded-xl border border-brand-copper/5 group-hover:bg-brand-copper/5 transition-colors">
-                    ${icon}
-                </div>
-                <h4 class="font-serif text-lg text-dark-elegant font-medium pr-10 leading-tight pt-1">${producto.nombre}</h4>
-            </div>
-            <p class="text-xs text-slate-500 mb-5 flex-grow font-light leading-relaxed">${producto.descripcion || ''}</p>
-            
-            <div class="flex justify-between items-end mt-auto pt-4 border-t border-brand-copper/5">
-                <div>
-                    <span class="text-[9px] text-slate-400 uppercase tracking-widest block mb-1">Valor Unitario</span>
-                    <span class="font-sans text-sm text-brand-copper font-bold">${precioMostrar}</span>
-                </div>
-                
-                ${producto.pendiente ? '' : `
-                <div class="flex flex-col items-end gap-1">
-                    <div class="flex items-center bg-cream border border-brand-copper/20 rounded-lg overflow-hidden">
-                        <button type="button" class="btn-restar px-2 py-1 text-brand-copper hover:bg-brand-copper/10 transition-colors" data-target="input-${producto.id}">−</button>
-                        <input type="number" 
-                            id="input-${producto.id}"
-                            data-producto="${producto.id}" 
-                            data-precio="${producto.precio || 0}"
-                            data-nombre="${producto.nombre}"
-                            min="${producto.minimo}"
-                            step="${producto.incremento}"
-                            class="w-12 text-center bg-transparent border-x border-brand-copper/10 py-1 text-sm font-medium text-dark-elegant focus:outline-none appearance-none"
-                            placeholder="0" ${inputDisabled}>
-                        <button type="button" class="btn-sumar px-2 py-1 text-brand-copper hover:bg-brand-copper/10 transition-colors" data-target="input-${producto.id}">+</button>
+            ${imagenHTML}
+            <div class="p-5 flex flex-col flex-1">
+                <div class="mb-3 flex gap-3 items-start">
+                    <div class="p-2 bg-cream rounded-xl border border-brand-copper/5 group-hover:bg-brand-copper/5 transition-colors flex-shrink-0">
+                        <svg class="w-5 h-5 text-brand-copper/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
                     </div>
-                    <span class="text-[9px] text-slate-400 italic">Mín: ${producto.minimo} / +${producto.incremento}</span>
+                    <h4 class="font-serif text-lg text-dark-elegant font-medium leading-tight">${escapeAttr(producto.nombre)}</h4>
                 </div>
-                `}
+                <p class="text-xs text-slate-500 mb-5 flex-grow font-light leading-relaxed">${escapeAttr(producto.descripcion || '')}</p>
+                
+                <div class="flex justify-between items-end mt-auto pt-4 border-t border-brand-copper/5">
+                    <div>
+                        <span class="text-[9px] text-slate-400 uppercase tracking-widest block mb-1">Valor Unitario</span>
+                        <span class="font-sans text-sm text-brand-copper font-bold">${precioMostrar}</span>
+                    </div>
+                    
+                    ${producto.pendiente ? '' : `
+                    <div class="flex flex-col items-end gap-1">
+                        <div class="flex items-center bg-cream border border-brand-copper/20 rounded-lg overflow-hidden">
+                            <button type="button" class="btn-restar px-2 py-1 text-brand-copper hover:bg-brand-copper/10 transition-colors" data-target="input-${producto.id}">−</button>
+                            <input type="number" 
+                                id="input-${producto.id}"
+                                data-producto="${producto.id}" 
+                                data-precio="${producto.precio || 0}"
+                                data-nombre="${escapeAttr(producto.nombre)}"
+                                min="${producto.minimo}"
+                                step="${producto.incremento}"
+                                class="w-12 text-center bg-transparent border-x border-brand-copper/10 py-1 text-sm font-medium text-dark-elegant focus:outline-none appearance-none"
+                                placeholder="0" ${inputDisabled}>
+                            <button type="button" class="btn-sumar px-2 py-1 text-brand-copper hover:bg-brand-copper/10 transition-colors" data-target="input-${producto.id}">+</button>
+                        </div>
+                        <span class="text-[9px] text-slate-400 italic">Mín: ${producto.minimo} / +${producto.incremento}</span>
+                    </div>
+                    `}
+                </div>
             </div>
         </div>
     `;
+}
+
+function escapeAttr(str) {
+    return String(str || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function initCateringCotizador() {
@@ -168,7 +169,7 @@ function initCateringCotizador() {
                 if (current > min) {
                     input.value = current - step;
                 } else {
-                    input.value = ''; // Reset to 0
+                    input.value = '';
                 }
                 handleInputUpdate(input);
             }
@@ -211,28 +212,30 @@ function initCateringCotizador() {
                 return;
             }
             
-            // Mostrar Modal
             modal.classList.remove('opacity-0', 'pointer-events-none');
             modal.querySelector('div').classList.remove('scale-95');
         });
 
-        closeModal.addEventListener('click', () => {
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.add('scale-95');
-        });
+        if (closeModal) {
+            closeModal.addEventListener('click', () => {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modal.querySelector('div').classList.add('scale-95');
+            });
+        }
 
-        formModal.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const clienteNombre = document.getElementById('cot-nombre').value;
-            const clienteTelefono = document.getElementById('cot-telefono').value;
-            const clienteEmail = document.getElementById('cot-email').value;
+        if (formModal) {
+            formModal.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const clienteNombre = document.getElementById('cot-nombre').value;
+                const clienteTelefono = document.getElementById('cot-telefono').value;
+                const clienteEmail = document.getElementById('cot-email').value;
 
-            // Ocultar Modal y mostrar estado de carga si lo deseas
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div').classList.add('scale-95');
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modal.querySelector('div').classList.add('scale-95');
 
-            await enviarCotizacionWhatsApp(clienteNombre, clienteTelefono, clienteEmail);
-        });
+                await enviarCotizacionWhatsApp(clienteNombre, clienteTelefono, clienteEmail);
+            });
+        }
     }
 }
 
@@ -250,15 +253,22 @@ function updateCotizador() {
         return;
     }
     
-    seleccionContainer.innerHTML = productos.map(p => `
-        <div class="flex justify-between items-center py-2 border-b border-brand-copper/5">
-            <div>
-                <span class="text-sm text-dark-elegant block">${p.nombre}</span>
+    seleccionContainer.innerHTML = productos.map(p => {
+        const producto = getProductById(p.id || '');
+        const thumb = producto?.imagen_url 
+            ? `<img src="${escapeAttr(producto.imagen_url)}" alt="" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.style.display='none'">`
+            : '';
+        
+        return `
+        <div class="flex items-center gap-3 py-2 border-b border-brand-copper/5">
+            ${thumb}
+            <div class="flex-1 min-w-0">
+                <span class="text-sm text-dark-elegant block truncate">${escapeAttr(p.nombre)}</span>
                 <span class="text-xs text-slate-400">${p.cantidad} u. x ${formatARS(p.precio)}</span>
             </div>
-            <span class="text-sm text-brand-copper font-medium">${formatARS(p.subtotal)}</span>
+            <span class="text-sm text-brand-copper font-medium flex-shrink-0">${formatARS(p.subtotal)}</span>
         </div>
-    `).join('');
+    `}).join('');
     
     const total = productos.reduce((sum, p) => sum + p.subtotal, 0);
     totalElement.textContent = formatARS(total);

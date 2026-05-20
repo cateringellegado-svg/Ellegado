@@ -1,5 +1,5 @@
-// SECURITY: Sanitización de HTML para prevenir XSS
 function sanitizeHTML(str) {
+    if (!str) return '';
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
@@ -9,7 +9,6 @@ function escapeAttr(str) {
     return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// SECURITY: Validación de entrada
 function validateNumber(value, min, max) {
     const num = parseInt(value);
     return !isNaN(num) && num >= min && num <= max;
@@ -31,11 +30,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadConfig();
     initLogout();
     initModal();
+    initMenuCRUD();
 });
 
-// SECURITY: Monitor de sesión
 function initSessionMonitor() {
-    const TIMEOUT_MS = 15 * 60 * 1000; // 15 minutos
+    const TIMEOUT_MS = 15 * 60 * 1000;
     let lastActivity = Date.now();
     
     const resetActivity = () => { lastActivity = Date.now(); };
@@ -66,13 +65,14 @@ function initNavigation() {
             link.classList.add('active');
             
             sections.forEach(s => s.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
+            const target = document.getElementById(sectionId);
+            if (target) target.classList.add('active');
             
             loadSectionData(sectionId);
         });
     });
     
-    links[0].classList.add('active');
+    if (links.length > 0) links[0].classList.add('active');
 }
 
 async function loadSectionData(section) {
@@ -87,42 +87,43 @@ async function loadSectionData(section) {
 }
 
 async function loadDashboard() {
-    const { data: cotizaciones } = await supabase
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    
+    const { data: monthCotizaciones, error: err1 } = await supabase
+        .from('cotizaciones')
+        .select('presupuesto')
+        .gte('created_at', startOfMonth);
+    
+    const { data: eventos, error: err2 } = await supabase
+        .from('eventos')
+        .select('id')
+        .eq('estado', 'confirmado');
+
+    const { data: clientes, error: err3 } = await supabase
+        .from('clientes')
+        .select('id', { count: 'exact', head: true });
+    
+    const { data: recentCotizaciones, error: err4 } = await supabase
         .from('cotizaciones')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(5);
 
-    const { data: eventos } = await supabase
-        .from('eventos')
-        .select('*')
-        .eq('estado', 'confirmado');
+    if (err1 || err2 || err3 || err4) {
+        console.error('Error cargando dashboard:', err1, err2, err3, err4);
+    }
 
-    const { data: clientes } = await supabase
-        .from('clientes')
-        .select('id');
-    
-    const { data: todasCotizaciones } = await supabase
-        .from('cotizaciones')
-        .select('presupuesto');
+    const totalIngresos = (monthCotizaciones || []).reduce((sum, c) => sum + (c.presupuesto || 0), 0);
 
-    const thisMonth = new Date().getMonth();
-    const thisYear = new Date().getFullYear();
-    const monthCotizaciones = todasCotizaciones?.filter(c => {
-        const date = new Date(c.created_at);
-        return date.getMonth() === thisMonth && date.getFullYear() === thisYear;
-    }) || [];
-
-    const totalIngresos = monthCotizaciones.reduce((sum, c) => sum + (c.presupuesto || 0), 0);
-
-    document.getElementById('stat-cotizaciones').textContent = monthCotizaciones.length;
-    document.getElementById('stat-eventos').textContent = eventos?.length || 0;
-    document.getElementById('stat-clientes').textContent = clientes?.length || 0;
+    document.getElementById('stat-cotizaciones').textContent = (monthCotizaciones || []).length;
+    document.getElementById('stat-eventos').textContent = (eventos || []).length;
+    document.getElementById('stat-clientes').textContent = clientes || 0;
     document.getElementById('stat-ingresos').textContent = formatCLP(totalIngresos);
 
     const container = document.getElementById('recent-cotizaciones');
-    if (cotizaciones && cotizaciones.length > 0) {
-        container.innerHTML = cotizaciones.slice(0, 5).map(c => {
+    if (recentCotizaciones && recentCotizaciones.length > 0) {
+        container.innerHTML = recentCotizaciones.map(c => {
             const nombre = sanitizeHTML(c.cliente_nombre || 'Cliente sin nombre');
             const tipo = sanitizeHTML(c.tipo_evento);
             const estado = sanitizeHTML(c.estado);
@@ -144,7 +145,7 @@ async function loadDashboard() {
 }
 
 async function loadCotizaciones() {
-    const filter = document.getElementById('filter-estado').value;
+    const filter = document.getElementById('filter-estado')?.value;
     let query = supabase.from('cotizaciones').select('*').order('created_at', { ascending: false });
     
     if (filter) {
@@ -205,20 +206,23 @@ window.updateEstado = async function(id, estado) {
         .update({ estado, updated_at: new Date().toISOString() })
         .eq('id', id);
     
-    if (!error) {
+    if (error) {
+        showNotification('Error al actualizar estado', 'error');
+        console.error('Error updateEstado:', error);
+    } else {
         showNotification('Estado actualizado');
         loadCotizaciones();
     }
 };
 
 window.viewCotizacion = async function(id) {
-    const { data } = await supabase
+    const { data, error } = await supabase
         .from('cotizaciones')
         .select('*')
         .eq('id', id)
         .single();
     
-    if (!data) return;
+    if (error || !data) return;
     
     let servicios = [];
     try {
@@ -262,7 +266,7 @@ window.viewCotizacion = async function(id) {
             <div>
                 <p class="text-xs text-slate-400 uppercase mb-2">Servicios</p>
                 <div class="flex flex-wrap gap-2">
-                    ${servicios.map(s => `<span class="px-3 py-1 bg-brand-copper/10 text-brand-copper rounded-full text-sm">${sanitizeHTML(s)}</span>`).join('')}
+                    ${servicios.map(s => `<span class="px-3 py-1 bg-brand-copper/10 text-brand-copper rounded-full text-sm">${sanitizeHTML(s.nombre || s)}</span>`).join('')}
                 </div>
             </div>
             <div class="pt-4 border-t border-brand-copper/10">
@@ -274,12 +278,18 @@ window.viewCotizacion = async function(id) {
 };
 
 async function loadClientes() {
-    const { data } = await supabase
+    const { data, error } = await supabase
         .from('clientes')
         .select('*')
         .order('created_at', { ascending: false });
     
     const tbody = document.getElementById('clientes-table');
+    if (error) {
+        console.error('Error cargando clientes:', error);
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-red-500">Error al cargar datos</td></tr>`;
+        return;
+    }
+    
     if (data && data.length > 0) {
         tbody.innerHTML = data.map(c => {
             const nombre = sanitizeHTML(c.nombre);
@@ -300,17 +310,22 @@ async function loadClientes() {
 }
 
 async function loadMenus() {
-    const { data: salados } = await supabase
+    const { data: salados, error: err1 } = await supabase
         .from('menu_items')
         .select('*')
         .eq('categoria', 'salado')
         .order('orden');
     
-    const { data: dulces } = await supabase
+    const { data: dulces, error: err2 } = await supabase
         .from('menu_items')
         .select('*')
         .eq('categoria', 'dulce')
         .order('orden');
+    
+    if (err1 || err2) {
+        console.error('Error cargando menús:', err1, err2);
+        return;
+    }
     
     const saladosContainer = document.getElementById('menu-salados');
     const dulcesContainer = document.getElementById('menu-dulces');
@@ -318,55 +333,279 @@ async function loadMenus() {
     if (salados && salados.length > 0) {
         saladosContainer.innerHTML = salados.map(item => createMenuItemHTML(item)).join('');
     } else {
-        saladosContainer.innerHTML = '<p class="text-slate-400 text-sm">No hay items. Agrega desde Supabase.</p>';
+        saladosContainer.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No hay items. Usa "+ Agregar Item" para crear uno.</p>';
     }
     
     if (dulces && dulces.length > 0) {
         dulcesContainer.innerHTML = dulces.map(item => createMenuItemHTML(item)).join('');
     } else {
-        dulcesContainer.innerHTML = '<p class="text-slate-400 text-sm">No hay items. Agrega desde Supabase.</p>';
+        dulcesContainer.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No hay items. Usa "+ Agregar Item" para crear uno.</p>';
     }
 }
 
 function createMenuItemHTML(item) {
     const nombre = sanitizeHTML(item.nombre);
+    const descripcion = sanitizeHTML(item.descripcion || '');
+    const precio = item.precio > 0 ? formatCLP(item.precio) : 'Por definir';
+    const imagen = item.imagen_url ? `<img src="${sanitizeHTML(item.imagen_url)}" alt="${nombre}" class="w-16 h-16 object-cover rounded-lg border border-brand-copper/10" onerror="this.style.display='none'">` : `<div class="w-16 h-16 bg-cream rounded-lg border border-brand-copper/10 flex items-center justify-center"><svg class="w-8 h-8 text-brand-copper/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>`;
     const etiquetas = item.etiquetas ? item.etiquetas.map(e => 
         `<span class="text-[10px] px-2 py-0.5 bg-brand-copper/10 text-brand-copper rounded-full">${sanitizeHTML(e)}</span>`
     ).join('') : '';
     
     return `
-        <div class="flex items-center justify-between p-3 bg-cream rounded-lg">
-            <div>
-                <p class="font-medium text-dark-elegant">${nombre}</p>
-                <div class="flex gap-1 mt-1">${etiquetas}</div>
+        <div class="flex items-start gap-4 p-4 bg-cream rounded-lg group hover:shadow-md transition-all" data-id="${item.id}">
+            ${imagen}
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                    <p class="font-medium text-dark-elegant truncate">${nombre}</p>
+                    <div class="flex gap-1 ml-2">
+                        <button onclick="editMenuItem('${item.id}')" class="p-1 text-slate-400 hover:text-brand-copper transition-colors" title="Editar">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </button>
+                        <button onclick="deleteMenuItem('${item.id}', '${escapeAttr(nombre)}')" class="p-1 text-slate-400 hover:text-red-500 transition-colors" title="Eliminar">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                ${descripcion ? `<p class="text-xs text-slate-500 line-clamp-2 mb-2">${descripcion}</p>` : ''}
+                <div class="flex gap-1 mb-2">${etiquetas}</div>
             </div>
-            <div class="text-right">
-                <p class="font-medium text-brand-copper">${formatCLP(item.precio)}</p>
-                <button onclick="toggleMenuItem('${item.id}', ${!item.activo})" class="text-xs ${item.activo ? 'text-green-600' : 'text-red-500'}">
+            <div class="text-right flex-shrink-0">
+                <p class="font-medium text-brand-copper">${precio}</p>
+                <button onclick="toggleMenuItem('${item.id}', ${!item.activo})" class="text-xs ${item.activo ? 'text-green-600' : 'text-red-500'} mt-1">
                     ${item.activo ? 'Activo' : 'Inactivo'}
                 </button>
+                ${item.pendiente ? '<p class="text-[10px] text-amber-500 mt-1">Pendiente</p>' : ''}
             </div>
         </div>
     `;
 }
 
 window.toggleMenuItem = async function(id, activo) {
-    await supabase
+    const { error } = await supabase
         .from('menu_items')
         .update({ activo })
         .eq('id', id);
     
-    loadMenus();
+    if (error) {
+        showNotification('Error al actualizar', 'error');
+    } else {
+        loadMenus();
+    }
 };
+
+let currentEditingItem = null;
+
+function initMenuCRUD() {
+    const addBtn = document.getElementById('add-menu-btn');
+    if (addBtn) {
+        addBtn.addEventListener('click', () => openMenuModal());
+    }
+    
+    const closeBtn = document.getElementById('close-menu-modal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeMenuModal);
+    }
+    
+    const cancelBtn = document.getElementById('cancel-menu-modal');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeMenuModal);
+    }
+    
+    const saveBtn = document.getElementById('save-menu-item');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveMenuItem);
+    }
+    
+    const imageInput = document.getElementById('menu-image-input');
+    if (imageInput) {
+        imageInput.addEventListener('change', handleImageUpload);
+    }
+}
+
+function openMenuModal(item = null) {
+    currentEditingItem = item;
+    const modal = document.getElementById('menu-modal');
+    const title = document.getElementById('menu-modal-title');
+    
+    if (item) {
+        title.textContent = 'Editar Item';
+        document.getElementById('menu-nombre').value = item.nombre || '';
+        document.getElementById('menu-categoria').value = item.categoria || 'salado';
+        document.getElementById('menu-precio').value = item.precio || 0;
+        document.getElementById('menu-descripcion').value = item.descripcion || '';
+        document.getElementById('menu-etiquetas').value = (item.etiquetas || []).join(', ');
+        document.getElementById('menu-orden').value = item.orden || 0;
+        document.getElementById('menu-minimo').value = item.minimo || 50;
+        document.getElementById('menu-incremento').value = item.incremento || 10;
+        document.getElementById('menu-activo').checked = item.activo !== false;
+        document.getElementById('menu-pendiente').checked = item.pendiente || false;
+        
+        if (item.imagen_url) {
+            document.getElementById('menu-image-preview').innerHTML = `<img src="${sanitizeHTML(item.imagen_url)}" class="w-full h-32 object-cover rounded-lg" onerror="this.style.display='none'">`;
+        } else {
+            document.getElementById('menu-image-preview').innerHTML = '';
+        }
+    } else {
+        title.textContent = 'Agregar Item';
+        document.getElementById('menu-form').reset();
+        document.getElementById('menu-image-preview').innerHTML = '';
+    }
+    
+    modal?.classList.remove('hidden');
+}
+
+function closeMenuModal() {
+    document.getElementById('menu-modal')?.classList.add('hidden');
+    currentEditingItem = null;
+}
+
+window.editMenuItem = async function(id) {
+    const { data, error } = await supabase
+        .from('menu_items')
+        .select('*')
+        .eq('id', id)
+        .single();
+    
+    if (error || !data) {
+        showNotification('Error al cargar item', 'error');
+        return;
+    }
+    
+    openMenuModal(data);
+};
+
+window.deleteMenuItem = async function(id, nombre) {
+    if (!confirm(`¿Eliminar "${nombre}"? Esta acción no se puede deshacer.`)) return;
+    
+    const { error } = await supabase
+        .from('menu_items')
+        .delete()
+        .eq('id', id);
+    
+    if (error) {
+        showNotification('Error al eliminar', 'error');
+        console.error('Error deleteMenuItem:', error);
+    } else {
+        showNotification('Item eliminado');
+        loadMenus();
+    }
+};
+
+async function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+        showNotification('Solo se permiten imágenes', 'error');
+        return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+        showNotification('La imagen no debe superar 5MB', 'error');
+        return;
+    }
+    
+    const preview = document.getElementById('menu-image-preview');
+    preview.innerHTML = '<p class="text-sm text-slate-400">Subiendo...</p>';
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+        .from('menu-images')
+        .upload(fileName, file, { cacheControl: '3600', upsert: false });
+    
+    if (error) {
+        showNotification('Error al subir imagen: ' + error.message, 'error');
+        preview.innerHTML = '';
+        return;
+    }
+    
+    const { data: { publicUrl } } = supabase.storage
+        .from('menu-images')
+        .getPublicUrl(data.path);
+    
+    preview.innerHTML = `<img src="${publicUrl}" class="w-full h-32 object-cover rounded-lg">`;
+    preview.dataset.url = publicUrl;
+}
+
+async function saveMenuItem() {
+    const nombre = document.getElementById('menu-nombre').value.trim();
+    const categoria = document.getElementById('menu-categoria').value;
+    const precio = parseInt(document.getElementById('menu-precio').value) || 0;
+    const descripcion = document.getElementById('menu-descripcion').value.trim();
+    const etiquetasStr = document.getElementById('menu-etiquetas').value.trim();
+    const orden = parseInt(document.getElementById('menu-orden').value) || 0;
+    const minimo = parseInt(document.getElementById('menu-minimo').value) || 50;
+    const incremento = parseInt(document.getElementById('menu-incremento').value) || 10;
+    const activo = document.getElementById('menu-activo').checked;
+    const pendiente = document.getElementById('menu-pendiente').checked;
+    
+    if (!validateRequired(nombre)) {
+        showNotification('El nombre es obligatorio', 'error');
+        return;
+    }
+    
+    if (!validateNumber(precio, 0, 1000000)) {
+        showNotification('Precio inválido (0 - 1.000.000)', 'error');
+        return;
+    }
+    
+    const etiquetas = etiquetasStr ? etiquetasStr.split(',').map(e => e.trim()).filter(e => e) : [];
+    const imagen_url = document.getElementById('menu-image-preview').dataset.url || '';
+    
+    const itemData = {
+        nombre,
+        categoria,
+        precio,
+        descripcion,
+        etiquetas,
+        orden,
+        minimo,
+        incremento,
+        activo,
+        pendiente,
+        imagen_url
+    };
+    
+    let error;
+    if (currentEditingItem) {
+        const result = await supabase
+            .from('menu_items')
+            .update(itemData)
+            .eq('id', currentEditingItem.id);
+        error = result.error;
+    } else {
+        const result = await supabase
+            .from('menu_items')
+            .insert([itemData]);
+        error = result.error;
+    }
+    
+    if (error) {
+        showNotification('Error al guardar: ' + error.message, 'error');
+        console.error('Error saveMenuItem:', error);
+    } else {
+        showNotification(currentEditingItem ? 'Item actualizado' : 'Item creado');
+        closeMenuModal();
+        loadMenus();
+    }
+}
 
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 
 async function loadEventos() {
-    const { data: eventos } = await supabase
+    const { data: eventos, error } = await supabase
         .from('eventos')
         .select('*')
         .order('fecha');
+    
+    if (error) {
+        console.error('Error cargando eventos:', error);
+        return;
+    }
     
     const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     document.getElementById('current-month').textContent = `${monthNames[currentMonth]} ${currentYear}`;
@@ -409,9 +648,14 @@ document.getElementById('next-month')?.addEventListener('click', () => {
 });
 
 async function loadConfig() {
-    const { data } = await supabase
+    const { data, error } = await supabase
         .from('config')
         .select('*');
+    
+    if (error) {
+        console.error('Error cargando configuración:', error);
+        return;
+    }
     
     if (data) {
         const config = {};
@@ -473,11 +717,16 @@ document.getElementById('save-config')?.addEventListener('click', async () => {
     const whatsappConfig = { phone: whatsapp };
     const invitados = { min: minInvitados, max: maxInvitados };
     
-    await supabase.from('config').upsert({ key: 'precios', value: precios });
-    await supabase.from('config').upsert({ key: 'whatsapp', value: whatsappConfig });
-    await supabase.from('config').upsert({ key: 'invitados', value: invitados });
+    const { error: err1 } = await supabase.from('config').upsert({ key: 'precios', value: precios });
+    const { error: err2 } = await supabase.from('config').upsert({ key: 'whatsapp', value: whatsappConfig });
+    const { error: err3 } = await supabase.from('config').upsert({ key: 'invitados', value: invitados });
     
-    showNotification('Configuración guardada');
+    if (err1 || err2 || err3) {
+        showNotification('Error al guardar configuración', 'error');
+        console.error('Error save-config:', err1, err2, err3);
+    } else {
+        showNotification('Configuración guardada');
+    }
 });
 
 document.getElementById('filter-estado')?.addEventListener('change', loadCotizaciones);
@@ -512,7 +761,7 @@ function getEstadoClass(estado) {
 }
 
 function formatCLP(value) {
-    if (!value) return '$0';
+    if (!value && value !== 0) return '$0';
     return '$' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 

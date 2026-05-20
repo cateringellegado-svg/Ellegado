@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - El Legado</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co blob:;">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -267,8 +267,6 @@
                     </div>
                 </div>
             </section>
-
-            <!-- Eventos Section -->
             <section id="eventos" class="section fade-in">
                 <h1 class="font-serif text-4xl text-dark-elegant mb-8">Calendario de Eventos</h1>
                 
@@ -352,6 +350,93 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Modal para editar/agregar items del menú -->
+    <div id="menu-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-6">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-serif text-2xl text-dark-elegant" id="menu-modal-title">Agregar Item</h2>
+                <button id="close-menu-modal" class="text-slate-400 hover:text-dark-elegant">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="menu-form" class="space-y-4">
+                <div id="menu-image-preview" class="w-full h-32 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer relative" onclick="document.getElementById('menu-image-input').click()">
+                    <input type="file" id="menu-image-input" accept="image/*" class="hidden">
+                    <div class="text-center text-slate-400">
+                        <svg class="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <p class="text-xs">Click para subir imagen</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Nombre *</label>
+                    <input type="text" id="menu-nombre" required class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Categoría</label>
+                        <select id="menu-categoria" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper">
+                            <option value="salado">Salado</option>
+                            <option value="dulce">Dulce</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Precio</label>
+                        <input type="number" id="menu-precio" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" value="0" min="0">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Descripción</label>
+                    <textarea id="menu-descripcion" rows="2" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper resize-none"></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Etiquetas (separadas por coma)</label>
+                    <input type="text" id="menu-etiquetas" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" placeholder="vegano, gluten-free">
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Orden</label>
+                        <input type="number" id="menu-orden" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" value="0">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Mínimo</label>
+                        <input type="number" id="menu-minimo" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" value="50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Incremento</label>
+                        <input type="number" id="menu-incremento" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" value="10">
+                    </div>
+                </div>
+                
+                <div class="flex gap-6">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="menu-activo" checked class="w-4 h-4 text-brand-copper rounded">
+                        <span class="text-sm text-slate-600">Activo</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="menu-pendiente" class="w-4 h-4 text-brand-copper rounded">
+                        <span class="text-sm text-slate-600">Pendiente</span>
+                    </label>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="cancel-menu-modal" class="flex-1 bg-cream text-slate-600 px-6 py-3 rounded-lg hover:bg-cream/80 transition-colors text-sm font-medium">
+                        Cancelar
+                    </button>
+                    <button type="button" id="save-menu-item" class="flex-1 bg-brand-copper text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-brand-copper/30 transition-all text-sm font-medium">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Modal para ver detalles -->

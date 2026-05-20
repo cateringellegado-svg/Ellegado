@@ -26,172 +26,91 @@ const CONFIG = {
         minIncrement: 10
     },
     productos: {
-        clasicos: [
-            {
-                id: 'canapes',
-                nombre: 'Canapés',
-                descripcion: 'Pan de chips con variantes: pollo pimentón, pollo ciboulette, huevo y tomate cherry, choclo y morrón, palmito y morrón, salame y aceituna negra, aceituna verde',
-                precio: 500,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'mini_hamburguesas',
-                nombre: 'Mini Hamburguesas',
-                descripcion: '3 variantes: Clásico (carne, mayo, lechuga, tomate), Aliloy (carne, queso tybo, cebolla salteada, salsa aliloy), Gourmet (carne, tomate cherry, rúcula, queso azul)',
-                precio: 760,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'mini_empanadas',
-                nombre: 'Mini Empanadas',
-                descripcion: '4 rellenos: carne, jamón y queso, pollo, caprese',
-                precio: 400,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'tapaditos',
-                nombre: 'Tapaditos',
-                descripcion: 'Pan figasa con 3 pastas: pollo pimentón y morrón, pollo ciboulette y tomate cherry, jamón, queso, tomate y queso crema',
-                precio: 600,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'mini_pizzas',
-                nombre: 'Mini Pizzas',
-                descripcion: 'Napolitana: queso, tomate, jamón y aceituna',
-                precio: 560,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'sopaipillas',
-                nombre: 'Mini Sopaipillas con Pebre',
-                descripcion: 'Sopaipillas tradicionales con pebre',
-                precio: 400,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'mini_conitos',
-                nombre: 'Mini Conitos',
-                descripcion: 'Cono de rapidita rellenos con: pollo, tomate, mayo y lechuga | carne, tomate y lechuga | jamón, queso, choclo, tomate y aceituna',
-                precio: 1440,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'sandwich_miga',
-                nombre: 'Mini Sándwich de Miga',
-                descripcion: 'Jamón y queso decorado con tomate cherry, aceituna y lechuga',
-                precio: 600,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'fosforitos',
-                nombre: 'Fosforitos',
-                descripcion: 'Jamón y queso',
-                precio: 460,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'nuggets',
-                nombre: 'Nuggets Crocantes',
-                descripcion: 'Con 4 salsas',
-                precio: null,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10,
-                pendiente: true
-            },
-            {
-                id: 'salchichas',
-                nombre: 'Salchichas envueltas',
-                descripcion: 'Con 4 salsas',
-                precio: null,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10,
-                pendiente: true
-            }
-        ],
-        dulce: [
-            {
-                id: 'canastitas',
-                nombre: 'Canastitas',
-                descripcion: 'Relleno: crema, dulce de leche y mousse de chocolate',
-                precio: 650,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'shots',
-                nombre: 'Shots variados',
-                descripcion: 'Variedad de sabores a elección',
-                precio: 850,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'tacitas',
-                nombre: 'Tacitas Rellenas',
-                descripcion: 'Masa de hojadre con relleno de crema',
-                precio: 700,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10
-            },
-            {
-                id: 'conitos_dulces',
-                nombre: 'Conitos Dulces',
-                descripcion: 'Rellenos con: crema, dulce de leche, mousse de chocolate',
-                precio: null,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10,
-                pendiente: true
-            },
-            {
-                id: 'galletas',
-                nombre: 'Galletas Artesanales',
-                descripcion: 'Veganas',
-                precio: null,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10,
-                pendiente: true
-            },
-            {
-                id: 'donas',
-                nombre: 'Mini Donas',
-                descripcion: 'Bañadas en chocolate',
-                precio: null,
-                unidad: 'unidad',
-                minimo: 50,
-                incremento: 10,
-                pendiente: true
-            }
-        ]
+        clasicos: [],
+        dulce: []
     }
 };
 
 const WHATSAPP_PHONE = CONFIG.whatsapp.phone;
+
+async function loadProductsFromDB() {
+    if (!supabaseClient) {
+        console.warn('Supabase no disponible, usando productos por defecto');
+        loadFallbackProducts();
+        return;
+    }
+    
+    try {
+        const { data: salados, error: err1 } = await supabaseClient
+            .from('menu_items')
+            .select('*')
+            .eq('categoria', 'salado')
+            .eq('activo', true)
+            .order('orden');
+        
+        const { data: dulces, error: err2 } = await supabaseClient
+            .from('menu_items')
+            .select('*')
+            .eq('categoria', 'dulce')
+            .eq('activo', true)
+            .order('orden');
+        
+        if (err1 || err2) {
+            console.error('Error cargando productos:', err1, err2);
+            loadFallbackProducts();
+            return;
+        }
+        
+        CONFIG.productos.clasicos = (salados || []).map(item => ({
+            id: item.id,
+            nombre: item.nombre,
+            descripcion: item.descripcion || '',
+            precio: item.precio > 0 ? item.precio : null,
+            unidad: 'unidad',
+            minimo: item.minimo || 50,
+            incremento: item.incremento || 10,
+            pendiente: item.pendiente || false,
+            imagen_url: item.imagen_url || ''
+        }));
+        
+        CONFIG.productos.dulce = (dulces || []).map(item => ({
+            id: item.id,
+            nombre: item.nombre,
+            descripcion: item.descripcion || '',
+            precio: item.precio > 0 ? item.precio : null,
+            unidad: 'unidad',
+            minimo: item.minimo || 50,
+            incremento: item.incremento || 10,
+            pendiente: item.pendiente || false,
+            imagen_url: item.imagen_url || ''
+        }));
+        
+        console.log(`Productos cargados desde DB: ${CONFIG.productos.clasicos.length} salados, ${CONFIG.productos.dulce.length} dulces`);
+    } catch (err) {
+        console.error('Error cargando productos desde DB:', err);
+        loadFallbackProducts();
+    }
+}
+
+function loadFallbackProducts() {
+    CONFIG.productos.clasicos = [
+        { id: 'canapes', nombre: 'Canapés', descripcion: 'Pan de chips con variantes: pollo pimentón, pollo ciboulette, huevo y tomate cherry', precio: 500, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' },
+        { id: 'mini_hamburguesas', nombre: 'Mini Hamburguesas', descripcion: '3 variantes: Clásico, Aliloy, Gourmet', precio: 760, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' },
+        { id: 'mini_empanadas', nombre: 'Mini Empanadas', descripcion: '4 rellenos: carne, jamón y queso, pollo, caprese', precio: 400, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' },
+        { id: 'tapaditos', nombre: 'Tapaditos', descripcion: 'Pan figasa con 3 pastas', precio: 600, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' },
+        { id: 'mini_pizzas', nombre: 'Mini Pizzas', descripcion: 'Napolitana: queso, tomate, jamón y aceituna', precio: 560, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' },
+        { id: 'sopaipillas', nombre: 'Mini Sopaipillas con Pebre', descripcion: 'Sopaipillas tradicionales con pebre', precio: 400, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' },
+        { id: 'mini_conitos', nombre: 'Mini Conitos', descripcion: 'Cono de rapidita rellenos', precio: 1440, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' },
+        { id: 'sandwich_miga', nombre: 'Mini Sándwich de Miga', descripcion: 'Jamón y queso decorado', precio: 600, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' },
+        { id: 'fosforitos', nombre: 'Fosforitos', descripcion: 'Jamón y queso', precio: 460, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' }
+    ];
+    
+    CONFIG.productos.dulce = [
+        { id: 'canastitas', nombre: 'Canastitas', descripcion: 'Relleno: crema, dulce de leche y mousse de chocolate', precio: 650, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' },
+        { id: 'shots', nombre: 'Shots variados', descripcion: 'Variedad de sabores a elección', precio: 850, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' },
+        { id: 'tacitas', nombre: 'Tacitas Rellenas', descripcion: 'Masa de hojaldre con relleno de crema', precio: 700, unidad: 'unidad', minimo: 50, incremento: 10, pendiente: false, imagen_url: '' }
+    ];
+}
 
 async function guardarCotizacion(cotizacion) {
     if (!supabaseClient) {
@@ -223,6 +142,7 @@ async function guardarCotizacion(cotizacion) {
 }
 
 function formatARS(value) {
+    if (!value && value !== 0) return '$0';
     return '$' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 

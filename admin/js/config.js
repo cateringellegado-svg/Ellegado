@@ -6,16 +6,15 @@ if (typeof window !== 'undefined' && window.supabase) {
     try {
         if (SUPABASE_URL && SUPABASE_URL !== 'TU_SUPABASE_URL' && SUPABASE_URL.startsWith('http')) {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('✅ Cliente de Supabase inicializado correctamente en admin');
+            console.log('Cliente de Supabase inicializado correctamente en admin');
         } else {
-            console.warn('⚠️ Supabase URL no está configurada o es inválida en el administrador.');
+            console.warn('Supabase URL no está configurada o es inválida en el administrador.');
         }
     } catch (err) {
-        console.error('❌ Error al inicializar el cliente de Supabase en el administrador:', err);
+        console.error('Error al inicializar el cliente de Supabase en el administrador:', err);
     }
 }
 
-// Exponer supabase globalmente
 window.supabaseClient = supabase;
 
 const APP_CONFIG = {
@@ -37,20 +36,20 @@ const APP_CONFIG = {
 };
 
 async function getAuthSession() {
+    if (!supabase) return null;
     const { data: { session } } = await supabase.auth.getSession();
     return session;
 }
 
 async function signIn(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-    });
+    if (!supabase) throw new Error('Supabase no inicializado');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;
 }
 
 async function signOut() {
+    if (!supabase) return;
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
 }
@@ -64,8 +63,11 @@ async function checkAuth() {
 }
 
 function showNotification(message, type = 'success') {
+    const existing = document.querySelector('.admin-notification');
+    if (existing) existing.remove();
+    
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in ${
+    notification.className = `admin-notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-[100] transition-all duration-300 ${
         type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
     }`;
     notification.textContent = message;
@@ -74,14 +76,16 @@ function showNotification(message, type = 'success') {
 }
 
 function formatCLP(value) {
+    if (!value && value !== 0) return '$0';
     return '$' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
 function formatDate(dateString) {
+    if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString('es-CL', { 
         year: 'numeric', 
-        month: 'long', 
+        month: 'short',
         day: 'numeric' 
     });
 }
