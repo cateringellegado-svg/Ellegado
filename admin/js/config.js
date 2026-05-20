@@ -24,18 +24,6 @@ if (!supabase) {
 }
 
 window.supabaseClient = supabase;
-                window.supabase = supabase;
-                console.log('Supabase client initialized');
-            } else {
-                console.warn('Supabase library not loaded yet');
-            }
-        } else {
-            console.warn('Supabase URL not configured');
-        }
-    } catch (err) {
-        console.error('Error initializing Supabase:', err);
-    }
-})();
 
 const APP_CONFIG = {
     sitio: {
