@@ -1,0 +1,6 @@
+*.sql
+*.md
+.git
+.agents
+.gemini
+.gitignore
