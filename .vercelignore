@@ -4,3 +4,8 @@
 .agents
 .gemini
 .gitignore
+.opencode
+.vscode
+*.log
+.DS_Store
+Thumbs.db

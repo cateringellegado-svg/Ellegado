@@ -132,47 +132,69 @@ function safeSetValue(id, value) {
 }
 
 async function saveCMS() {
+    // Sanitize all text inputs
+    const sanitize = (val) => String(val || '').replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<[^>]+>/g, '').trim();
+    const sanitizeUrl = (val) => {
+        const url = String(val || '').trim();
+        if (!url || url === '#') return url;
+        try {
+            const parsed = new URL(url);
+            return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? url : '#';
+        } catch {
+            return '#';
+        }
+    };
+    const sanitizeColor = (val) => {
+        const color = String(val || '').trim();
+        return /^#[0-9A-Fa-f]{6}$/.test(color) ? color : '#AF7A54';
+    };
+    const sanitizePhone = (val) => String(val || '').replace(/[^\d+]/g, '').slice(0, 20);
+    const sanitizeEmail = (val) => {
+        const email = String(val || '').trim();
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : '';
+    };
+    
     const colors = {
-        primary: document.getElementById('cms-color-primary')?.value || '#AF7A54',
-        primaryLight: document.getElementById('cms-color-primary-light')?.value || '#D9A78B',
-        background: document.getElementById('cms-color-background')?.value || '#FAF9F6',
-        text: document.getElementById('cms-color-text')?.value || '#1A1A1A',
-        textSecondary: document.getElementById('cms-color-text-secondary')?.value || '#64748B'
+        primary: sanitizeColor(document.getElementById('cms-color-primary')?.value),
+        primaryLight: sanitizeColor(document.getElementById('cms-color-primary-light')?.value),
+        background: sanitizeColor(document.getElementById('cms-color-background')?.value),
+        text: sanitizeColor(document.getElementById('cms-color-text')?.value),
+        textSecondary: sanitizeColor(document.getElementById('cms-color-text-secondary')?.value)
     };
     
     const hero = {
-        title: document.getElementById('cms-hero-title')?.value || '',
-        subtitle: document.getElementById('cms-hero-subtitle')?.value || '',
-        tagline: document.getElementById('cms-hero-tagline')?.value || '',
-        ctaText: document.getElementById('cms-hero-cta')?.value || ''
+        title: sanitize(document.getElementById('cms-hero-title')?.value),
+        subtitle: sanitize(document.getElementById('cms-hero-subtitle')?.value),
+        tagline: sanitize(document.getElementById('cms-hero-tagline')?.value),
+        ctaText: sanitize(document.getElementById('cms-hero-cta')?.value)
     };
     
     const about = {
-        title: document.getElementById('cms-about-title')?.value || '',
-        text: document.getElementById('cms-about-text')?.value || '',
-        highlight: document.getElementById('cms-about-highlight')?.value || ''
+        title: sanitize(document.getElementById('cms-about-title')?.value),
+        text: sanitize(document.getElementById('cms-about-text')?.value),
+        highlight: sanitize(document.getElementById('cms-about-highlight')?.value)
     };
     
     const festin = {
-        title: document.getElementById('cms-festin-title')?.value || '',
-        subtitle: document.getElementById('cms-festin-subtitle')?.value || '',
-        ctaText: document.getElementById('cms-festin-cta')?.value || ''
+        title: sanitize(document.getElementById('cms-festin-title')?.value),
+        subtitle: sanitize(document.getElementById('cms-festin-subtitle')?.value),
+        ctaText: sanitize(document.getElementById('cms-festin-cta')?.value)
     };
     
     const footer = {
-        text: document.getElementById('cms-footer-text')?.value || '',
-        copyright: document.getElementById('cms-footer-copyright')?.value || ''
+        text: sanitize(document.getElementById('cms-footer-text')?.value),
+        copyright: sanitize(document.getElementById('cms-footer-copyright')?.value)
     };
     
     const social = {
-        instagram: document.getElementById('cms-social-instagram')?.value || '#',
-        facebook: document.getElementById('cms-social-facebook')?.value || '#',
-        tiktok: document.getElementById('cms-social-tiktok')?.value || '#'
+        instagram: sanitizeUrl(document.getElementById('cms-social-instagram')?.value),
+        facebook: sanitizeUrl(document.getElementById('cms-social-facebook')?.value),
+        tiktok: sanitizeUrl(document.getElementById('cms-social-tiktok')?.value)
     };
     
     const contact = {
-        email: document.getElementById('cms-contact-email')?.value || '',
-        whatsapp: document.getElementById('cms-contact-whatsapp')?.value || ''
+        email: sanitizeEmail(document.getElementById('cms-contact-email')?.value),
+        whatsapp: sanitizePhone(document.getElementById('cms-contact-whatsapp')?.value)
     };
     
     const sections = {
@@ -242,14 +264,31 @@ async function handleCMSImageUpload(inputId, previewId) {
             return;
         }
         
-        preview.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><div class="animate-spin w-6 h-6 border-2 border-brand-copper border-t-transparent rounded-full mx-auto mb-2"></div><p class="text-sm text-slate-500">Subiendo...</p></div></div>';
+        preview.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><div class="animate-spin w-6 h-6 border-2 border-brand-copper border-t-transparent rounded-full mx-auto mb-2"></div><p class="text-sm text-slate-500">Procesando...</p></div></div>';
         
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${previewId}-${Date.now()}.${fileExt}`;
+        // Convert to WebP for better performance
+        let uploadFile = file;
+        let fileName = `${previewId}-${Date.now()}`;
+        
+        try {
+            const webpBlob = await convertToWebP(file, 0.85);
+            if (webpBlob) {
+                uploadFile = webpBlob;
+                fileName = `${fileName}.webp`;
+            } else {
+                // Fallback: keep original format
+                const fileExt = file.name.split('.').pop();
+                fileName = `${fileName}.${fileExt}`;
+            }
+        } catch (err) {
+            console.warn('WebP conversion failed, using original:', err);
+            const fileExt = file.name.split('.').pop();
+            fileName = `${fileName}.${fileExt}`;
+        }
         
         const { data, error } = await supabase.storage
             .from('site-images')
-            .upload(fileName, file, { cacheControl: '3600', upsert: true });
+            .upload(fileName, uploadFile, { cacheControl: '3600', upsert: true, contentType: uploadFile.type });
         
         if (error) {
             showNotification('Error al subir: ' + error.message, 'error');
@@ -263,6 +302,31 @@ async function handleCMSImageUpload(inputId, previewId) {
         
         preview.innerHTML = `<img src="${publicUrl}" class="w-full h-32 object-cover rounded-lg">`;
         preview.dataset.url = publicUrl;
+    });
+}
+
+// Convert image to WebP using Canvas API
+function convertToWebP(file, quality = 0.85) {
+    return new Promise((resolve) => {
+        // Check if WebP is supported
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            resolve(null);
+            return;
+        }
+        
+        const img = new Image();
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+                resolve(blob);
+            }, 'image/webp', quality);
+        };
+        img.onerror = () => resolve(null);
+        img.src = URL.createObjectURL(file);
     });
 }
 

@@ -219,12 +219,25 @@ function initCateringCotizador() {
         cotizarBtn.addEventListener('click', (e) => {
             e.preventDefault();
             
+            // Rate limiting: max 5 cotizations per hour
+            const now = Date.now();
+            const rateLimit = JSON.parse(localStorage.getItem('legado_rate_limit') || '[]');
+            const recentRequests = rateLimit.filter(t => now - t < 3600000);
+            if (recentRequests.length >= 5) {
+                alert('Demasiadas solicitudes. Esperá unos minutos antes de intentar nuevamente.');
+                return;
+            }
+            
             const productosValidos = Object.values(cotizacionSeleccion).filter(p => p.cantidad > 0 && p.precio > 0);
             
             if (productosValidos.length === 0) {
                 alert('Por favor selecciona al menos un producto con cantidad válida');
                 return;
             }
+            
+            // Record this request
+            recentRequests.push(now);
+            localStorage.setItem('legado_rate_limit', JSON.stringify(recentRequests));
             
             modal.classList.remove('opacity-0', 'pointer-events-none');
             modal.querySelector('div').classList.remove('scale-95');
