@@ -48,9 +48,24 @@ function loadCMSContent(config) {
     safeSetValue('cms-hero-tagline', hero.tagline || '');
     safeSetValue('cms-hero-cta', hero.ctaText || 'Cotizá tu evento');
     
+    // Hero Stats
+    const stats = hero.stats || [];
+    if (stats[0]) {
+        safeSetValue('cms-hero-stat1-value', stats[0].value || '');
+        safeSetValue('cms-hero-stat1-label', stats[0].label || '');
+    }
+    if (stats[1]) {
+        safeSetValue('cms-hero-stat2-value', stats[1].value || '');
+        safeSetValue('cms-hero-stat2-label', stats[1].label || '');
+    }
+    if (stats[2]) {
+        safeSetValue('cms-hero-stat3-value', stats[2].value || '');
+        safeSetValue('cms-hero-stat3-label', stats[2].label || '');
+    }
+    
     // About
     const about = config.about || {};
-    safeSetValue('cms-about-title', about.title || 'Sobre Nosotros');
+    safeSetValue('cms-about-title', about.title || 'Nuestra Filosofía');
     safeSetValue('cms-about-text', about.text || '');
     safeSetValue('cms-about-highlight', about.highlight || '');
     
@@ -74,7 +89,7 @@ function loadCMSContent(config) {
 function loadCMSImages(config) {
     const fields = [
         { key: 'cms-img-hero', label: 'Imagen Hero' },
-        { key: 'cms-img-about', label: 'Imagen About' },
+        { key: 'cms-img-about', label: 'Imagen Filosofía' },
         { key: 'cms-img-festin', label: 'Imagen Festín' },
         { key: 'cms-img-logo', label: 'Logo' },
         { key: 'cms-img-favicon', label: 'Favicon' }
@@ -93,6 +108,21 @@ function loadCMSImages(config) {
             }
         }
     });
+    
+    // Load gallery images
+    for (let i = 1; i <= 6; i++) {
+        const preview = document.getElementById(`cms-img-gallery-${i}-preview`);
+        if (preview) {
+            const url = config[`cms-img-gallery-${i}`] || '';
+            if (url) {
+                preview.innerHTML = `<img src="${sanitizeHTML(url)}" class="w-full h-full object-cover rounded-lg">`;
+                preview.dataset.url = url;
+            } else {
+                preview.innerHTML = `<div class="text-center text-slate-500 py-2"><p class="text-xs">Sin imagen</p></div>`;
+                delete preview.dataset.url;
+            }
+        }
+    }
 }
 
 function loadCMSSocial(social) {
@@ -166,7 +196,12 @@ async function saveCMS() {
         title: sanitize(document.getElementById('cms-hero-title')?.value),
         subtitle: sanitize(document.getElementById('cms-hero-subtitle')?.value),
         tagline: sanitize(document.getElementById('cms-hero-tagline')?.value),
-        ctaText: sanitize(document.getElementById('cms-hero-cta')?.value)
+        ctaText: sanitize(document.getElementById('cms-hero-cta')?.value),
+        stats: [
+            { value: sanitize(document.getElementById('cms-hero-stat1-value')?.value), label: sanitize(document.getElementById('cms-hero-stat1-label')?.value) },
+            { value: sanitize(document.getElementById('cms-hero-stat2-value')?.value), label: sanitize(document.getElementById('cms-hero-stat2-label')?.value) },
+            { value: sanitize(document.getElementById('cms-hero-stat3-value')?.value), label: sanitize(document.getElementById('cms-hero-stat3-label')?.value) }
+        ]
     };
     
     const about = {
@@ -213,6 +248,12 @@ async function saveCMS() {
         const preview = document.getElementById(key + '-preview');
         images[key] = preview?.dataset?.url || '';
     });
+    
+    // Gallery images
+    for (let i = 1; i <= 6; i++) {
+        const preview = document.getElementById(`cms-img-gallery-${i}-preview`);
+        images[`cms-img-gallery-${i}`] = preview?.dataset?.url || '';
+    }
     
     const configs = [
         { key: 'colors', value: colors },
@@ -346,6 +387,11 @@ function initCMS() {
     handleCMSImageUpload('cms-img-festin-input', 'cms-img-festin-preview');
     handleCMSImageUpload('cms-img-logo-input', 'cms-img-logo-preview');
     handleCMSImageUpload('cms-img-favicon-input', 'cms-img-favicon-preview');
+    
+    // Gallery image uploads
+    for (let i = 1; i <= 6; i++) {
+        handleCMSImageUpload(`cms-img-gallery-${i}-input`, `cms-img-gallery-${i}-preview`);
+    }
     
     // Color picker sync with readonly text
     const colorMap = {

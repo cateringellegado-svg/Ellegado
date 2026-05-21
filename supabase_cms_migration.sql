@@ -46,9 +46,9 @@ INSERT INTO site_config (key, value) VALUES
     ]
 }'::jsonb),
 ('about', '{
-    "title": "Sobre Nosotros",
-    "text": "Somos un equipo apasionado por la gastronomía y la creación de experiencias únicas. Cada evento es una oportunidad para dejar una huella imborrable en nuestros clientes.",
-    "highlight": "La excelencia no es un acto, es un hábito."
+    "title": "Nuestra Filosofía",
+    "text": "En El Legado, entendemos que tu evento no es solo una fecha; es la construcción de un recuerdo.",
+    "highlight": "Nos especializamos en eventos de mediana envergadura, ofreciendo una experiencia gastronómica de alta gama con un trato cercano y profesional."
 }'::jsonb),
 ('festin', '{
     "title": "Armá tu Festín",

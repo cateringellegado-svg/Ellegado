@@ -11,4 +11,4 @@ Disallow: /supabase_*.sql
 Disallow: /.agents/
 Disallow: /.opencode/
 
-Sitemap: https://www.ellegado.com.ar/sitemap.xml
+Sitemap: https://ellegado.vercel.app/sitemap.xml

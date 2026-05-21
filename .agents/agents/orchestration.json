@@ -1,0 +1,218 @@
+{
+  "version": "1.0.0",
+  "name": "Web Agency Multi-Agent System",
+  "description": "Ecosistema profesional de agents IA para agencia web premium",
+  "stack": ["React", "Next.js", "TypeScript", "TailwindCSS", "Supabase", "Vercel", "Node.js"],
+  "shared_context": {
+    "project_state": {},
+    "decision_log": [],
+    "artifacts": {},
+    "review_queue": [],
+    "approval_status": {}
+  },
+  "hierarchy": {
+    "tier_1_strategic": ["project-manager", "product-strategist", "client-communication"],
+    "tier_2_design": ["senior-ux-strategist", "senior-ui-designer", "brand-designer"],
+    "tier_3_development": ["nextjs-architect", "senior-frontend-engineer", "react-specialist", "tailwindcss-specialist"],
+    "tier_4_backend": ["backend-architect", "supabase-specialist", "database-engineer", "api-engineer", "auth-security-specialist"],
+    "tier_5_content": ["seo-strategist", "technical-seo-specialist", "conversion-copywriter", "content-strategist"],
+    "tier_6_quality": ["performance-engineer", "accessibility-specialist", "qa-web-tester", "analytics-cro-specialist"],
+    "tier_7_infra": ["devops-engineer", "vercel-deployment-specialist"],
+    "tier_8_ai": ["ai-automation-engineer", "prompt-engineer", "ai-chatbot-specialist"]
+  },
+  "development_pipeline": {
+    "phase_1_discovery": {
+      "agents": ["project-manager", "product-strategist", "client-communication"],
+      "duration": "1-2 days",
+      "deliverables": ["brief", "requirements", "user-personas", "success-metrics"],
+      "approval_gate": "client-signoff"
+    },
+    "phase_2_strategy": {
+      "agents": ["seo-strategist", "content-strategist", "analytics-cro-specialist"],
+      "duration": "1-2 days",
+      "deliverables": ["seo-strategy", "content-plan", "conversion-funnel"],
+      "approval_gate": "pm-review"
+    },
+    "phase_3_design": {
+      "agents": ["senior-ux-strategist", "senior-ui-designer", "brand-designer"],
+      "duration": "3-5 days",
+      "deliverables": ["wireframes", "design-system", "mockups", "brand-guide"],
+      "approval_gate": "client-signoff"
+    },
+    "phase_4_development": {
+      "agents": ["nextjs-architect", "senior-frontend-engineer", "react-specialist", "tailwindcss-specialist", "backend-architect", "supabase-specialist", "database-engineer", "api-engineer", "auth-security-specialist"],
+      "duration": "5-10 days",
+      "deliverables": ["source-code", "database-schema", "api-specs", "auth-flow"],
+      "approval_gate": "code-review"
+    },
+    "phase_5_content": {
+      "agents": ["conversion-copywriter", "content-strategist", "technical-seo-specialist"],
+      "duration": "2-3 days",
+      "deliverables": ["final-copy", "meta-tags", "structured-data", "alt-texts"],
+      "approval_gate": "seo-review"
+    },
+    "phase_6_quality": {
+      "agents": ["performance-engineer", "accessibility-specialist", "qa-web-tester", "analytics-cro-specialist"],
+      "duration": "2-3 days",
+      "deliverables": ["test-reports", "lighthouse-scores", "a11y-audit", "cro-recommendations"],
+      "approval_gate": "quality-gate"
+    },
+    "phase_7_deployment": {
+      "agents": ["devops-engineer", "vercel-deployment-specialist", "ai-automation-engineer"],
+      "duration": "1-2 days",
+      "deliverables": ["production-deploy", "ci-cd-pipeline", "monitoring-setup"],
+      "approval_gate": "pm-signoff"
+    },
+    "phase_8_ai_integration": {
+      "agents": ["ai-automation-engineer", "prompt-engineer", "ai-chatbot-specialist"],
+      "duration": "2-3 days",
+      "deliverables": ["chatbot-config", "automation-flows", "prompt-library"],
+      "approval_gate": "pm-review"
+    }
+  },
+  "cross_review_system": {
+    "design_review": {
+      "reviewer": "senior-ux-strategist",
+      "reviews": ["senior-ui-designer", "brand-designer"],
+      "criteria": ["usability", "consistency", "accessibility", "brand-alignment"]
+    },
+    "code_review": {
+      "reviewer": "nextjs-architect",
+      "reviews": ["senior-frontend-engineer", "react-specialist", "tailwindcss-specialist"],
+      "criteria": ["clean-code", "performance", "security", "scalability"]
+    },
+    "backend_review": {
+      "reviewer": "backend-architect",
+      "reviews": ["supabase-specialist", "database-engineer", "api-engineer", "auth-security-specialist"],
+      "criteria": ["security", "performance", "data-integrity", "api-design"]
+    },
+    "seo_review": {
+      "reviewer": "seo-strategist",
+      "reviews": ["technical-seo-specialist", "conversion-copywriter", "content-strategist"],
+      "criteria": ["keyword-optimization", "technical-seo", "content-quality", "structured-data"]
+    },
+    "quality_review": {
+      "reviewer": "qa-web-tester",
+      "reviews": ["performance-engineer", "accessibility-specialist", "analytics-cro-specialist"],
+      "criteria": ["functionality", "performance", "accessibility", "conversion"]
+    }
+  },
+  "approval_protocols": {
+    "client_signoff": {
+      "required_by": ["client-communication"],
+      "deliverables": ["design-mockups", "final-copy", "live-site"],
+      "timeout": "48h"
+    },
+    "pm_review": {
+      "required_by": ["project-manager"],
+      "deliverables": ["strategy-docs", "ai-integrations", "final-deployment"],
+      "timeout": "24h"
+    },
+    "code_review": {
+      "required_by": ["nextjs-architect", "backend-architect"],
+      "deliverables": ["frontend-code", "backend-code", "database-migrations"],
+      "timeout": "12h"
+    },
+    "quality_gate": {
+      "required_by": ["qa-web-tester"],
+      "criteria": {
+        "lighthouse_performance": ">=90",
+        "lighthouse_accessibility": ">=95",
+        "lighthouse_seo": ">=95",
+        "lighthouse_best_practices": ">=90",
+        "critical_bugs": "0",
+        "a11y_violations": "0"
+      },
+      "timeout": "24h"
+    }
+  },
+  "error_handling": {
+    "escalation_levels": {
+      "level_1": {
+        "description": "Auto-corrección por el agent",
+        "conditions": ["minor-bug", "style-issue", "typo", "small-optimization"],
+        "action": "agent-resolves-and-logs"
+      },
+      "level_2": {
+        "description": "Escalamiento al reviewer del área",
+        "conditions": ["design-conflict", "code-conflict", "performance-degradation"],
+        "action": "notify-reviewer-and-wait"
+      },
+      "level_3": {
+        "description": "Escalamiento al Project Manager",
+        "conditions": ["scope-change", "timeline-risk", "client-request", "blocking-issue"],
+        "action": "pm-decides-and-reassigns"
+      },
+      "level_4": {
+        "description": "Escalamiento al cliente",
+        "conditions": ["major-pivot", "budget-impact", "feature-removal"],
+        "action": "client-communication-notifies"
+      }
+    },
+    "conflict_resolution": {
+      "design_vs_development": {
+        "arbiter": "nextjs-architect",
+        "process": "evaluar viabilidad técnica → proponer alternativa visual → documentar decisión"
+      },
+      "seo_vs_design": {
+        "arbiter": "seo-strategist",
+        "process": "identificar impacto SEO → proponer ajuste visual → medir trade-off"
+      },
+      "performance_vs_features": {
+        "arbiter": "performance-engineer",
+        "process": "benchmark → identificar bottleneck → optimizar o reducir scope"
+      },
+      "content_vs_tech": {
+        "arbiter": "project-manager",
+        "process": "evaluar impacto en conversión → decidir priorización → comunicar al cliente"
+      }
+    }
+  },
+  "feedback_system": {
+    "post_phase_review": {
+      "trigger": "completion-of-any-phase",
+      "participants": ["project-manager", "all-agents-in-phase"],
+      "format": "retrospective-brief",
+      "outputs": ["lessons-learned", "process-improvements", "agent-updates"]
+    },
+    "quality_feedback_loop": {
+      "trigger": "quality-gate-failure",
+      "participants": ["qa-web-tester", "responsible-agents", "reviewers"],
+      "process": "identify-failures → create-fix-tasks → re-test → approve"
+    },
+    "client_feedback_loop": {
+      "trigger": "client-feedback-received",
+      "participants": ["client-communication", "project-manager", "affected-agents"],
+      "process": "categorize-feedback → prioritize → assign → implement → confirm"
+    }
+  },
+  "communication_rules": {
+    "shared_state": "Todos los agents leen/escriben en shared_context",
+    "notification_system": "Agents notifican al PM al completar tareas o encontrar bloqueos",
+    "handoff_format": "JSON estandarizado con: agent, phase, deliverable, status, notes, next_agent",
+    "conflict_flag": "Cualquier agent puede flaggear un conflicto que el PM resuelve",
+    "silent_mode": "Agents no comunican al cliente directamente, solo vía client-communication"
+  },
+  "global_priorities": [
+    "seguridad",
+    "performance",
+    "conversión",
+    "escalabilidad",
+    "seo",
+    "accesibilidad",
+    "experiencia-de-usuario",
+    "clean-code",
+    "mantenibilidad"
+  ],
+  "global_constraints": [
+    "No exponer secrets o credenciales",
+    "No hardcodear valores sensibles",
+    "Seguir principios SOLID y DRY",
+    "Mobile-first siempre",
+    "Accesibilidad WCAG 2.1 AA mínimo",
+    "Performance: Lighthouse >= 90 en todas las métricas",
+    "SEO: Core Web Vitals optimizados",
+    "TypeScript strict mode",
+    "Testing crítico antes de deploy"
+  ]
+}

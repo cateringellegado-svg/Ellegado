@@ -232,19 +232,36 @@ function applySiteConfig(config) {
         if (btn) btn.textContent = hero.ctaText;
     }
     
-    // Apply about section
+    // Apply hero stats
+    const stats = hero.stats || [];
+    for (let i = 0; i < 3; i++) {
+        if (stats[i]) {
+            const valEl = document.querySelector(`[data-hero-stat-value="${i + 1}"]`);
+            const labelEl = document.querySelector(`[data-hero-stat-label="${i + 1}"]`);
+            if (valEl) valEl.textContent = stats[i].value || '';
+            if (labelEl) labelEl.textContent = stats[i].label || '';
+        }
+    }
+    
+    // Apply about/philosophy section (maps to #filosofia)
     const about = config.about || {};
     if (about.title) {
-        const el = document.querySelector('#nosotros h2');
+        const el = document.querySelector('#filosofia h2');
         if (el) el.textContent = about.title;
     }
     if (about.text) {
-        const el = document.querySelector('#nosotros p.text-lg');
-        if (el) el.textContent = about.text;
+        const el = document.querySelector('#filosofia .font-serif.text-xl');
+        if (el) el.innerHTML = about.text;
     }
     if (about.highlight) {
-        const el = document.querySelector('#nosotros .font-serif.text-xl');
+        const el = document.querySelector('#filosofia p.text-lg');
         if (el) el.textContent = about.highlight;
+    }
+    if (images['cms-img-about']) {
+        const img = document.querySelector('#filosofia img');
+        if (img) img.src = images['cms-img-about'];
+        const source = document.querySelector('#filosofia source');
+        if (source) source.srcset = images['cms-img-about'];
     }
     
     // Apply festin section
@@ -252,6 +269,31 @@ function applySiteConfig(config) {
     if (festin.title) {
         const el = document.querySelector('#festin h2');
         if (el) el.textContent = festin.title;
+    }
+    if (festin.subtitle) {
+        const el = document.querySelector('#festin .text-slate-600.font-light');
+        if (el) el.textContent = festin.subtitle;
+    }
+    if (festin.ctaText) {
+        const btn = document.querySelector('[data-whatsapp-cotizar]');
+        if (btn) btn.textContent = festin.ctaText;
+    }
+    if (images['cms-img-festin']) {
+        const img = document.querySelector('#festin img');
+        if (img) img.src = images['cms-img-festin'];
+        const source = document.querySelector('#festin source');
+        if (source) source.srcset = images['cms-img-festin'];
+    }
+    
+    // Apply gallery images
+    const galleryImgs = document.querySelectorAll('#galeria img');
+    const gallerySources = document.querySelectorAll('#galeria source');
+    for (let i = 0; i < 6; i++) {
+        const imgUrl = images[`cms-img-gallery-${i + 1}`];
+        if (imgUrl) {
+            if (galleryImgs[i]) galleryImgs[i].src = imgUrl;
+            if (gallerySources[i]) gallerySources[i].srcset = imgUrl;
+        }
     }
     
     // Apply footer
@@ -304,13 +346,13 @@ function applySiteConfig(config) {
     const sections = config.sections || {};
     const sectionMap = {
         'hero': 'inicio',
-        'about': 'nosotros',
+        'about': 'filosofia',
         'festin': 'festin',
         'gallery': 'galeria',
         'testimonials': 'testimonios',
         'contact': 'contacto',
         'comingSoon': 'proximamente',
-        'footer': null // footer is always visible
+        'footer': null
     };
     
     for (const [key, sectionId] of Object.entries(sectionMap)) {

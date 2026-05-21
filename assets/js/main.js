@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    showLoadingState();
     await loadProductsFromDB();
+    hideLoadingState();
     loadProductsToDOM();
     await loadSiteConfig();
     initBackToTop();
@@ -9,6 +11,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     initWhatsAppLinks();
     initScrollAnimations();
 });
+
+function showLoadingState() {
+    ['productos-clasicos', 'productos-premium', 'productos-dulces'].forEach(id => {
+        const container = document.getElementById(id);
+        if (container) {
+            container.innerHTML = '<div class="col-span-full flex justify-center py-12"><div class="animate-pulse flex flex-col items-center gap-3"><div class="w-12 h-12 border-4 border-brand-copper/20 border-t-brand-copper rounded-full animate-spin"></div><p class="text-slate-500 text-sm">Cargando productos...</p></div></div>';
+        }
+    });
+}
+
+function hideLoadingState() {
+    // Loading state is replaced by loadProductsToDOM
+}
 
 function initScrollAnimations() {
     const observer = new IntersectionObserver((entries) => {
@@ -28,10 +43,51 @@ function initScrollAnimations() {
     });
 }
 
-let cotizacionSeleccion = JSON.parse(localStorage.getItem('legado_cotizacion')) || {};
+let cotizacionSeleccion = (() => {
+    try {
+        return JSON.parse(localStorage.getItem('legado_cotizacion')) || {};
+    } catch {
+        return {};
+    }
+})();
 
 function saveCotizacionToStorage() {
-    localStorage.setItem('legado_cotizacion', JSON.stringify(cotizacionSeleccion));
+    try {
+        localStorage.setItem('legado_cotizacion', JSON.stringify(cotizacionSeleccion));
+    } catch {
+        console.warn('No se pudo guardar la cotización en localStorage');
+    }
+}
+
+// Toast Notification System
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    const colors = {
+        success: 'bg-green-50 border-green-200 text-green-800',
+        error: 'bg-red-50 border-red-200 text-red-800',
+        warning: 'bg-amber-50 border-amber-200 text-amber-800',
+        info: 'bg-blue-50 border-blue-200 text-blue-800'
+    };
+    const icons = {
+        success: '<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>',
+        error: '<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>',
+        warning: '<svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>',
+        info: '<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+    };
+    
+    toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border ${colors[type]} transform translate-x-full transition-transform duration-300 max-w-sm`;
+    toast.innerHTML = `${icons[type]}<p class="text-sm font-medium flex-1">${message}</p>`;
+    
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.remove('translate-x-full'));
+    
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 function initExperienceTabs() {
@@ -65,7 +121,25 @@ function loadProductsToDOM() {
     
     if (!clasicosContainer || !dulcesContainer) {
         console.log('Contenedores no encontrados, reintentando...');
-        setTimeout(loadProductsToDOM, 200);
+        let retries = 0;
+        const maxRetries = 5;
+        const retryInterval = setInterval(() => {
+            retries++;
+            const clasicos = document.getElementById('productos-clasicos');
+            const dulces = document.getElementById('productos-dulces');
+            if (clasicos && dulces || retries >= maxRetries) {
+                clearInterval(retryInterval);
+                if (clasicos && dulces) {
+                    loadProductsToDOM();
+                } else {
+                    console.error('No se encontraron contenedores de productos después de', maxRetries, 'intentos');
+                    ['productos-clasicos', 'productos-premium', 'productos-dulces'].forEach(id => {
+                        const c = document.getElementById(id);
+                        if (c) c.innerHTML = '<p class="col-span-full text-center text-slate-500 py-8">Error al cargar productos. Recargá la página.</p>';
+                    });
+                }
+            }
+        }, 300);
         return;
     }
     
@@ -89,6 +163,10 @@ function loadProductsToDOM() {
         console.log('Productos cargados correctamente');
     } catch (err) {
         console.error('Error cargando productos:', err);
+        ['productos-clasicos', 'productos-premium', 'productos-dulces'].forEach(id => {
+            const c = document.getElementById(id);
+            if (c) c.innerHTML = '<p class="col-span-full text-center text-slate-500 py-8">Error al cargar productos. Recargá la página.</p>';
+        });
     }
 }
 
@@ -203,8 +281,16 @@ function initCateringCotizador() {
                 precio: precio,
                 subtotal: cantidad * precio
             };
+            const producto = getProductById(productoId);
+            if (producto) {
+                showToast(`${producto.nombre} agregado (${cantidad} u.)`, 'success');
+            }
         } else {
+            const prevData = cotizacionSeleccion[productoId];
             delete cotizacionSeleccion[productoId];
+            if (prevData) {
+                showToast(`${prevData.nombre} removido`, 'info');
+            }
         }
         
         saveCotizacionToStorage();
@@ -222,23 +308,30 @@ function initCateringCotizador() {
             
             // Rate limiting: max 5 cotizations per hour
             const now = Date.now();
-            const rateLimit = JSON.parse(localStorage.getItem('legado_rate_limit') || '[]');
+            let rateLimit = [];
+            try {
+                rateLimit = JSON.parse(localStorage.getItem('legado_rate_limit') || '[]');
+            } catch {
+                rateLimit = [];
+            }
             const recentRequests = rateLimit.filter(t => now - t < 3600000);
             if (recentRequests.length >= 5) {
-                alert('Demasiadas solicitudes. Esperá unos minutos antes de intentar nuevamente.');
+                showToast('Demasiadas solicitudes. Esperá unos minutos antes de intentar nuevamente.', 'warning');
                 return;
             }
             
             const productosValidos = Object.values(cotizacionSeleccion).filter(p => p.cantidad > 0 && p.precio > 0);
             
             if (productosValidos.length === 0) {
-                alert('Por favor selecciona al menos un producto con cantidad válida');
+                showToast('Por favor selecciona al menos un producto con cantidad válida', 'warning');
                 return;
             }
             
             // Record this request
             recentRequests.push(now);
-            localStorage.setItem('legado_rate_limit', JSON.stringify(recentRequests));
+            try {
+                localStorage.setItem('legado_rate_limit', JSON.stringify(recentRequests));
+            } catch {}
             
             modal.classList.remove('opacity-0', 'pointer-events-none');
             modal.querySelector('div').classList.remove('scale-95');
@@ -342,7 +435,7 @@ async function enviarCotizacionWhatsApp(clienteNombre = '', clienteTelefono = ''
     });
     
     if (categories.has('clasica') && categories.has('premium')) {
-        alert('No se pueden mezclar productos de Experiencia Clásica con Premium. Podés combinar Dulce con cualquiera de las dos, pero Clásica y Premium no pueden ir juntas.');
+        showToast('No se pueden mezclar productos de Experiencia Clásica con Premium. Podés combinar Dulce con cualquiera de las dos.', 'error');
         return;
     }
     
@@ -373,16 +466,22 @@ async function enviarCotizacionWhatsApp(clienteNombre = '', clienteTelefono = ''
 }
 
 function initWhatsAppLinks() {
-    const whatsappLinks = document.querySelectorAll('[data-whatsapp]');
+    const whatsappButtons = document.querySelectorAll('[data-whatsapp]');
     
-    if (!whatsappLinks.length) return;
+    if (!whatsappButtons.length) return;
 
     const defaultMessage = "Hola El Legado, me gustaría obtener más información sobre sus servicios de catering.";
     const url = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(defaultMessage)}`;
 
-    whatsappLinks.forEach(link => {
-        link.setAttribute('href', url);
-        link.setAttribute('target', '_blank');
+    whatsappButtons.forEach(btn => {
+        if (btn.tagName === 'A') {
+            btn.setAttribute('href', url);
+            btn.setAttribute('target', '_blank');
+        } else if (btn.tagName === 'BUTTON') {
+            btn.addEventListener('click', () => {
+                window.open(url, '_blank', 'noopener,noreferrer');
+            });
+        }
     });
 }
 
@@ -390,15 +489,22 @@ function initBackToTop() {
     const backToTopBtn = document.getElementById('back-to-top');
     if (!backToTopBtn) return;
 
+    let ticking = false;
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 500) {
-            backToTopBtn.classList.remove('opacity-0', 'pointer-events-none');
-            backToTopBtn.classList.add('opacity-100');
-        } else {
-            backToTopBtn.classList.add('opacity-0', 'pointer-events-none');
-            backToTopBtn.classList.remove('opacity-100');
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                if (window.scrollY > 500) {
+                    backToTopBtn.classList.remove('opacity-0', 'pointer-events-none');
+                    backToTopBtn.classList.add('opacity-100');
+                } else {
+                    backToTopBtn.classList.add('opacity-0', 'pointer-events-none');
+                    backToTopBtn.classList.remove('opacity-100');
+                }
+                ticking = false;
+            });
+            ticking = true;
         }
-    });
+    }, { passive: true });
 
     backToTopBtn.addEventListener('click', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -413,11 +519,50 @@ function initMobileMenu() {
 
     if (!menuBtn || !closeBtn || !mobileMenu) return;
 
+    let lastFocusedElement = null;
+
     function toggleMenu() {
-        mobileMenu.classList.toggle('hidden');
-        mobileMenu.classList.toggle('flex');
-        document.body.classList.toggle('overflow-hidden');
+        const isOpen = !mobileMenu.classList.contains('hidden');
+        
+        if (isOpen) {
+            mobileMenu.classList.add('hidden');
+            mobileMenu.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+            menuBtn.setAttribute('aria-expanded', 'false');
+            if (lastFocusedElement) lastFocusedElement.focus();
+        } else {
+            lastFocusedElement = document.activeElement;
+            mobileMenu.classList.remove('hidden');
+            mobileMenu.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+            menuBtn.setAttribute('aria-expanded', 'true');
+            // Focus first link in menu
+            const firstLink = mobileMenu.querySelector('.mobile-link');
+            if (firstLink) firstLink.focus();
+        }
     }
+
+    // Focus trap
+    mobileMenu.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            toggleMenu();
+            return;
+        }
+        
+        if (e.key === 'Tab') {
+            const focusable = mobileMenu.querySelectorAll('a, button');
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
+    });
 
     menuBtn.addEventListener('click', toggleMenu);
     closeBtn.addEventListener('click', toggleMenu);

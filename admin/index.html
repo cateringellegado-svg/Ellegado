@@ -5,26 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - El Legado</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://nebstosmaahdbivndlqq.supabase.co https://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; object-src 'none';">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-copper': '#AF7A54',
-                        'brand-copper-light': '#D9A78B',
-                        'cream': '#FAF9F6',
-                        'dark-elegant': '#1A1A1A',
-                    },
-                    fontFamily: {
-                        'serif': ['"Cormorant Garamond"', 'serif'],
-                        'sans': ['Montserrat', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://nebstosmaahdbivndlqq.supabase.co https://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; object-src 'none';">
+    <link rel="stylesheet" href="../assets/css/output.css">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
     <style>
         @keyframes fadeIn {
@@ -412,6 +394,40 @@
                                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Texto del CTA</label>
                                 <input type="text" id="cms-hero-cta" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Cotizá tu evento">
                             </div>
+                        </div>
+                        
+                        <!-- Estadísticas Hero -->
+                        <div class="mt-6 pt-6 border-t border-brand-copper/10">
+                            <h3 class="font-serif text-lg text-dark-elegant mb-4">Estadísticas</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Stat 1 - Valor</label>
+                                    <input type="text" id="cms-hero-stat1-value" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="100+">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Stat 1 - Etiqueta</label>
+                                    <input type="text" id="cms-hero-stat1-label" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Eventos">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Stat 2 - Valor</label>
+                                    <input type="text" id="cms-hero-stat2-value" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="5">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Stat 2 - Etiqueta</label>
+                                    <input type="text" id="cms-hero-stat2-label" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Años Exp.">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Stat 3 - Valor</label>
+                                    <input type="text" id="cms-hero-stat3-value" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="100%">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Stat 3 - Etiqueta</label>
+                                    <input type="text" id="cms-hero-stat3-label" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Dedicación">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Imagen Hero</label>
                                 <div id="cms-img-hero-preview" class="w-full h-32 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-hero-input').click()">
@@ -425,13 +441,13 @@
                         </div>
                     </div>
 
-                    <!-- About -->
+                    <!-- Nuestra Filosofía -->
                     <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
-                        <h2 class="font-serif text-2xl text-dark-elegant mb-6">Sección Sobre Nosotros</h2>
+                        <h2 class="font-serif text-2xl text-dark-elegant mb-6">Sección Nuestra Filosofía</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Título</label>
-                                <input type="text" id="cms-about-title" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Sobre Nosotros">
+                                <input type="text" id="cms-about-title" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Nuestra Filosofía">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Imagen</label>
@@ -444,12 +460,62 @@
                                 <input type="file" id="cms-img-about-input" accept="image/*" class="hidden">
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Texto</label>
-                                <textarea id="cms-about-text" rows="3" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm resize-none" placeholder="Somos un equipo apasionado..."></textarea>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Frase Principal</label>
+                                <textarea id="cms-about-text" rows="2" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm italic resize-none" placeholder="En El Legado, entendemos que tu evento no es solo una fecha..."></textarea>
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Frase Destacada</label>
-                                <input type="text" id="cms-about-highlight" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm italic" placeholder="La excelencia no es un acto, es un hábito.">
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Texto Descriptivo</label>
+                                <input type="text" id="cms-about-highlight" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Nos especializamos en eventos de mediana envergadura...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Galería -->
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+                        <h2 class="font-serif text-2xl text-dark-elegant mb-6">Sección Galería</h2>
+                        <p class="text-sm text-slate-500 mb-4">Subí las 6 imágenes de la galería. Cada imagen se convierte a WebP automáticamente.</p>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Imagen 1</label>
+                                <div id="cms-img-gallery-1-preview" class="w-full h-24 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-gallery-1-input').click()">
+                                    <div class="text-center text-slate-500"><p class="text-xs">Subir</p></div>
+                                </div>
+                                <input type="file" id="cms-img-gallery-1-input" accept="image/*" class="hidden">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Imagen 2</label>
+                                <div id="cms-img-gallery-2-preview" class="w-full h-24 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-gallery-2-input').click()">
+                                    <div class="text-center text-slate-500"><p class="text-xs">Subir</p></div>
+                                </div>
+                                <input type="file" id="cms-img-gallery-2-input" accept="image/*" class="hidden">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Imagen 3</label>
+                                <div id="cms-img-gallery-3-preview" class="w-full h-24 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-gallery-3-input').click()">
+                                    <div class="text-center text-slate-500"><p class="text-xs">Subir</p></div>
+                                </div>
+                                <input type="file" id="cms-img-gallery-3-input" accept="image/*" class="hidden">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Imagen 4</label>
+                                <div id="cms-img-gallery-4-preview" class="w-full h-24 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-gallery-4-input').click()">
+                                    <div class="text-center text-slate-500"><p class="text-xs">Subir</p></div>
+                                </div>
+                                <input type="file" id="cms-img-gallery-4-input" accept="image/*" class="hidden">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Imagen 5</label>
+                                <div id="cms-img-gallery-5-preview" class="w-full h-24 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-gallery-5-input').click()">
+                                    <div class="text-center text-slate-500"><p class="text-xs">Subir</p></div>
+                                </div>
+                                <input type="file" id="cms-img-gallery-5-input" accept="image/*" class="hidden">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Imagen 6</label>
+                                <div id="cms-img-gallery-6-preview" class="w-full h-24 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-gallery-6-input').click()">
+                                    <div class="text-center text-slate-500"><p class="text-xs">Subir</p></div>
+                                </div>
+                                <input type="file" id="cms-img-gallery-6-input" accept="image/*" class="hidden">
                             </div>
                         </div>
                     </div>
@@ -721,8 +787,8 @@
             });
         })();
     </script>
-    <script src="js/config.js?v=10"></script>
-    <script src="js/app.js?v=10"></script>
-    <script src="js/cms.js?v=2"></script>
+    <script src="js/config.js?v=12"></script>
+    <script src="js/app.js?v=12"></script>
+    <script src="js/cms.js?v=4"></script>
 </body>
 </html>

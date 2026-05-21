@@ -28,7 +28,7 @@ window.supabaseClient = supabase;
 const APP_CONFIG = {
     sitio: {
         nombre: 'El Legado - Catering y Eventos',
-        url: 'https://www.ellegado.cl'
+        url: 'https://ellegado.vercel.app'
     },
     precios: {
         salado: 15000,

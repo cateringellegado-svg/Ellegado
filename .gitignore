@@ -1,5 +1,38 @@
-.agents/
-.gemini/
+# Dependencies
 node_modules/
+package-lock.json
+
+# Build output
+assets/css/output.css
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
 *.log
+npm-debug.log*
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+
+# Supabase
+supabase/
+*.sql.backup
+
+# Temp
+tmp/
+temp/

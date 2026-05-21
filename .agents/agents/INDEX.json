@@ -1,0 +1,99 @@
+{
+  "version": "1.0.0",
+  "name": "Web Agency Multi-Agent System",
+  "description": "Índice completo del ecosistema de agents IA para agencia web premium",
+  "total_agents": 28,
+  "categories": {
+    "design": {
+      "path": "design/",
+      "agents": [
+        {"id": "senior-ux-strategist", "file": "senior-ux-strategist.json"},
+        {"id": "senior-ui-designer", "file": "senior-ui-designer.json"},
+        {"id": "brand-designer", "file": "brand-designer.json"}
+      ]
+    },
+    "development": {
+      "path": "development/",
+      "agents": [
+        {"id": "nextjs-architect", "file": "nextjs-architect.json"},
+        {"id": "senior-frontend-engineer", "file": "senior-frontend-engineer.json"},
+        {"id": "react-specialist", "file": "react-specialist.json"},
+        {"id": "tailwindcss-specialist", "file": "tailwindcss-specialist.json"}
+      ]
+    },
+    "backend": {
+      "path": "backend/",
+      "agents": [
+        {"id": "backend-architect", "file": "backend-architect.json"},
+        {"id": "supabase-specialist", "file": "supabase-specialist.json"},
+        {"id": "database-engineer", "file": "database-engineer.json"},
+        {"id": "api-engineer", "file": "api-engineer.json"},
+        {"id": "auth-security-specialist", "file": "auth-security-specialist.json"}
+      ]
+    },
+    "seo": {
+      "path": "seo/",
+      "agents": [
+        {"id": "seo-strategist", "file": "seo-strategist.json"},
+        {"id": "technical-seo-specialist", "file": "technical-seo-specialist.json"}
+      ]
+    },
+    "content": {
+      "path": "content/",
+      "agents": [
+        {"id": "conversion-copywriter", "file": "conversion-copywriter.json"},
+        {"id": "content-strategist", "file": "content-strategist.json"}
+      ]
+    },
+    "quality": {
+      "path": "quality/",
+      "agents": [
+        {"id": "performance-engineer", "file": "performance-engineer.json"},
+        {"id": "accessibility-specialist", "file": "accessibility-specialist.json"},
+        {"id": "qa-web-tester", "file": "qa-web-tester.json"},
+        {"id": "analytics-cro-specialist", "file": "analytics-cro-specialist.json"}
+      ]
+    },
+    "infra": {
+      "path": "infra/",
+      "agents": [
+        {"id": "devops-engineer", "file": "devops-engineer.json"},
+        {"id": "vercel-deployment-specialist", "file": "vercel-deployment-specialist.json"}
+      ]
+    },
+    "ai": {
+      "path": "ai/",
+      "agents": [
+        {"id": "ai-automation-engineer", "file": "ai-automation-engineer.json"},
+        {"id": "prompt-engineer", "file": "prompt-engineer.json"},
+        {"id": "ai-chatbot-specialist", "file": "ai-chatbot-specialist.json"}
+      ]
+    },
+    "management": {
+      "path": "management/",
+      "agents": [
+        {"id": "project-manager", "file": "project-manager.json"},
+        {"id": "product-strategist", "file": "product-strategist.json"},
+        {"id": "client-communication", "file": "client-communication.json"}
+      ]
+    }
+  },
+  "core_files": {
+    "orchestration": "orchestration.json",
+    "system_prompt": "SYSTEM-PROMPT.md",
+    "handoff_protocol": "HANDOFF-PROTOCOL.md",
+    "index": "INDEX.json"
+  },
+  "stack": ["React", "Next.js", "TypeScript", "TailwindCSS", "Supabase", "Vercel", "Node.js"],
+  "quality_targets": {
+    "lighthouse_performance": ">=90",
+    "lighthouse_accessibility": ">=95",
+    "lighthouse_seo": ">=95",
+    "lighthouse_best_practices": ">=90",
+    "critical_bugs": "0",
+    "a11y_violations": "0",
+    "wcag_level": "2.1 AA",
+    "typescript": "strict mode",
+    "test_coverage": ">=80%"
+  }
+}
