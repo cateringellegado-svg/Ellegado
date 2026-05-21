@@ -358,7 +358,16 @@ function createMenuItemHTML(item) {
     const nombre = sanitizeHTML(item.nombre);
     const descripcion = sanitizeHTML(item.descripcion || '');
     const precio = item.precio > 0 ? formatCLP(item.precio) : 'Por definir';
-    const imagen = item.imagen_url ? `<img src="${sanitizeHTML(item.imagen_url)}" alt="${nombre}" class="w-20 h-20 object-cover rounded-lg border border-brand-copper/10 flex-shrink-0" onerror="this.style.display='none'">` : `<div class="w-20 h-20 bg-cream rounded-lg border border-brand-copper/10 flex items-center justify-center flex-shrink-0"><svg class="w-8 h-8 text-brand-copper/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>`;
+    const imagen = item.imagen_url 
+        ? `<div class="relative w-20 h-20 flex-shrink-0 group/img">
+            <img src="${sanitizeHTML(item.imagen_url)}" alt="${nombre}" class="w-full h-full object-cover rounded-lg border border-brand-copper/20" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-cream rounded-lg border border-brand-copper/20 flex items-center justify-center\\'><svg class=\\'w-6 h-6 text-brand-copper/30\\' fill=\\'none\\' stroke=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\\'></path></svg></div>'">
+            <button onclick="quickChangeImage('${item.id}', '${escapeAttr(nombre)}')" class="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 transition-opacity rounded-lg flex items-center justify-center" title="Cambiar imagen">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+           </div>` 
+        : `<button onclick="quickChangeImage('${item.id}', '${escapeAttr(nombre)}')" class="w-20 h-20 bg-cream rounded-lg border-2 border-dashed border-brand-copper/30 hover:border-brand-copper/60 hover:bg-brand-copper/5 transition-all flex items-center justify-center flex-shrink-0" title="Agregar imagen">
+            <svg class="w-8 h-8 text-brand-copper/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+           </button>`;
     const etiquetas = item.etiquetas ? item.etiquetas.map(e => 
         `<span class="text-[10px] px-2 py-0.5 bg-brand-copper/10 text-brand-copper rounded-full">${sanitizeHTML(e)}</span>`
     ).join('') : '';
@@ -405,6 +414,67 @@ window.toggleMenuItem = async function(id, activo) {
     }
 };
 
+let quickImageItemId = null;
+const quickImageInput = document.createElement('input');
+quickImageInput.type = 'file';
+quickImageInput.accept = 'image/*';
+quickImageInput.className = 'hidden';
+quickImageInput.addEventListener('change', handleQuickImageUpload);
+document.body.appendChild(quickImageInput);
+
+window.quickChangeImage = function(id, nombre) {
+    quickImageItemId = id;
+    quickImageInput.value = '';
+    quickImageInput.click();
+};
+
+async function handleQuickImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file || !quickImageItemId) return;
+    
+    if (!file.type.startsWith('image/')) {
+        showNotification('Solo se permiten imágenes', 'error');
+        return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+        showNotification('La imagen no debe superar 5MB', 'error');
+        return;
+    }
+    
+    showNotification('Subiendo imagen...', 'info');
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+        .from('menu-images')
+        .upload(fileName, file, { cacheControl: '3600', upsert: false });
+    
+    if (error) {
+        console.error('Error uploading image:', error);
+        showNotification('Error al subir: ' + (error.message || 'Verifica que el bucket existe en Supabase'), 'error');
+        return;
+    }
+    
+    const { data: { publicUrl } } = supabase.storage
+        .from('menu-images')
+        .getPublicUrl(data.path);
+    
+    const { error: updateError } = await supabase
+        .from('menu_items')
+        .update({ imagen_url: publicUrl })
+        .eq('id', quickImageItemId);
+    
+    if (updateError) {
+        showNotification('Error al guardar URL', 'error');
+        return;
+    }
+    
+    showNotification('Imagen actualizada');
+    loadMenus();
+}
+
 let currentEditingItem = null;
 
 function initMenuCRUD() {
@@ -442,7 +512,7 @@ function openMenuModal(item = null) {
     if (item) {
         title.textContent = 'Editar Item';
         document.getElementById('menu-nombre').value = item.nombre || '';
-        document.getElementById('menu-categoria').value = item.categoria || 'salado';
+        document.getElementById('menu-categoria').value = item.categoria || 'clasica';
         document.getElementById('menu-precio').value = item.precio || 0;
         document.getElementById('menu-descripcion').value = item.descripcion || '';
         document.getElementById('menu-etiquetas').value = (item.etiquetas || []).join(', ');
@@ -452,18 +522,94 @@ function openMenuModal(item = null) {
         document.getElementById('menu-activo').checked = item.activo !== false;
         document.getElementById('menu-pendiente').checked = item.pendiente || false;
         
-        if (item.imagen_url) {
-            document.getElementById('menu-image-preview').innerHTML = `<img src="${sanitizeHTML(item.imagen_url)}" class="w-full h-32 object-cover rounded-lg" onerror="this.style.display='none'">`;
-        } else {
-            document.getElementById('menu-image-preview').innerHTML = '';
-        }
+        updateImagePreview(item.imagen_url);
     } else {
         title.textContent = 'Agregar Item';
         document.getElementById('menu-form').reset();
-        document.getElementById('menu-image-preview').innerHTML = '';
+        updateImagePreview(null);
     }
     
     modal?.classList.remove('hidden');
+    initImageDropZone();
+}
+
+function updateImagePreview(url) {
+    const preview = document.getElementById('menu-image-preview');
+    if (url) {
+        preview.innerHTML = `
+            <div class="relative w-full h-full">
+                <img src="${sanitizeHTML(url)}" class="w-full h-full object-cover rounded-lg" onerror="this.parentElement.innerHTML='<p class=\\'text-sm text-slate-500\\'>Error cargando imagen</p>'">
+                <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-3">
+                    <button type="button" onclick="document.getElementById('menu-image-input').click()" class="p-2 bg-white/90 rounded-full hover:bg-white transition-colors" title="Cambiar imagen">
+                        <svg class="w-5 h-5 text-dark-elegant" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </button>
+                    <button type="button" onclick="removeMenuItemImage()" class="p-2 bg-red-500/90 rounded-full hover:bg-red-500 transition-colors" title="Eliminar imagen">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+        preview.dataset.url = url;
+        preview.classList.remove('border-2', 'border-dashed');
+    } else {
+        preview.innerHTML = `
+            <div class="text-center text-slate-500">
+                <svg class="w-10 h-10 mx-auto mb-2 text-brand-copper/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m0 0l3-3"></path></svg>
+                <p class="text-sm font-medium">Arrastra una imagen aquí</p>
+                <p class="text-xs mt-1">o haz click para seleccionar</p>
+                <p class="text-[10px] mt-2 text-slate-400">PNG, JPG hasta 5MB</p>
+            </div>
+        `;
+        delete preview.dataset.url;
+        preview.classList.add('border-2', 'border-dashed');
+    }
+}
+
+function removeMenuItemImage() {
+    const preview = document.getElementById('menu-image-preview');
+    const oldUrl = preview.dataset.url || '';
+    
+    updateImagePreview(null);
+    
+    if (oldUrl && currentEditingItem) {
+        const fileName = oldUrl.split('/').pop();
+        supabase.storage.from('menu-images').remove([fileName]).catch(() => {});
+    }
+}
+
+function initImageDropZone() {
+    const dropZone = document.getElementById('menu-image-preview');
+    if (!dropZone) return;
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.add('border-brand-copper', 'bg-brand-copper/5');
+        });
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.remove('border-brand-copper', 'bg-brand-copper/5');
+        });
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const input = document.getElementById('menu-image-input');
+            const dt = new DataTransfer();
+            dt.items.add(files[0]);
+            input.files = dt.files;
+            handleImageUpload({ target: input });
+        }
+    });
 }
 
 function closeMenuModal() {
@@ -518,7 +664,7 @@ async function handleImageUpload(e) {
     }
     
     const preview = document.getElementById('menu-image-preview');
-    preview.innerHTML = '<p class="text-sm text-slate-400">Subiendo...</p>';
+    preview.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><div class="animate-spin w-6 h-6 border-2 border-brand-copper border-t-transparent rounded-full mx-auto mb-2"></div><p class="text-sm text-slate-500">Subiendo imagen...</p></div></div>';
     
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
@@ -528,8 +674,9 @@ async function handleImageUpload(e) {
         .upload(fileName, file, { cacheControl: '3600', upsert: false });
     
     if (error) {
-        showNotification('Error al subir imagen: ' + error.message, 'error');
-        preview.innerHTML = '';
+        console.error('Error uploading image:', error);
+        showNotification('Error al subir imagen: ' + (error.message || 'Verifica que el bucket menu-images existe en Supabase'), 'error');
+        updateImagePreview(currentEditingItem?.imagen_url || null);
         return;
     }
     
@@ -537,8 +684,8 @@ async function handleImageUpload(e) {
         .from('menu-images')
         .getPublicUrl(data.path);
     
-    preview.innerHTML = `<img src="${publicUrl}" class="w-full h-32 object-cover rounded-lg">`;
-    preview.dataset.url = publicUrl;
+    updateImagePreview(publicUrl);
+    showNotification('Imagen subida correctamente');
 }
 
 async function saveMenuItem() {

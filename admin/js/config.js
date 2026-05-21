@@ -75,8 +75,14 @@ function showNotification(message, type) {
     var existing = document.querySelector('.admin-notification');
     if (existing) existing.remove();
     
+    var colors = {
+        success: 'bg-green-500 text-white',
+        error: 'bg-red-500 text-white',
+        info: 'bg-brand-copper text-white'
+    };
+    
     var notification = document.createElement('div');
-    notification.className = 'admin-notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-[100] transition-all duration-300 ' + (type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white');
+    notification.className = 'admin-notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-[100] transition-all duration-300 ' + (colors[type] || colors.success);
     notification.textContent = message;
     document.body.appendChild(notification);
     setTimeout(function() { notification.remove(); }, 3000);
