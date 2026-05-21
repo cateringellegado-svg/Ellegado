@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - El Legado</title>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co; connect-src 'self' https://nebstosmaahdbivndlqq.supabase.co https://*.supabase.co;">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -41,11 +41,11 @@
                 <span class="font-serif text-3xl text-white font-bold">L</span>
             </div>
             <h1 class="font-serif text-3xl text-dark-elegant mb-2">El Legado</h1>
-            <p class="text-slate-500 text-sm tracking-widest uppercase">Panel de Administracion</p>
+            <p class="text-slate-500 text-sm tracking-widest uppercase">Panel de Administración</p>
         </div>
 
         <div class="bg-white rounded-3xl p-8 shadow-2xl border border-brand-copper/10 fade-in">
-            <h2 class="font-serif text-2xl text-dark-elegant mb-6 text-center">Iniciar Sesion</h2>
+            <h2 class="font-serif text-2xl text-dark-elegant mb-6 text-center">Iniciar Sesión</h2>
             
             <form id="login-form" class="space-y-6">
                 <div>
@@ -56,7 +56,7 @@
                 </div>
                 
                 <div>
-                    <label for="password" class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Contrasena</label>
+                    <label for="password" class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Contraseña</label>
                     <input type="password" id="password" required
                         class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 font-sans text-sm focus:outline-none focus:border-brand-copper transition-colors"
                         placeholder="••••••••">

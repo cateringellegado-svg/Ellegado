@@ -96,7 +96,7 @@ function formatCLP(value) {
 function formatDate(dateString) {
     if (!dateString) return '-';
     var date = new Date(dateString);
-    return date.toLocaleDateString('es-CL', { 
+    return date.toLocaleDateString('es-AR', { 
         year: 'numeric', 
         month: 'short',
         day: 'numeric' 

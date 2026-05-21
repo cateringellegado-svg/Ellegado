@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /privacidad.html
+Allow: /aviso-legal.html
+Allow: /terminos.html
+Allow: /assets/
+Disallow: /admin/
+Disallow: /.git/
+Disallow: /supabase_*.sql
+Disallow: /.agents/
+Disallow: /.opencode/
+
+Sitemap: https://www.ellegado.com.ar/sitemap.xml

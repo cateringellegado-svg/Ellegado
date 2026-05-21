@@ -109,9 +109,10 @@ async function loadDashboard() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-    if (err1 || err2 || err3 || err4) {
-        console.error('Error cargando dashboard:', err1, err2, err3, err4);
-    }
+    if (err1) console.error('Error cotizaciones:', err1.message);
+    if (err2) console.warn('Tabla eventos no disponible:', err2.message);
+    if (err3) console.error('Error clientes:', err3.message);
+    if (err4) console.error('Error recent cotizaciones:', err4.message);
 
     const totalIngresos = (monthCotizaciones || []).reduce((sum, c) => sum + (c.presupuesto || 0), 0);
 
@@ -867,15 +868,4 @@ function getEstadoClass(estado) {
         'completada': 'bg-slate-100 text-slate-700'
     };
     return classes[estado] || 'bg-slate-100 text-slate-700';
-}
-
-function formatCLP(value) {
-    if (!value && value !== 0) return '$0';
-    return '$' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-
-function formatDate(dateString) {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-CL', { year: 'numeric', month: 'short', day: 'numeric' });
 }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EL LEGADO - Catering y Eventos | Haz Eterno Cada Momento</title>
-    <meta name="description" content="Servicio de catering premium para eventos inolvidable. Elegancia, cercanía y alta gastronoma en cada detalle. Cotiza tu evento hoy.">
+    <meta name="description" content="Servicio de catering premium para eventos inolvidables. Elegancia, cercanía y alta gastronomía en cada detalle. Cotizá tu evento hoy.">
     <meta name="author" content="El Legado - Catering y Eventos">
     <meta name="contact" content="catering.ellegado@gmail.com">
     <meta name="keywords" content="catering premium, eventos, bocados gourmet, el legado, servicio de comida, eventos sociales">
@@ -195,7 +195,7 @@
         "@type": "LocalBusiness",
         "name": "El Legado - Catering y Eventos",
         "description": "Servicio de catering premium para eventos inolvidables",
-        "telephone": "+56900000000",
+        "telephone": "+541176753854",
         "email": "catering.ellegado@gmail.com",
         "url": "https://www.ellegado.cl",
         "address": {
@@ -688,7 +688,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Teléfono *</label>
-                    <input type="tel" id="cot-telefono" required class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" placeholder="+56 9 1234 5678">
+                    <input type="tel" id="cot-telefono" required class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" placeholder="+54 11 1234 5678" pattern="[\+]?[0-9\s\-]{7,20}">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Email</label>
@@ -707,8 +707,47 @@
     <script>
         if (typeof supabase !== 'undefined') window.supabase = supabase;
     </script>
-    <script src="assets/js/config.js?v=7" defer></script>
-    <script src="assets/js/main.js?v=7" defer></script>
+    <script src="assets/js/config.js?v=8" defer></script>
+    <script src="assets/js/main.js?v=8" defer></script>
+
+    <!-- Cookie Consent Banner (Ley 25.326 Argentina) -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-brand-copper/20 shadow-2xl transform translate-y-full transition-transform duration-500">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div class="flex-1">
+                <p class="text-sm text-dark-elegant font-medium">Utilizamos cookies para mejorar tu experiencia.</p>
+                <p class="text-xs text-slate-500 mt-1">Al continuar navegando, aceptas nuestra <a href="privacidad.html" class="text-brand-copper underline hover:text-brand-copper-light">Política de Privacidad</a> y el uso de cookies conforme a la Ley 25.326.</p>
+            </div>
+            <div class="flex gap-2 flex-shrink-0">
+                <button onclick="rejectCookies()" class="px-4 py-2 text-xs font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+                    Rechazar
+                </button>
+                <button onclick="acceptCookies()" class="px-4 py-2 text-xs font-medium text-white bg-brand-copper rounded-lg hover:bg-brand-copper-light transition-colors">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function() {
+            var banner = document.getElementById('cookie-banner');
+            if (!localStorage.getItem('legado_cookie_consent')) {
+                setTimeout(function() {
+                    banner.classList.remove('translate-y-full');
+                    banner.classList.add('translate-y-0');
+                }, 1500);
+            }
+            window.acceptCookies = function() {
+                localStorage.setItem('legado_cookie_consent', 'accepted');
+                banner.classList.add('translate-y-full');
+                banner.classList.remove('translate-y-0');
+            };
+            window.rejectCookies = function() {
+                localStorage.setItem('legado_cookie_consent', 'rejected');
+                banner.classList.add('translate-y-full');
+                banner.classList.remove('translate-y-0');
+            };
+        })();
+    </script>
 
 </body>
 </html>
