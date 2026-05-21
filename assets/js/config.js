@@ -173,3 +173,10 @@ function getAllProducts() {
 function getProductById(id) {
     return getAllProducts().find(p => p.id === id);
 }
+
+function getProductCategory(id) {
+    if (CONFIG.productos.clasicos.find(p => p.id === id)) return 'clasica';
+    if (CONFIG.productos.premium.find(p => p.id === id)) return 'premium';
+    if (CONFIG.productos.dulce.find(p => p.id === id)) return 'dulce';
+    return null;
+}

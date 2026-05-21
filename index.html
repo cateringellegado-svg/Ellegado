@@ -406,6 +406,9 @@
                     <div id="cotizador-seleccion" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">
                         <p class="text-slate-600 text-sm text-center py-4">Selecciona los productos arriba para agregarlos a tu cuenta</p>
                     </div>
+                    <div id="cotizador-warning" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4 text-center font-medium">
+                        No se pueden mezclar productos de Experiencia Clásica con Premium
+                    </div>
                     <div class="border-t-2 border-brand-copper/20 pt-4">
                         <div class="flex justify-between items-center mb-6">
                             <span class="text-slate-700 font-medium">Total Estimado:</span>
@@ -707,8 +710,8 @@
     <script>
         if (typeof supabase !== 'undefined') window.supabase = supabase;
     </script>
-    <script src="assets/js/config.js?v=8" defer></script>
-    <script src="assets/js/main.js?v=8" defer></script>
+    <script src="assets/js/config.js?v=9" defer></script>
+    <script src="assets/js/main.js?v=9" defer></script>
 
     <!-- Cookie Consent Banner (Ley 25.326 Argentina) -->
     <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-brand-copper/20 shadow-2xl transform translate-y-full transition-transform duration-500">

@@ -256,6 +256,8 @@ function initCateringCotizador() {
 function updateCotizador() {
     const seleccionContainer = document.getElementById('cotizador-seleccion');
     const totalElement = document.getElementById('cotizador-total');
+    const warningElement = document.getElementById('cotizador-warning');
+    const cotizarBtn = document.getElementById('cotizar-btn');
     
     if (!seleccionContainer || !totalElement) return;
     
@@ -264,7 +266,34 @@ function updateCotizador() {
     if (productos.length === 0) {
         seleccionContainer.innerHTML = '<p class="text-slate-600 text-center py-4">Selecciona los productos arriba para agregar a tu cotización</p>';
         totalElement.textContent = '$0';
+        if (warningElement) warningElement.classList.add('hidden');
+        if (cotizarBtn) cotizarBtn.classList.remove('opacity-50', 'pointer-events-none');
         return;
+    }
+    
+    // Detect category conflict: Clásica + Premium not allowed
+    const categories = new Set();
+    productos.forEach(p => {
+        const cat = getProductCategory(p.id || '');
+        if (cat) categories.add(cat);
+    });
+    
+    const hasConflict = categories.has('clasica') && categories.has('premium');
+    
+    if (warningElement) {
+        if (hasConflict) {
+            warningElement.classList.remove('hidden');
+        } else {
+            warningElement.classList.add('hidden');
+        }
+    }
+    
+    if (cotizarBtn) {
+        if (hasConflict) {
+            cotizarBtn.classList.add('opacity-50', 'pointer-events-none');
+        } else {
+            cotizarBtn.classList.remove('opacity-50', 'pointer-events-none');
+        }
     }
     
     seleccionContainer.innerHTML = productos.map(p => {
@@ -290,6 +319,19 @@ function updateCotizador() {
 
 async function enviarCotizacionWhatsApp(clienteNombre = '', clienteTelefono = '', clienteEmail = '') {
     const productos = Object.values(cotizacionSeleccion).filter(p => p.cantidad > 0 && p.precio > 0);
+    
+    // Validate no Clásica + Premium conflict
+    const categories = new Set();
+    productos.forEach(p => {
+        const cat = getProductCategory(p.id || '');
+        if (cat) categories.add(cat);
+    });
+    
+    if (categories.has('clasica') && categories.has('premium')) {
+        alert('No se pueden mezclar productos de Experiencia Clásica con Premium. Podés combinar Dulce con cualquiera de las dos, pero Clásica y Premium no pueden ir juntas.');
+        return;
+    }
+    
     const total = productos.reduce((sum, p) => sum + p.subtotal, 0);
     
     let productosTexto = productos.map(p => 

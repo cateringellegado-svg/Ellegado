@@ -90,6 +90,13 @@
                     </svg>
                     <span class="text-sm font-medium">Configuración</span>
                 </a>
+                
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-slate-800 hover:bg-brand-copper/10 transition-colors" data-section="cms">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12.75M12 3v1m0 16v1m8.66-13.66l-.71.71M4.34 7.34L3.63 6.63M20.36 17.36l-.71.71M4.34 16.66l-.71-.71M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">CMS del Sitio</span>
+                </a>
             </nav>
             
             <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-brand-copper/10">
@@ -326,6 +333,257 @@
                     </button>
                 </div>
             </section>
+
+            <!-- CMS Section -->
+            <section id="cms" class="section fade-in">
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="font-serif text-4xl text-dark-elegant">CMS del Sitio</h1>
+                    <button id="save-cms-config" class="bg-brand-copper text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-brand-copper/30 transition-all text-sm font-medium">
+                        Guardar Todo
+                    </button>
+                </div>
+
+                <div class="space-y-8">
+                    <!-- Colores -->
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+                        <h2 class="font-serif text-2xl text-dark-elegant mb-6">Apariencia y Colores</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Color Primario</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="cms-color-primary" class="w-12 h-12 rounded-lg border-2 border-brand-copper/20 cursor-pointer" value="#AF7A54">
+                                    <input type="text" id="cms-color-primary-text" class="flex-1 bg-cream border border-brand-copper/20 rounded-lg px-3 py-2 text-sm font-mono" value="#AF7A54" readonly>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Color Primario Claro</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="cms-color-primary-light" class="w-12 h-12 rounded-lg border-2 border-brand-copper/20 cursor-pointer" value="#D9A78B">
+                                    <input type="text" class="flex-1 bg-cream border border-brand-copper/20 rounded-lg px-3 py-2 text-sm font-mono" value="#D9A78B" readonly>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Color de Fondo</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="cms-color-background" class="w-12 h-12 rounded-lg border-2 border-brand-copper/20 cursor-pointer" value="#FAF9F6">
+                                    <input type="text" class="flex-1 bg-cream border border-brand-copper/20 rounded-lg px-3 py-2 text-sm font-mono" value="#FAF9F6" readonly>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Color de Texto</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="cms-color-text" class="w-12 h-12 rounded-lg border-2 border-brand-copper/20 cursor-pointer" value="#1A1A1A">
+                                    <input type="text" class="flex-1 bg-cream border border-brand-copper/20 rounded-lg px-3 py-2 text-sm font-mono" value="#1A1A1A" readonly>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Color Texto Secundario</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="cms-color-text-secondary" class="w-12 h-12 rounded-lg border-2 border-brand-copper/20 cursor-pointer" value="#64748B">
+                                    <input type="text" class="flex-1 bg-cream border border-brand-copper/20 rounded-lg px-3 py-2 text-sm font-mono" value="#64748B" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Preview -->
+                        <div id="cms-color-preview" class="mt-6 p-6 bg-cream rounded-xl border-2 border-brand-copper/20">
+                            <p class="preview-title font-serif text-2xl text-brand-copper mb-2">Vista Previa</p>
+                            <p class="text-dark-elegant text-sm">Así se verán los colores en el sitio público.</p>
+                            <button class="preview-btn mt-3 bg-brand-copper text-white px-4 py-2 rounded-lg text-sm">Botón de ejemplo</button>
+                        </div>
+                    </div>
+
+                    <!-- Hero -->
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+                        <h2 class="font-serif text-2xl text-dark-elegant mb-6">Sección Hero</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Título</label>
+                                <input type="text" id="cms-hero-title" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="El Legado">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Subtítulo</label>
+                                <input type="text" id="cms-hero-subtitle" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Catering & Eventos">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Tagline</label>
+                                <input type="text" id="cms-hero-tagline" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Donde cada evento se convierte en un legado inolvidable">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Texto del CTA</label>
+                                <input type="text" id="cms-hero-cta" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Cotizá tu evento">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Imagen Hero</label>
+                                <div id="cms-img-hero-preview" class="w-full h-32 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-hero-input').click()">
+                                    <div class="text-center text-slate-500">
+                                        <svg class="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m0 0l3-3"></path></svg>
+                                        <p class="text-xs">Click para subir</p>
+                                    </div>
+                                </div>
+                                <input type="file" id="cms-img-hero-input" accept="image/*" class="hidden">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- About -->
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+                        <h2 class="font-serif text-2xl text-dark-elegant mb-6">Sección Sobre Nosotros</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Título</label>
+                                <input type="text" id="cms-about-title" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Sobre Nosotros">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Imagen</label>
+                                <div id="cms-img-about-preview" class="w-full h-32 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-about-input').click()">
+                                    <div class="text-center text-slate-500">
+                                        <svg class="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m0 0l3-3"></path></svg>
+                                        <p class="text-xs">Click para subir</p>
+                                    </div>
+                                </div>
+                                <input type="file" id="cms-img-about-input" accept="image/*" class="hidden">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Texto</label>
+                                <textarea id="cms-about-text" rows="3" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm resize-none" placeholder="Somos un equipo apasionado..."></textarea>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Frase Destacada</label>
+                                <input type="text" id="cms-about-highlight" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm italic" placeholder="La excelencia no es un acto, es un hábito.">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Festin -->
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+                        <h2 class="font-serif text-2xl text-dark-elegant mb-6">Sección Festín</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Título</label>
+                                <input type="text" id="cms-festin-title" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Armá tu Festín">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Imagen</label>
+                                <div id="cms-img-festin-preview" class="w-full h-32 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-festin-input').click()">
+                                    <div class="text-center text-slate-500">
+                                        <svg class="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m0 0l3-3"></path></svg>
+                                        <p class="text-xs">Click para subir</p>
+                                    </div>
+                                </div>
+                                <input type="file" id="cms-img-festin-input" accept="image/*" class="hidden">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Subtítulo</label>
+                                <input type="text" id="cms-festin-subtitle" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Armá tu catering personalizado">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Texto del CTA</label>
+                                <input type="text" id="cms-festin-cta" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="Empezá a cotizar">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logo y Favicon -->
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+                        <h2 class="font-serif text-2xl text-dark-elegant mb-6">Logo y Favicon</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Logo</label>
+                                <div id="cms-img-logo-preview" class="w-full h-32 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-logo-input').click()">
+                                    <div class="text-center text-slate-500">
+                                        <svg class="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m0 0l3-3"></path></svg>
+                                        <p class="text-xs">Click para subir</p>
+                                    </div>
+                                </div>
+                                <input type="file" id="cms-img-logo-input" accept="image/*" class="hidden">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Favicon</label>
+                                <div id="cms-img-favicon-preview" class="w-full h-32 bg-cream rounded-lg border-2 border-dashed border-brand-copper/20 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cms-img-favicon-input').click()">
+                                    <div class="text-center text-slate-500">
+                                        <svg class="w-8 h-8 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m0 0l3-3"></path></svg>
+                                        <p class="text-xs">Click para subir</p>
+                                    </div>
+                                </div>
+                                <input type="file" id="cms-img-favicon-input" accept="image/*" class="hidden">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Redes Sociales -->
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+                        <h2 class="font-serif text-2xl text-dark-elegant mb-6">Redes Sociales</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Instagram URL</label>
+                                <input type="url" id="cms-social-instagram" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="https://instagram.com/...">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Facebook URL</label>
+                                <input type="url" id="cms-social-facebook" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="https://facebook.com/...">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">TikTok URL</label>
+                                <input type="url" id="cms-social-tiktok" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="https://tiktok.com/...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contacto -->
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+                        <h2 class="font-serif text-2xl text-dark-elegant mb-6">Contacto</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Email</label>
+                                <input type="email" id="cms-contact-email" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="catering.ellegado@gmail.com">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">WhatsApp (sin +)</label>
+                                <input type="tel" id="cms-contact-whatsapp" class="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="541176753854">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Secciones -->
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+                        <h2 class="font-serif text-2xl text-dark-elegant mb-6">Mostrar/Ocultar Secciones</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <label class="flex items-center gap-3 p-3 bg-cream rounded-lg cursor-pointer hover:bg-cream/80 transition-colors">
+                                <input type="checkbox" id="cms-section-hero" checked class="w-4 h-4 text-brand-copper rounded">
+                                <span class="text-sm text-dark-elegant">Hero</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 bg-cream rounded-lg cursor-pointer hover:bg-cream/80 transition-colors">
+                                <input type="checkbox" id="cms-section-about" checked class="w-4 h-4 text-brand-copper rounded">
+                                <span class="text-sm text-dark-elegant">Sobre Nosotros</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 bg-cream rounded-lg cursor-pointer hover:bg-cream/80 transition-colors">
+                                <input type="checkbox" id="cms-section-festin" checked class="w-4 h-4 text-brand-copper rounded">
+                                <span class="text-sm text-dark-elegant">Festín</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 bg-cream rounded-lg cursor-pointer hover:bg-cream/80 transition-colors">
+                                <input type="checkbox" id="cms-section-gallery" checked class="w-4 h-4 text-brand-copper rounded">
+                                <span class="text-sm text-dark-elegant">Galería</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 bg-cream rounded-lg cursor-pointer hover:bg-cream/80 transition-colors">
+                                <input type="checkbox" id="cms-section-testimonials" checked class="w-4 h-4 text-brand-copper rounded">
+                                <span class="text-sm text-dark-elegant">Testimonios</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 bg-cream rounded-lg cursor-pointer hover:bg-cream/80 transition-colors">
+                                <input type="checkbox" id="cms-section-contact" checked class="w-4 h-4 text-brand-copper rounded">
+                                <span class="text-sm text-dark-elegant">Contacto</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 bg-cream rounded-lg cursor-pointer hover:bg-cream/80 transition-colors">
+                                <input type="checkbox" id="cms-section-comingSoon" checked class="w-4 h-4 text-brand-copper rounded">
+                                <span class="text-sm text-dark-elegant">Próximamente</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 bg-cream rounded-lg cursor-pointer hover:bg-cream/80 transition-colors">
+                                <input type="checkbox" id="cms-section-footer" checked class="w-4 h-4 text-brand-copper rounded">
+                                <span class="text-sm text-dark-elegant">Footer</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -463,7 +721,8 @@
             });
         })();
     </script>
-    <script src="js/config.js?v=8"></script>
-    <script src="js/app.js?v=8"></script>
+    <script src="js/config.js?v=9"></script>
+    <script src="js/app.js?v=9"></script>
+    <script src="js/cms.js?v=1"></script>
 </body>
 </html>

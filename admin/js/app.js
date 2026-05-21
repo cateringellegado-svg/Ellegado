@@ -82,6 +82,7 @@ async function loadSectionData(section) {
         case 'clientes': loadClientes(); break;
         case 'menus': loadMenus(); break;
         case 'config': loadConfig(); break;
+        case 'cms': if (typeof initCMS === 'function') initCMS(); break;
     }
 }
 
