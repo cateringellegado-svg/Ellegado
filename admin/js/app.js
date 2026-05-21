@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await checkAuth();
     initSessionMonitor();
     initNavigation();
+    initQuickImageUpload();
     loadDashboard();
     loadCotizaciones();
     loadClientes();
@@ -415,12 +416,16 @@ window.toggleMenuItem = async function(id, activo) {
 };
 
 let quickImageItemId = null;
-const quickImageInput = document.createElement('input');
-quickImageInput.type = 'file';
-quickImageInput.accept = 'image/*';
-quickImageInput.className = 'hidden';
-quickImageInput.addEventListener('change', handleQuickImageUpload);
-document.body.appendChild(quickImageInput);
+let quickImageInput = null;
+
+function initQuickImageUpload() {
+    quickImageInput = document.createElement('input');
+    quickImageInput.type = 'file';
+    quickImageInput.accept = 'image/*';
+    quickImageInput.className = 'hidden';
+    quickImageInput.addEventListener('change', handleQuickImageUpload);
+    document.body.appendChild(quickImageInput);
+}
 
 window.quickChangeImage = function(id, nombre) {
     quickImageItemId = id;
