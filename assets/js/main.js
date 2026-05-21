@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     await loadProductsFromDB();
     loadProductsToDOM();
+    await loadSiteConfig();
     initBackToTop();
     initMobileMenu();
     initExperienceTabs();

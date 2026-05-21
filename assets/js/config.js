@@ -180,3 +180,149 @@ function getProductCategory(id) {
     if (CONFIG.productos.dulce.find(p => p.id === id)) return 'dulce';
     return null;
 }
+
+async function loadSiteConfig() {
+    if (!supabaseClient) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('site_config')
+            .select('*');
+        if (error) { console.warn('CMS config not available:', error.message); return; }
+        
+        const config = {};
+        data.forEach(c => { config[c.key] = c.value; });
+        applySiteConfig(config);
+    } catch (err) {
+        console.warn('CMS config load failed:', err);
+    }
+}
+
+function applySiteConfig(config) {
+    // Apply colors as CSS custom properties
+    const colors = config.colors || {};
+    if (colors.primary) document.documentElement.style.setProperty('--brand-copper', colors.primary);
+    if (colors.primaryLight) document.documentElement.style.setProperty('--brand-copper-light', colors.primaryLight);
+    if (colors.background) document.documentElement.style.setProperty('--cream', colors.background);
+    if (colors.text) document.documentElement.style.setProperty('--dark-elegant', colors.text);
+    if (colors.textSecondary) document.documentElement.style.setProperty('--slate-500', colors.textSecondary);
+    
+    // Apply images
+    const images = config.images || {};
+    if (images['cms-img-hero']) {
+        const hero = document.getElementById('inicio');
+        if (hero) hero.style.backgroundImage = `url('${images['cms-img-hero']}')`;
+    }
+    
+    // Apply text content
+    const hero = config.hero || {};
+    if (hero.title) {
+        const el = document.querySelector('#inicio h1');
+        if (el) el.textContent = hero.title;
+    }
+    if (hero.subtitle) {
+        const el = document.querySelector('#inicio .text-brand-copper.tracking-\\[0\\.4em\\]');
+        if (el) el.textContent = hero.subtitle;
+    }
+    if (hero.tagline) {
+        const el = document.querySelector('#inicio p.text-xl');
+        if (el) el.textContent = hero.tagline;
+    }
+    if (hero.ctaText) {
+        const btn = document.querySelector('[data-whatsapp]');
+        if (btn) btn.textContent = hero.ctaText;
+    }
+    
+    // Apply about section
+    const about = config.about || {};
+    if (about.title) {
+        const el = document.querySelector('#nosotros h2');
+        if (el) el.textContent = about.title;
+    }
+    if (about.text) {
+        const el = document.querySelector('#nosotros p.text-lg');
+        if (el) el.textContent = about.text;
+    }
+    if (about.highlight) {
+        const el = document.querySelector('#nosotros .font-serif.text-xl');
+        if (el) el.textContent = about.highlight;
+    }
+    
+    // Apply festin section
+    const festin = config.festin || {};
+    if (festin.title) {
+        const el = document.querySelector('#festin h2');
+        if (el) el.textContent = festin.title;
+    }
+    
+    // Apply footer
+    const footer = config.footer || {};
+    if (footer.text) {
+        const el = document.querySelector('footer .font-serif');
+        if (el) el.textContent = footer.text;
+    }
+    if (footer.copyright) {
+        const el = document.querySelector('footer .text-slate-500');
+        if (el) el.textContent = `© 2026 ${footer.copyright}. Todos los derechos reservados.`;
+    }
+    
+    // Apply social links
+    const social = config.social || {};
+    const socialLinks = document.querySelectorAll('[data-social]');
+    socialLinks.forEach(link => {
+        const platform = link.getAttribute('data-social');
+        if (social[platform] && social[platform] !== '#') {
+            link.href = social[platform];
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+        }
+    });
+    
+    // Apply contact info
+    const contact = config.contact || {};
+    if (contact.email) {
+        const emailLinks = document.querySelectorAll('[data-email]');
+        emailLinks.forEach(el => {
+            el.href = `mailto:${contact.email}`;
+            el.textContent = contact.email;
+        });
+    }
+    if (contact.whatsapp) {
+        const waLinks = document.querySelectorAll('[data-whatsapp]');
+        const msg = encodeURIComponent('Hola El Legado, me gustaría obtener más información sobre sus servicios de catering.');
+        waLinks.forEach(el => {
+            el.href = `https://wa.me/${contact.whatsapp}?text=${msg}`;
+        });
+        // Update phone display
+        const phoneEl = document.querySelector('[data-phone]');
+        if (phoneEl) {
+            const formatted = contact.whatsapp.replace(/(\d{2})(\d{2})(\d{4})(\d{4})/, '+$1 $2 $3 $4');
+            phoneEl.textContent = formatted;
+        }
+    }
+    
+    // Apply section visibility
+    const sections = config.sections || {};
+    const sectionMap = {
+        'hero': 'inicio',
+        'about': 'nosotros',
+        'festin': 'festin',
+        'gallery': 'galeria',
+        'testimonials': 'testimonios',
+        'contact': 'contacto',
+        'comingSoon': 'proximamente',
+        'footer': null // footer is always visible
+    };
+    
+    for (const [key, sectionId] of Object.entries(sectionMap)) {
+        if (sectionId) {
+            const el = document.getElementById(sectionId);
+            if (el) {
+                if (sections[key] === false) {
+                    el.style.display = 'none';
+                } else {
+                    el.style.display = '';
+                }
+            }
+        }
+    }
+}
