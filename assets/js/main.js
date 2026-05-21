@@ -102,11 +102,11 @@ function createProductCard(producto, esDulce = false, esPremium = false) {
         : '';
     
     const cardClass = esPremium 
-        ? 'relative bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-brand-copper/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group'
-        : `relative bg-white rounded-2xl border border-brand-copper/10 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group ${disabled}`;
+        ? 'relative bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-brand-copper/20 hover:shadow-xl hover:-translate-y-1 hover:border-brand-copper/40 transition-all duration-300 flex flex-col h-full group'
+        : `relative bg-white rounded-2xl border border-brand-copper/20 hover:shadow-xl hover:-translate-y-1 hover:border-brand-copper/40 transition-all duration-300 flex flex-col h-full group ${disabled}`;
     
     const textColor = esPremium ? 'text-slate-100' : 'text-dark-elegant';
-    const descColor = esPremium ? 'text-slate-400' : 'text-slate-500';
+    const descColor = esPremium ? 'text-slate-400' : 'text-slate-600';
     const iconBg = esPremium ? 'bg-brand-copper/20' : 'bg-cream';
     
     return `
@@ -124,7 +124,7 @@ function createProductCard(producto, esDulce = false, esPremium = false) {
                 
                 <div class="flex justify-between items-end mt-auto pt-4 border-t border-brand-copper/5">
                     <div>
-                        <span class="text-[9px] text-slate-400 uppercase tracking-widest block mb-1">Valor Unitario</span>
+                        <span class="text-[9px] text-slate-500 uppercase tracking-widest block mb-1">Valor Unitario</span>
                         <span class="font-sans text-sm text-brand-copper font-bold">${precioMostrar}</span>
                     </div>
                     
@@ -143,7 +143,7 @@ function createProductCard(producto, esDulce = false, esPremium = false) {
                                 placeholder="0" ${inputDisabled}>
                             <button type="button" class="btn-sumar px-2 py-1 text-brand-copper hover:bg-brand-copper/10 transition-colors" data-target="input-${producto.id}">+</button>
                         </div>
-                        <span class="text-[9px] text-slate-400 italic">Mín: ${producto.minimo} / +${producto.incremento}</span>
+                        <span class="text-[9px] text-slate-500 italic">Mín: ${producto.minimo} / +${producto.incremento}</span>
                     </div>
                     `}
                 </div>
@@ -262,7 +262,7 @@ function updateCotizador() {
     const productos = Object.values(cotizacionSeleccion).filter(p => p.cantidad > 0 && p.precio > 0);
     
     if (productos.length === 0) {
-        seleccionContainer.innerHTML = '<p class="text-slate-400 text-center py-4">Selecciona los productos arriba para agregar a tu cotización</p>';
+        seleccionContainer.innerHTML = '<p class="text-slate-500 text-center py-4">Selecciona los productos arriba para agregar a tu cotización</p>';
         totalElement.textContent = '$0';
         return;
     }
@@ -278,7 +278,7 @@ function updateCotizador() {
             ${thumb}
             <div class="flex-1 min-w-0">
                 <span class="text-sm text-dark-elegant block truncate">${escapeAttr(p.nombre)}</span>
-                <span class="text-xs text-slate-400">${p.cantidad} u. x ${formatARS(p.precio)}</span>
+                <span class="text-xs text-slate-500">${p.cantidad} u. x ${formatARS(p.precio)}</span>
             </div>
             <span class="text-sm text-brand-copper font-medium flex-shrink-0">${formatARS(p.subtotal)}</span>
         </div>

@@ -129,7 +129,7 @@ async function loadDashboard() {
             <div class="flex items-center justify-between p-4 bg-cream rounded-lg">
                 <div>
                     <p class="font-medium text-dark-elegant">${nombre}</p>
-                    <p class="text-sm text-slate-500">${tipo} - ${c.num_invitados} invitados</p>
+                    <p class="text-sm text-slate-600">${tipo} - ${c.num_invitados} invitados</p>
                 </div>
                 <div class="text-right">
                     <p class="font-serif text-brand-copper">${formatCLP(c.presupuesto)}</p>
@@ -167,13 +167,13 @@ async function loadCotizaciones() {
             const estado = sanitizeHTML(c.estado);
             return `
             <tr class="hover:bg-cream/50 transition-colors">
-                <td class="px-6 py-4 text-sm text-slate-600">${formatDate(c.created_at)}</td>
+                <td class="px-6 py-4 text-sm text-slate-700">${formatDate(c.created_at)}</td>
                 <td class="px-6 py-4">
                     <p class="font-medium text-dark-elegant">${nombre}</p>
-                    <p class="text-xs text-slate-400">${email}</p>
+                    <p class="text-xs text-slate-500">${email}</p>
                 </td>
-                <td class="px-6 py-4 text-sm text-slate-600">${tipo}</td>
-                <td class="px-6 py-4 text-sm text-slate-600">${c.num_invitados}</td>
+                <td class="px-6 py-4 text-sm text-slate-700">${tipo}</td>
+                <td class="px-6 py-4 text-sm text-slate-700">${c.num_invitados}</td>
                 <td class="px-6 py-4 font-medium text-brand-copper">${formatCLP(c.presupuesto)}</td>
                 <td class="px-6 py-4">
                     <select onchange="updateEstado('${c.id}', this.value)" class="text-xs px-2 py-1 rounded-full border-0 ${getEstadoClass(estado)}">
@@ -296,10 +296,10 @@ async function loadClientes() {
             return `
             <tr class="hover:bg-cream/50 transition-colors">
                 <td class="px-6 py-4 font-medium text-dark-elegant">${nombre}</td>
-                <td class="px-6 py-4 text-sm text-slate-600">${email}</td>
-                <td class="px-6 py-4 text-sm text-slate-600">${telefono}</td>
-                <td class="px-6 py-4 text-sm text-slate-600">${c.eventos_count || 0}</td>
-                <td class="px-6 py-4 text-sm text-slate-600">${c.created_at ? formatDate(c.created_at) : '-'}</td>
+                <td class="px-6 py-4 text-sm text-slate-700">${email}</td>
+                <td class="px-6 py-4 text-sm text-slate-700">${telefono}</td>
+                <td class="px-6 py-4 text-sm text-slate-700">${c.eventos_count || 0}</td>
+                <td class="px-6 py-4 text-sm text-slate-700">${c.created_at ? formatDate(c.created_at) : '-'}</td>
             </tr>
         `}).join('');
     } else {
@@ -364,25 +364,25 @@ function createMenuItemHTML(item) {
     ).join('') : '';
     
     return `
-        <div class="flex items-center gap-4 p-4 bg-cream rounded-lg group hover:shadow-md transition-all" data-id="${item.id}">
+        <div class="flex items-center gap-4 p-4 bg-white rounded-lg border border-brand-copper/20 group hover:shadow-md hover:border-brand-copper/40 transition-all" data-id="${item.id}">
             ${imagen}
             <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between mb-1">
                     <p class="font-medium text-dark-elegant">${nombre}</p>
                     <div class="flex gap-1 ml-3 flex-shrink-0">
-                        <button onclick="editMenuItem('${item.id}')" class="p-1.5 text-slate-400 hover:text-brand-copper hover:bg-brand-copper/10 rounded transition-colors" title="Editar">
+                        <button onclick="editMenuItem('${item.id}')" class="p-1.5 text-slate-500 hover:text-brand-copper hover:bg-brand-copper/10 rounded transition-colors" title="Editar">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         </button>
-                        <button onclick="deleteMenuItem('${item.id}', '${escapeAttr(nombre)}')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Eliminar">
+                        <button onclick="deleteMenuItem('${item.id}', '${escapeAttr(nombre)}')" class="p-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Eliminar">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </div>
                 </div>
-                ${descripcion ? `<p class="text-xs text-slate-500 mb-2">${descripcion}</p>` : ''}
+                ${descripcion ? `<p class="text-sm text-slate-600 mb-2">${descripcion}</p>` : ''}
                 <div class="flex gap-1">${etiquetas}</div>
             </div>
             <div class="text-right flex-shrink-0 ml-4">
-                <p class="font-medium text-brand-copper text-lg">${precio}</p>
+                <p class="font-semibold text-dark-elegant text-lg">${precio}</p>
                 <button onclick="toggleMenuItem('${item.id}', ${!item.activo})" class="text-xs ${item.activo ? 'text-green-600 hover:text-green-700' : 'text-red-500 hover:text-red-600'} mt-1 transition-colors">
                     ${item.activo ? 'Activo' : 'Inactivo'}
                 </button>
