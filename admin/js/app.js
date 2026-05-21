@@ -358,35 +358,35 @@ function createMenuItemHTML(item) {
     const nombre = sanitizeHTML(item.nombre);
     const descripcion = sanitizeHTML(item.descripcion || '');
     const precio = item.precio > 0 ? formatCLP(item.precio) : 'Por definir';
-    const imagen = item.imagen_url ? `<img src="${sanitizeHTML(item.imagen_url)}" alt="${nombre}" class="w-16 h-16 object-cover rounded-lg border border-brand-copper/10" onerror="this.style.display='none'">` : `<div class="w-16 h-16 bg-cream rounded-lg border border-brand-copper/10 flex items-center justify-center"><svg class="w-8 h-8 text-brand-copper/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>`;
+    const imagen = item.imagen_url ? `<img src="${sanitizeHTML(item.imagen_url)}" alt="${nombre}" class="w-20 h-20 object-cover rounded-lg border border-brand-copper/10 flex-shrink-0" onerror="this.style.display='none'">` : `<div class="w-20 h-20 bg-cream rounded-lg border border-brand-copper/10 flex items-center justify-center flex-shrink-0"><svg class="w-8 h-8 text-brand-copper/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>`;
     const etiquetas = item.etiquetas ? item.etiquetas.map(e => 
         `<span class="text-[10px] px-2 py-0.5 bg-brand-copper/10 text-brand-copper rounded-full">${sanitizeHTML(e)}</span>`
     ).join('') : '';
     
     return `
-        <div class="flex items-start gap-4 p-4 bg-cream rounded-lg group hover:shadow-md transition-all" data-id="${item.id}">
+        <div class="flex items-center gap-4 p-4 bg-cream rounded-lg group hover:shadow-md transition-all" data-id="${item.id}">
             ${imagen}
             <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between mb-1">
-                    <p class="font-medium text-dark-elegant truncate">${nombre}</p>
-                    <div class="flex gap-1 ml-2">
-                        <button onclick="editMenuItem('${item.id}')" class="p-1 text-slate-400 hover:text-brand-copper transition-colors" title="Editar">
+                    <p class="font-medium text-dark-elegant">${nombre}</p>
+                    <div class="flex gap-1 ml-3 flex-shrink-0">
+                        <button onclick="editMenuItem('${item.id}')" class="p-1.5 text-slate-400 hover:text-brand-copper hover:bg-brand-copper/10 rounded transition-colors" title="Editar">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         </button>
-                        <button onclick="deleteMenuItem('${item.id}', '${escapeAttr(nombre)}')" class="p-1 text-slate-400 hover:text-red-500 transition-colors" title="Eliminar">
+                        <button onclick="deleteMenuItem('${item.id}', '${escapeAttr(nombre)}')" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Eliminar">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </div>
                 </div>
-                ${descripcion ? `<p class="text-xs text-slate-500 line-clamp-2 mb-2">${descripcion}</p>` : ''}
-                <div class="flex gap-1 mb-2">${etiquetas}</div>
+                ${descripcion ? `<p class="text-xs text-slate-500 mb-2">${descripcion}</p>` : ''}
+                <div class="flex gap-1">${etiquetas}</div>
             </div>
-            <div class="text-right flex-shrink-0">
-                <p class="font-medium text-brand-copper">${precio}</p>
-                <button onclick="toggleMenuItem('${item.id}', ${!item.activo})" class="text-xs ${item.activo ? 'text-green-600' : 'text-red-500'} mt-1">
+            <div class="text-right flex-shrink-0 ml-4">
+                <p class="font-medium text-brand-copper text-lg">${precio}</p>
+                <button onclick="toggleMenuItem('${item.id}', ${!item.activo})" class="text-xs ${item.activo ? 'text-green-600 hover:text-green-700' : 'text-red-500 hover:text-red-600'} mt-1 transition-colors">
                     ${item.activo ? 'Activo' : 'Inactivo'}
                 </button>
-                ${item.pendiente ? '<p class="text-[10px] text-amber-500 mt-1">Pendiente</p>' : ''}
+                ${item.pendiente ? '<p class="text-[10px] text-amber-500 mt-1 font-medium">Pendiente</p>' : ''}
             </div>
         </div>
     `;
