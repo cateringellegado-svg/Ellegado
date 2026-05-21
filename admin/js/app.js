@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadCotizaciones();
     loadClientes();
     loadMenus();
-    loadEventos();
     loadConfig();
     initLogout();
     initModal();
@@ -81,7 +80,6 @@ async function loadSectionData(section) {
         case 'cotizaciones': loadCotizaciones(); break;
         case 'clientes': loadClientes(); break;
         case 'menus': loadMenus(); break;
-        case 'eventos': loadEventos(); break;
         case 'config': loadConfig(); break;
     }
 }
@@ -605,60 +603,6 @@ async function saveMenuItem() {
         loadMenus();
     }
 }
-
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
-
-async function loadEventos() {
-    const { data: eventos, error } = await supabase
-        .from('eventos')
-        .select('*')
-        .order('fecha');
-    
-    if (error) {
-        console.error('Error cargando eventos:', error);
-        return;
-    }
-    
-    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    document.getElementById('current-month').textContent = `${monthNames[currentMonth]} ${currentYear}`;
-    
-    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    
-    const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    let html = days.map(d => `<div class="text-center text-xs font-medium text-slate-400 py-2">${d}</div>`).join('');
-    
-    for (let i = 0; i < firstDay; i++) {
-        html += '<div class="p-2"></div>';
-    }
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const dayEventos = eventos?.filter(e => e.fecha === dateStr) || [];
-        
-        html += `
-            <div class="p-2 text-center ${dayEventos.length > 0 ? 'bg-brand-copper/10 rounded-lg' : ''}">
-                <p class="text-sm ${dayEventos.length > 0 ? 'font-medium text-brand-copper' : 'text-slate-600'}">${day}</p>
-                ${dayEventos.length > 0 ? `<p class="text-[10px] text-slate-500">${dayEventos.length} evento(s)</p>` : ''}
-            </div>
-        `;
-    }
-    
-    document.getElementById('calendar-grid').innerHTML = html;
-}
-
-document.getElementById('prev-month')?.addEventListener('click', () => {
-    currentMonth--;
-    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-    loadEventos();
-});
-
-document.getElementById('next-month')?.addEventListener('click', () => {
-    currentMonth++;
-    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-    loadEventos();
-});
 
 async function loadConfig() {
     const { data, error } = await supabase

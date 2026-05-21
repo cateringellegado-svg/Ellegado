@@ -12,12 +12,12 @@ ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS minimo INTEGER DEFAULT 50;
 ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS incremento INTEGER DEFAULT 10;
 ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
--- 2. Actualizar constraint de categoria para incluir 'premium'
+-- 2. Migrar datos existentes: 'salado' -> 'clasica'
+UPDATE menu_items SET categoria = 'clasica' WHERE categoria = 'salado';
+
+-- 3. Actualizar constraint de categoria para incluir 'premium'
 ALTER TABLE menu_items DROP CONSTRAINT IF EXISTS menu_items_categoria_check;
 ALTER TABLE menu_items ADD CONSTRAINT menu_items_categoria_check CHECK (categoria IN ('clasica', 'premium', 'dulce'));
-
--- 3. Migrar datos existentes: 'salado' -> 'clasica'
-UPDATE menu_items SET categoria = 'clasica' WHERE categoria = 'salado';
 
 -- 4. Eliminar datos duplicados viejos y limpiar
 DELETE FROM menu_items WHERE nombre IN ('Canapés premium', 'Mini Churrascos', 'Mini Empanaditas', 'Mini Pizzas', 'Mini Sopaipillas con Pebre', 'Mini Sándwiches de Miga', 'Fosforitos', 'Piononos', 'Brochetas saladas', 'Mini Conitos de Fajita', 'Grisines con Tofu artesanal', 'Mini Hamburguesitas Gourmet', 'Canastitas', 'Shots variados', 'Tacitas rellenas', 'Conitos dulces', 'Galletas artesanales', 'Mini Donas bañadas en chocolate');
