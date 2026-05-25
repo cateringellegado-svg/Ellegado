@@ -30,8 +30,8 @@ export default function BackToTop() {
       onClick={scrollToTop}
       className={`fixed bottom-32 right-8 bg-white/80 backdrop-blur-md text-brand-copper p-3 rounded-full shadow-lg border border-brand-copper/20 transition-all duration-500 z-40 hover:bg-brand-copper hover:text-white ${
         visible
-          ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none"
+          ? "opacity-100 pointer-events-auto visible"
+          : "opacity-0 pointer-events-none invisible"
       }`}
       aria-label="Volver arriba"
     >

@@ -87,7 +87,7 @@ export default function Navbar() {
 
           <button
             onClick={toggleMenu}
-            className="sm:hidden text-brand-copper p-2 focus:outline-none"
+            className="sm:hidden text-brand-copper p-2 focus:outline-none relative z-[60]"
             aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={isOpen}
             aria-controls="mobile-menu"
@@ -155,11 +155,11 @@ export default function Navbar() {
 
         <button
           onClick={closeMenu}
-          className="absolute top-6 right-6 text-brand-copper"
+          className="absolute top-6 right-6 text-brand-copper z-50 pointer-events-auto"
           aria-label="Cerrar menú"
         >
           <svg
-            className="w-8 h-8"
+            className="w-8 h-8 pointer-events-none"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

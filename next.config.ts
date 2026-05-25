@@ -2,6 +2,17 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+let connectSrc = "'self'";
+if (supabaseUrl) {
+  try {
+    const host = new URL(supabaseUrl).host;
+    connectSrc += ` ${supabaseUrl} wss://${host}`;
+  } catch {
+    // Invalid URL, skip
+  }
+}
+
 const cspHeader = `
   default-src 'self';
   script-src 'self' 'unsafe-inline' 'unsafe-eval';
@@ -12,6 +23,7 @@ const cspHeader = `
   base-uri 'self';
   form-action 'self' https:;
   frame-ancestors 'none';
+  connect-src ${connectSrc};
   ${!isDev ? "upgrade-insecure-requests;" : ""}
 `;
 

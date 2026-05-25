@@ -1,11 +1,7 @@
 "use client";
 
 import Image from "next/image";
-
-const WHATSAPP_NUMBER = "541176753854";
-const WHATSAPP_MSG = encodeURIComponent(
-  "Hola El Legado, me gustaría obtener más información sobre sus servicios de catering."
-);
+import { WHATSAPP_NUMBER, WHATSAPP_MSG } from "@/lib/constants";
 
 function openWhatsApp() {
   window.open(
@@ -19,9 +15,18 @@ export default function Hero() {
   return (
     <section
       id="inicio"
-      className="min-h-screen flex flex-col justify-center items-center text-center px-6 pt-40 pb-20 relative overflow-hidden bg-fixed bg-center bg-cover"
-      style={{ backgroundImage: "url('/hero_catering.webp')" }}
+      className="min-h-screen flex flex-col justify-center items-center text-center px-6 pt-40 pb-20 relative overflow-hidden"
     >
+      <div className="absolute inset-0 -z-10">
+        <Image
+          src="/hero_catering.webp"
+          alt="Fondo de catering elegante"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+      </div>
       <div className="absolute inset-0 z-0 bg-cream/80 bg-gradient-to-b from-cream via-transparent to-cream" />
 
       <div className="fade-in max-w-4xl relative z-10">

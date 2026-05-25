@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { WHATSAPP_NUMBER } from "@/lib/constants";
 
 interface CMSConfig {
   colors: Record<string, string>;
@@ -212,7 +213,7 @@ export default function CMSPage() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">WhatsApp</label>
-              <input type="tel" value={config.contact.whatsapp || ""} onChange={(e) => setContact("whatsapp", e.target.value)} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder="541176753854" />
+              <input type="tel" value={config.contact.whatsapp || ""} onChange={(e) => setContact("whatsapp", e.target.value)} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder={WHATSAPP_NUMBER} />
             </div>
           </div>
         </div>

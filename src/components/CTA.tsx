@@ -1,9 +1,6 @@
 "use client";
 
-const WHATSAPP_NUMBER = "541176753854";
-const WHATSAPP_MSG = encodeURIComponent(
-  "Hola El Legado, me gustaría obtener más información sobre sus servicios de catering."
-);
+import { WHATSAPP_NUMBER, WHATSAPP_MSG } from "@/lib/constants";
 
 function openWhatsApp() {
   window.open(

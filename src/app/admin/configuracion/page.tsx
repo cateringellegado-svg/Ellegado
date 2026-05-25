@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { WHATSAPP_NUMBER } from "@/lib/constants";
 
 interface ConfigForm {
   salado: number;
@@ -18,7 +19,7 @@ const DEFAULT_CONFIG: ConfigForm = {
   dulce: 10000,
   staff: 6000,
   decor: 4000,
-  whatsapp: "541176753854",
+  whatsapp: WHATSAPP_NUMBER,
   min_invitados: 20,
   max_invitados: 300,
 };
@@ -96,7 +97,7 @@ export default function ConfiguracionPage() {
           <h2 className="font-serif text-2xl text-dark-elegant mb-6">Configuración WhatsApp</h2>
           <div>
             <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Número de Teléfono</label>
-            <input type="text" value={form.whatsapp} onChange={(e) => update("whatsapp", e.target.value)} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" placeholder="541176753854" />
+            <input type="text" value={form.whatsapp} onChange={(e) => update("whatsapp", e.target.value)} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" placeholder={WHATSAPP_NUMBER} />
           </div>
         </div>
 

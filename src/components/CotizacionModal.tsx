@@ -3,8 +3,7 @@
 import { useState, useCallback } from "react";
 import type { CotizacionSeleccion } from "@/types";
 import { useToast } from "./Toast";
-
-const WHATSAPP_NUMBER = "541176753854";
+import { WHATSAPP_NUMBER } from "@/lib/constants";
 const WHATSAPP_MSG_PREFIX =
   "Hola El Legado, me gustaría solicitar una cotización de catering.";
 

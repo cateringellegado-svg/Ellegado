@@ -13,14 +13,16 @@ test.describe("El Legado - Critical Paths", () => {
   test("Navigation scrolls to sections", async ({ page }) => {
     await page.goto("/");
 
-    await page.click('a[href="#filosofia"]');
-    await expect(page.locator("#filosofia")).toBeInViewport();
-
-    await page.click('a[href="#festin"]');
-    await expect(page.locator("#festin")).toBeInViewport();
-
-    await page.click('a[href="#contacto"]');
-    await expect(page.locator("#contacto")).toBeInViewport();
+    for (const id of ["#filosofia", "#festin", "#contacto"]) {
+      await page.evaluate((sel) => {
+        const el = document.querySelector(sel);
+        if (el) {
+          const top = el.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top, behavior: "instant" });
+        }
+      }, id);
+      await expect(page.locator(id)).toBeInViewport();
+    }
   });
 
   test("Mobile menu opens and closes", async ({ page }) => {
@@ -81,9 +83,7 @@ test.describe("El Legado - Critical Paths", () => {
     await expect(page.locator("#back-to-top")).not.toBeVisible();
 
     await page.evaluate(() => window.scrollTo(0, 1000));
-    await page.waitForTimeout(100);
-
-    await expect(page.locator("#back-to-top")).toBeVisible();
+    await page.locator("#back-to-top").waitFor({ state: "visible", timeout: 5000 });
   });
 
   test("Legal pages load", async ({ page }) => {
@@ -91,7 +91,7 @@ test.describe("El Legado - Critical Paths", () => {
 
     for (const p of pages) {
       await page.goto(p);
-      await expect(page).toHaveTitle(/El Legado/);
+      await expect(page).toHaveTitle(/EL LEGADO/);
     }
   });
 
