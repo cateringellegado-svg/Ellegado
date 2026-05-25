@@ -146,12 +146,14 @@ export default function CMSPage() {
     setSaving(false);
   };
 
+  const sanitize = (val: string) => val.replace(/<[^>]*>/g, "").replace(/[<>]/g, "");
+
   const setColor = (key: string, val: string) => setConfig((p) => ({ ...p, colors: { ...p.colors, [key]: val } }));
-  const setHero = (key: string, val: string) => setConfig((p) => ({ ...p, hero: { ...p.hero, [key]: val } }));
-  const setAbout = (key: string, val: string) => setConfig((p) => ({ ...p, about: { ...p.about, [key]: val } }));
-  const setFestin = (key: string, val: string) => setConfig((p) => ({ ...p, festin: { ...p.festin, [key]: val } }));
-  const setSocial = (key: string, val: string) => setConfig((p) => ({ ...p, social: { ...p.social, [key]: val } }));
-  const setContact = (key: string, val: string) => setConfig((p) => ({ ...p, contact: { ...p.contact, [key]: val } }));
+  const setHero = (key: string, val: string) => setConfig((p) => ({ ...p, hero: { ...p.hero, [key]: sanitize(val) } }));
+  const setAbout = (key: string, val: string) => setConfig((p) => ({ ...p, about: { ...p.about, [key]: sanitize(val) } }));
+  const setFestin = (key: string, val: string) => setConfig((p) => ({ ...p, festin: { ...p.festin, [key]: sanitize(val) } }));
+  const setSocial = (key: string, val: string) => setConfig((p) => ({ ...p, social: { ...p.social, [key]: sanitize(val) } }));
+  const setContact = (key: string, val: string) => setConfig((p) => ({ ...p, contact: { ...p.contact, [key]: sanitize(val) } }));
   const toggleSection = (key: string) => setConfig((p) => ({ ...p, sections: { ...p.sections, [key]: !p.sections[key] } }));
 
   return (

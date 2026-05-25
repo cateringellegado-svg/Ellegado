@@ -86,6 +86,8 @@ const NAV_ITEMS = [
   },
 ];
 
+const IDLE_TIMEOUT = 15 * 60 * 1000;
+
 export default function AdminLayout({
   children,
 }: {
@@ -94,9 +96,28 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [checking, setChecking] = useState(true);
+  const [idleWarning, setIdleWarning] = useState(false);
 
   useEffect(() => {
     let mounted = true;
+    let idleTimer: ReturnType<typeof setTimeout>;
+    let warningTimer: ReturnType<typeof setTimeout>;
+
+    const resetIdle = () => {
+      clearTimeout(idleTimer);
+      clearTimeout(warningTimer);
+      setIdleWarning(false);
+      if (pathname === "/admin/login") return;
+      warningTimer = setTimeout(() => setIdleWarning(true), IDLE_TIMEOUT - 60_000);
+      idleTimer = setTimeout(async () => {
+        await supabase?.auth.signOut();
+        if (mounted) router.push("/admin/login");
+      }, IDLE_TIMEOUT);
+    };
+
+    const events = ["mousedown", "keydown", "touchstart", "scroll"];
+    events.forEach((e) => window.addEventListener(e, resetIdle, { passive: true }));
+    resetIdle();
 
     async function checkAuth() {
       if (pathname === "/admin/login") {
@@ -134,6 +155,9 @@ export default function AdminLayout({
     return () => {
       mounted = false;
       clearInterval(refreshInterval);
+      clearTimeout(idleTimer);
+      clearTimeout(warningTimer);
+      events.forEach((e) => window.removeEventListener(e, resetIdle));
       listener?.subscription.unsubscribe();
     };
   }, [pathname, router]);
@@ -229,6 +253,13 @@ export default function AdminLayout({
       </aside>
 
       <main className="flex-1 ml-64 p-8">{children}</main>
+
+      {idleWarning && (
+        <div className="fixed bottom-6 right-6 z-50 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-5 py-4 shadow-xl max-w-xs animate-in slide-in-from-bottom-2">
+          <p className="text-sm font-medium">¿Sigues ahí?</p>
+          <p className="text-xs mt-1 text-amber-600">Tu sesión se cerrará por inactividad en menos de 1 minuto.</p>
+        </div>
+      )}
     </div>
   );
 }

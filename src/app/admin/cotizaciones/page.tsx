@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import Pagination from "@/components/Pagination";
 
@@ -88,18 +88,51 @@ export default function CotizacionesPage() {
     load(filter, page);
   };
 
+  const exportCSV = () => {
+    const headers = ["Fecha", "Cliente", "Email", "Teléfono", "Tipo Evento", "Invitados", "Presupuesto", "Estado", "Servicios"];
+    const rows = data.map((c) => [
+      formatDate(c.created_at),
+      c.cliente_nombre || "",
+      c.cliente_email || "",
+      c.cliente_telefono || "",
+      c.tipo_evento || "",
+      String(c.num_invitados ?? ""),
+      String(c.presupuesto ?? ""),
+      c.estado,
+      c.servicios || "",
+    ]);
+    const csv = [headers.join(","), ...rows.map((r) => r.map((v) => `"${v.replace(/"/g, '""')}"`).join(","))].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cotizaciones_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
         <h1 className="font-serif text-4xl text-dark-elegant">Cotizaciones</h1>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="bg-white border border-brand-copper/20 rounded-lg px-4 py-2 text-sm"
-        >
-          <option value="">Todos los estados</option>
-          {ESTADOS.map((e) => <option key={e} value={e}>{e.charAt(0).toUpperCase() + e.slice(1)}</option>)}
-        </select>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={exportCSV}
+            disabled={data.length === 0}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            Exportar CSV
+          </button>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="bg-white border border-brand-copper/20 rounded-lg px-4 py-2 text-sm"
+          >
+            <option value="">Todos los estados</option>
+            {ESTADOS.map((e) => <option key={e} value={e}>{e.charAt(0).toUpperCase() + e.slice(1)}</option>)}
+          </select>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-lg border border-brand-copper/10 overflow-hidden">

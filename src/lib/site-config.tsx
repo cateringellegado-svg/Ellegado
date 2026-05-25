@@ -164,6 +164,10 @@ function tryParse(val: string | null, fallback: unknown) {
   try { return JSON.parse(val); } catch { return fallback; }
 }
 
+export function sanitizeText(val: string): string {
+  return val.replace(/<[^>]*>/g, "").replace(/[<>]/g, "");
+}
+
 export async function fetchSiteConfigFromDB(): Promise<SiteConfig> {
   if (!supabase) return DEFAULT_SITE_CONFIG;
   const { data } = await supabase.from("site_config").select("*");
