@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import type { Producto, CotizacionSeleccion } from "@/types";
-import { fetchProductsByCategory } from "@/lib/supabase";
-import { useToast } from "./Toast";
+import { fetchProductsByCategory, supabase } from "@/lib/supabase";
 import CotizacionModal from "./CotizacionModal";
+import { useToast } from "./Toast";
+import { useSiteConfig } from "@/lib/site-config";
 
 const FALLBACK_CLASICOS: Producto[] = [
   { id: "canapes", nombre: "Canapés", descripcion: "Pan de chips con variantes: pollo pimentón, pollo ciboulette, huevo y tomate cherry", precio: 500, unidad: "unidad", minimo: 50, incremento: 10 },
@@ -54,6 +55,7 @@ function getProductCategory(
 
 export default function Festin() {
   const { showToast } = useToast();
+  const siteConfig = useSiteConfig();
   const [activeTab, setActiveTab] = useState<TabKey>("clasica");
   const [clasicos, setClasicos] = useState<Producto[]>([]);
   const [premium, setPremium] = useState<Producto[]>([]);
@@ -329,13 +331,14 @@ export default function Festin() {
         <span className="text-brand-copper font-medium tracking-[0.4em] uppercase text-xs mb-4 block">
           Propuesta Gastronómica
         </span>
-        <h2 className="font-serif text-5xl md:text-6xl mb-6">El Festín</h2>
+        <h2 className="font-serif text-5xl md:text-6xl mb-6">{siteConfig.festin.title}</h2>
+        <p className="text-lg md:text-xl text-slate-500 font-light italic max-w-2xl mx-auto mb-12">{siteConfig.festin.subtitle}</p>
         <div className="w-24 h-px bg-gradient-to-r from-transparent via-brand-copper to-transparent mx-auto mb-12" />
       </div>
 
       <div className="mb-16 rounded-3xl overflow-hidden h-[400px] shadow-2xl border border-brand-copper/10">
         <Image
-          src="/gourmet_canapes.webp"
+          src={siteConfig.images.festin || "/gourmet_canapes.webp"}
           alt="Variedad de Canapés Gourmet"
           width={1200}
           height={400}

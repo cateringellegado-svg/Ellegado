@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { WHATSAPP_NUMBER, WHATSAPP_MSG } from "@/lib/constants";
+import { useSiteConfig } from "@/lib/site-config";
 
 function openWhatsApp() {
   window.open(
@@ -12,6 +13,11 @@ function openWhatsApp() {
 }
 
 export default function Hero() {
+  const config = useSiteConfig();
+
+  const heroImage = config.images.hero || "/hero_catering.webp";
+  const heroAlt = config.images.hero ? "Hero" : "Fondo de catering elegante";
+
   return (
     <section
       id="inicio"
@@ -19,8 +25,8 @@ export default function Hero() {
     >
       <div className="absolute inset-0 -z-10">
         <Image
-          src="/hero_catering.webp"
-          alt="Fondo de catering elegante"
+          src={heroImage}
+          alt={heroAlt}
           fill
           priority
           sizes="100vw"
@@ -32,7 +38,7 @@ export default function Hero() {
       <div className="fade-in max-w-4xl relative z-10">
         <div className="mb-12 flex flex-col items-center">
           <Image
-            src="/logo.webp"
+            src={config.images.logo || "/logo.webp"}
             alt="Logo EL LEGADO"
             width={320}
             height={120}
@@ -42,45 +48,34 @@ export default function Hero() {
         </div>
 
         <h1 className="font-serif text-5xl md:text-7xl font-light mb-6 leading-tight">
-          Haz Eterno{" "}
+          {config.hero.title}{" "}
           <br />
           <span className="italic text-brand-copper text-gradient font-medium">
-            Cada Momento
+            {config.hero.subtitle}
           </span>
         </h1>
 
         <p className="text-lg md:text-xl text-slate-500 font-light mb-12 max-w-2xl mx-auto italic">
-          Servicio de catering premium para eventos inolvidables, con la
-          cercanía que tú te mereces.
+          {config.hero.tagline}
         </p>
 
         <div className="flex justify-center gap-8 mb-12 pb-8 border-b border-brand-copper/20 max-w-lg mx-auto opacity-80">
-          <div className="text-center">
-            <span className="block font-serif text-3xl text-brand-copper font-bold">
-              100+
-            </span>
-            <span className="text-[10px] uppercase tracking-widest text-slate-600">
-              Eventos
-            </span>
-          </div>
-          <div className="w-px bg-brand-copper/20" />
-          <div className="text-center">
-            <span className="block font-serif text-3xl text-brand-copper font-bold">
-              5
-            </span>
-            <span className="text-[10px] uppercase tracking-widest text-slate-500">
-              Años Exp.
-            </span>
-          </div>
-          <div className="w-px bg-brand-copper/20" />
-          <div className="text-center">
-            <span className="block font-serif text-3xl text-brand-copper font-bold">
-              100%
-            </span>
-            <span className="text-[10px] uppercase tracking-widest text-slate-500">
-              Dedicación
-            </span>
-          </div>
+          {config.hero.stats.map((stat, i) => (
+            <div key={i} className="text-center">
+              <span className="block font-serif text-3xl text-brand-copper font-bold">
+                {stat.value}
+              </span>
+              <span className="text-[10px] uppercase tracking-widest text-slate-600">
+                {stat.label}
+              </span>
+            </div>
+          )).reduce((acc, elem, i, arr) => {
+            acc.push(elem);
+            if (i < arr.length - 1) {
+              acc.push(<div key={`sep-${i}`} className="w-px bg-brand-copper/20" />);
+            }
+            return acc;
+          }, [] as React.ReactNode[])}
         </div>
 
         <button

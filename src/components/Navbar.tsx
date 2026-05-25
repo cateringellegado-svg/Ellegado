@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { useSiteConfig } from "@/lib/site-config";
 
 const NAV_LINKS = [
   { href: "#inicio", label: "Inicio" },
@@ -10,6 +11,7 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
+  const config = useSiteConfig();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
