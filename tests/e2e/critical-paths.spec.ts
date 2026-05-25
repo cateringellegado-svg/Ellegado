@@ -122,6 +122,7 @@ test.describe("El Legado - Critical Paths", () => {
     await page.goto("/");
 
     const schemas = page.locator('script[type="application/ld+json"]');
-    await expect(schemas).toHaveCount({ min: 2 });
+    const count = await schemas.count();
+    expect(count).toBeGreaterThanOrEqual(2);
   });
 });
