@@ -49,7 +49,7 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         <a
-          href={links[0]?.href || "#hero"}
+          href={links[0]?.href || "#inicio"}
           className="flex items-center gap-3 group"
           aria-label="Volver al inicio"
         >
@@ -66,7 +66,7 @@ export default function Navbar() {
         </a>
 
         <div className="flex items-center space-x-4 md:space-x-8 text-[10px] md:text-xs font-medium tracking-[0.2em] uppercase">
-          {links.slice(0, 3).map((link) => (
+          {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
@@ -75,12 +75,6 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
-          <a
-            href="#contacto"
-            className="px-3 py-2 md:px-4 md:py-2 bg-brand-copper text-white rounded-sm hover:bg-brand-copper-light transition-all shadow-md"
-          >
-            Contacto
-          </a>
 
           <button
             onClick={toggleMenu}
@@ -112,23 +106,16 @@ export default function Navbar() {
         }`}
         onKeyDown={handleKeyDown}
       >
-        {links.map((link) => (
-          <a
-            key={link.href}
-            href={link.href}
-            className="mobile-link hover:text-brand-copper"
-            onClick={closeMenu}
-          >
-            {link.label}
-          </a>
-        ))}
-        <a
-          href="#contacto"
-          className="mobile-link px-4 py-2 bg-brand-copper text-white rounded-full"
-          onClick={closeMenu}
-        >
-          Contacto
-        </a>
+          {links.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="mobile-link hover:text-brand-copper"
+              onClick={closeMenu}
+            >
+              {link.label}
+            </a>
+          ))}
 
         <button
           onClick={closeMenu}

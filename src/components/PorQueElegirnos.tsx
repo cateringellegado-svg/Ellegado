@@ -22,7 +22,7 @@ export default function PorQueElegirnos() {
   const features = config.features;
 
   return (
-    <section className="py-24 bg-white relative">
+    <section id="elegirnos" className="py-24 bg-white relative">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <span className="text-brand-copper font-medium tracking-[0.4em] uppercase text-xs mb-4 block">

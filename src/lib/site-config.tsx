@@ -259,11 +259,12 @@ const DEFAULT_COMING_SOON: SiteComingSoon = {
 const DEFAULT_NAVBAR: SiteNavbar = {
   logoUrl: "/logo.webp",
   links: [
-    { label: "Inicio", href: "#hero" },
-    { label: "Nosotros", href: "#about" },
+    { label: "Inicio", href: "#inicio" },
+    { label: "Elegirnos", href: "#elegirnos" },
+    { label: "Filosofía", href: "#filosofia" },
     { label: "Festín", href: "#festin" },
-    { label: "Galería", href: "#gallery" },
-    { label: "Contacto", href: "#contact" },
+    { label: "Galería", href: "#galeria" },
+    { label: "Contacto", href: "#contacto" },
   ],
 };
 
