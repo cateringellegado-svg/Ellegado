@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { WHATSAPP_NUMBER } from "@/lib/constants";
 
@@ -28,43 +28,59 @@ export default function ConfiguracionPage() {
   const [form, setForm] = useState<ConfigForm>(DEFAULT_CONFIG);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     async function load() {
-      if (!supabase) return;
-      const { data } = await supabase.from("site_config").select("*");
-      if (!data) return;
-      const config: Record<string, string> = {};
-      data.forEach((c: { key: string; value: string }) => { config[c.key] = c.value; });
-      const conf = config.config ? JSON.parse(config.config) : {};
-      setForm({
-        salado: conf.salado ?? DEFAULT_CONFIG.salado,
-        dulce: conf.dulce ?? DEFAULT_CONFIG.dulce,
-        staff: conf.staff ?? DEFAULT_CONFIG.staff,
-        decor: conf.decor ?? DEFAULT_CONFIG.decor,
-        whatsapp: conf.whatsapp ?? DEFAULT_CONFIG.whatsapp,
-        min_invitados: conf.min_invitados ?? DEFAULT_CONFIG.min_invitados,
-        max_invitados: conf.max_invitados ?? DEFAULT_CONFIG.max_invitados,
-      });
+      if (!supabase) { if (mountedRef.current) setLoading(false); return; }
+      try {
+        const { data } = await supabase.from("site_config").select("*");
+        if (!data) return;
+        const config: Record<string, string> = {};
+        data.forEach((c: { key: string; value: string }) => { config[c.key] = c.value; });
+        const conf = config.config ? JSON.parse(config.config) : {};
+        setForm({
+          salado: conf.salado ?? DEFAULT_CONFIG.salado,
+          dulce: conf.dulce ?? DEFAULT_CONFIG.dulce,
+          staff: conf.staff ?? DEFAULT_CONFIG.staff,
+          decor: conf.decor ?? DEFAULT_CONFIG.decor,
+          whatsapp: conf.whatsapp ?? DEFAULT_CONFIG.whatsapp,
+          min_invitados: conf.min_invitados ?? DEFAULT_CONFIG.min_invitados,
+          max_invitados: conf.max_invitados ?? DEFAULT_CONFIG.max_invitados,
+        });
+      } catch (e) {
+        console.error("Error loading config:", e);
+      } finally {
+        if (mountedRef.current) setLoading(false);
+      }
     }
     load();
+    return () => { mountedRef.current = false; };
   }, []);
 
   const saveConfig = async () => {
     if (!supabase) return;
     setSaving(true);
     setMsg("");
-    const configValue = JSON.stringify(form);
-    const { error } = await supabase.from("site_config").upsert(
-      { key: "config", value: configValue },
-      { onConflict: "key" }
-    );
-    if (error) {
-      setMsg("Error al guardar: " + error.message);
-    } else {
-      setMsg("Configuración guardada correctamente");
+    try {
+      const configValue = JSON.stringify(form);
+      const { error } = await supabase.from("site_config").upsert(
+        { key: "config", value: configValue },
+        { onConflict: "key" }
+      );
+      if (error) {
+        setMsg("Error al guardar: " + error.message);
+      } else {
+        setMsg("Configuración guardada correctamente");
+      }
+    } catch (e) {
+      console.error("Error saving config:", e);
+      setMsg("Error al guardar configuración");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const update = (key: keyof ConfigForm, value: string | number) => {
@@ -75,6 +91,9 @@ export default function ConfiguracionPage() {
     <>
       <h1 className="font-serif text-4xl text-dark-elegant mb-8">Configuración</h1>
 
+      {loading ? (
+        <div className="animate-pulse bg-slate-200 rounded-2xl p-8 h-64" />
+      ) : (
       <div className="space-y-6">
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
           <h2 className="font-serif text-2xl text-dark-elegant mb-6">Precios por Persona</h2>
@@ -120,6 +139,7 @@ export default function ConfiguracionPage() {
         </button>
         {msg && <p className={`text-sm ${msg.includes("Error") ? "text-red-500" : "text-green-600"}`}>{msg}</p>}
       </div>
+      )}
     </>
   );
 }

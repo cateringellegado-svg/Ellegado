@@ -37,15 +37,19 @@ export async function uploadMenuImage(file: File): Promise<string | null> {
   return publicUrl;
 }
 
+function getFileNameFromUrl(url: string): string {
+  return url.split("/").pop()?.split("?")[0] || "";
+}
+
 export async function deleteMenuImage(url: string): Promise<void> {
   if (!supabase || !url) return;
-  const fileName = url.split("/").pop();
+  const fileName = getFileNameFromUrl(url);
   if (!fileName) return;
   await supabase.storage.from(MENU_BUCKET).remove([fileName]);
 }
 
 export function getImageName(url: string): string {
-  return url.split("/").pop() || "";
+  return getFileNameFromUrl(url);
 }
 
 export async function uploadSiteImage(file: File): Promise<string | null> {
@@ -72,7 +76,7 @@ export async function uploadSiteImage(file: File): Promise<string | null> {
 
 export async function deleteSiteImage(url: string): Promise<void> {
   if (!supabase || !url) return;
-  const fileName = url.split("/").pop();
+  const fileName = getFileNameFromUrl(url);
   if (!fileName) return;
   await supabase.storage.from(SITE_BUCKET).remove([fileName]);
 }

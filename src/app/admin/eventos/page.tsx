@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 
 interface Evento {
@@ -43,16 +43,31 @@ export default function EventosPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
 
   const load = useCallback(async () => {
-    if (!supabase) return;
-    const { data: result } = await supabase.from("eventos").select("*").order("fecha", { ascending: false, nullsFirst: false });
-    setData(result || []);
+    if (!supabase) { if (mountedRef.current) setLoading(false); return; }
+    try {
+      const { data: result } = await supabase.from("eventos").select("*").order("fecha", { ascending: false, nullsFirst: false });
+      setData(result || []);
+    } catch (e) {
+      console.error("Error loading eventos:", e);
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    mountedRef.current = true;
+    load();
+    return () => { mountedRef.current = false; };
+  }, [load]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
-  const openNew = () => { setEditId(null); setForm(emptyForm); setShowModal(true); };
+  const openNew = () => { setEditId(null); setForm(emptyForm); setShowModal(true); setMsg(""); };
 
   const openEdit = (e: Evento) => {
     setEditId(e.id);
@@ -73,10 +88,13 @@ export default function EventosPage() {
     if (!supabase) return;
     setSaving(true);
     const payload = { ...form, fecha: form.fecha || null };
-    if (editId) {
-      await supabase.from("eventos").update(payload).eq("id", editId);
-    } else {
-      await supabase.from("eventos").insert(payload);
+    const { error } = editId
+      ? await supabase.from("eventos").update(payload).eq("id", editId)
+      : await supabase.from("eventos").insert(payload);
+    if (error) {
+      setMsg("Error al guardar: " + error.message);
+      setSaving(false);
+      return;
     }
     setSaving(false);
     setShowModal(false);
@@ -85,12 +103,20 @@ export default function EventosPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("¿Eliminar este evento?")) return;
-    await supabase?.from("eventos").delete().eq("id", id);
+    const { error } = await supabase?.from("eventos").delete().eq("id", id) ?? {};
+    if (error) {
+      setMsg("Error al eliminar: " + error.message);
+      return;
+    }
     load();
   };
 
   const updateEstado = async (id: string, estado: string) => {
-    await supabase?.from("eventos").update({ estado }).eq("id", id);
+    const { error } = await supabase?.from("eventos").update({ estado }).eq("id", id) ?? {};
+    if (error) {
+      setMsg("Error al actualizar: " + error.message);
+      return;
+    }
     load();
   };
 
@@ -121,6 +147,16 @@ export default function EventosPage() {
         </button>
       </div>
 
+      {msg && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-6" role="alert">
+          {msg}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="animate-pulse bg-slate-200 rounded-2xl p-8 h-64" />
+      ) : (
+      <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-brand-copper/10">
           <p className="text-2xl font-serif text-dark-elegant">{stats.total}</p>
@@ -143,7 +179,7 @@ export default function EventosPage() {
       {Object.entries(groupedByMonth).map(([month, eventos]) => (
         <div key={month} className="mb-8">
           <h2 className="font-serif text-xl text-dark-elegant mb-4">{month}</h2>
-          <div className="bg-white rounded-2xl shadow-lg border border-brand-copper/10 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg border border-brand-copper/10 overflow-x-auto">
             <table className="w-full">
               <thead className="bg-cream border-b border-brand-copper/10">
                 <tr>
@@ -194,7 +230,7 @@ export default function EventosPage() {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" role="dialog" aria-modal="true" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-serif text-2xl text-dark-elegant">{editId ? "Editar Evento" : "Nuevo Evento"}</h2>
@@ -255,6 +291,8 @@ export default function EventosPage() {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </>
   );

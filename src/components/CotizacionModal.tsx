@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { CotizacionSeleccion } from "@/types";
 import { useToast } from "./Toast";
-import { WHATSAPP_NUMBER } from "@/lib/constants";
+import { getWhatsAppUrl } from "@/lib/constants";
 const WHATSAPP_MSG_PREFIX =
   "Hola El Legado, me gustaría solicitar una cotización de catering.";
 
@@ -46,27 +46,33 @@ export default function CotizacionModal({
       const mensajePersonal = `Mi nombre es ${nombre}. Quedo atento a su respuesta para coordinar los detalles.`;
       const mensaje = `${WHATSAPP_MSG_PREFIX}\n\n*Productos solicitados:*\n${productosTexto}\n\n*Total estimado:* ${totalFormat}\n\n${mensajePersonal}`;
 
-      const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
+      const waUrl = getWhatsAppUrl(mensaje);
 
-      const res = await fetch("/api/cotizaciones", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          total_unidades: productos.reduce((sum, p) => sum + p.cantidad, 0),
-          productos: productos.map((p) => ({
-            nombre: p.nombre,
-            cantidad: p.cantidad,
-          })),
-          total,
-          cliente_nombre: nombre,
-          cliente_telefono: telefono,
-          cliente_email: email || "",
-        }),
-      });
+      try {
+        const res = await fetch("/api/cotizaciones", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            total_unidades: productos.reduce((sum, p) => sum + p.cantidad, 0),
+            productos: productos.map((p) => ({
+              nombre: p.nombre,
+              cantidad: p.cantidad,
+            })),
+            total,
+            cliente_nombre: nombre,
+            cliente_telefono: telefono,
+            cliente_email: email || "",
+          }),
+        });
 
-      if (!res.ok) {
-        const err = await res.json();
-        showToast(err.error || "Error al enviar cotización", "error");
+        if (!res.ok) {
+          const err = await res.json();
+          showToast(err.error || "Error al enviar cotización", "error");
+          setSubmitting(false);
+          return;
+        }
+      } catch {
+        showToast("Error de red. Verificá tu conexión e intentá de nuevo.", "error");
         setSubmitting(false);
         return;
       }
@@ -79,10 +85,22 @@ export default function CotizacionModal({
     [cotizacion, total, nombre, telefono, email, onClose, showToast]
   );
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Formulario de cotización"
       className="fixed inset-0 bg-dark-elegant/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();

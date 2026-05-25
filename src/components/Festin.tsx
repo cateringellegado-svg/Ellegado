@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Image from "next/image";
 import type { Producto, CotizacionSeleccion } from "@/types";
 import { fetchProductsByCategory, supabase } from "@/lib/supabase";
@@ -61,6 +61,8 @@ export default function Festin() {
   const [premium, setPremium] = useState<Producto[]>([]);
   const [dulces, setDulces] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const mounted = useRef(true);
   const [cotizacion, setCotizacion] = useState<CotizacionSeleccion>(() => {
     try {
       return JSON.parse(localStorage.getItem("legado_cotizacion") || "{}");
@@ -78,19 +80,33 @@ export default function Festin() {
   });
 
   useEffect(() => {
+    mounted.current = true;
     async function loadProducts() {
       setLoading(true);
-      const [clasicosData, premiumData, dulcesData] = await Promise.all([
-        fetchProductsByCategory("clasica"),
-        fetchProductsByCategory("premium"),
-        fetchProductsByCategory("dulce"),
-      ]);
-      setClasicos(clasicosData ?? FALLBACK_CLASICOS);
-      setPremium(premiumData ?? []);
-      setDulces(dulcesData ?? FALLBACK_DULCES);
-      setLoading(false);
+      try {
+        const [clasicosData, premiumData, dulcesData] = await Promise.all([
+          fetchProductsByCategory("clasica"),
+          fetchProductsByCategory("premium"),
+          fetchProductsByCategory("dulce"),
+        ]);
+        if (!mounted.current) return;
+        setClasicos(clasicosData ?? FALLBACK_CLASICOS);
+        setPremium(premiumData ?? []);
+        setDulces(dulcesData ?? FALLBACK_DULCES);
+        setLoadError(false);
+      } catch {
+        if (!mounted.current) return;
+        setClasicos(FALLBACK_CLASICOS);
+        setDulces(FALLBACK_DULCES);
+        setLoadError(true);
+      } finally {
+        if (mounted.current) setLoading(false);
+      }
     }
     loadProducts();
+    return () => {
+      mounted.current = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -347,11 +363,15 @@ export default function Festin() {
         />
       </div>
 
-      <div className="flex flex-wrap justify-center gap-3 mb-12">
+      <div className="flex flex-wrap justify-center gap-3 mb-12" role="tablist" aria-label="Categorías de menú">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             type="button"
+            role="tab"
+            aria-selected={activeTab === tab.key}
+            aria-controls={`tabpanel-${tab.key}`}
+            id={`tab-${tab.key}`}
             onClick={() => setActiveTab(tab.key)}
             className={`px-6 py-3 rounded-full transition-all duration-300 shadow-md font-semibold cursor-pointer ${
               activeTab === tab.key
@@ -371,9 +391,20 @@ export default function Festin() {
             <p className="text-slate-500 text-sm">Cargando productos...</p>
           </div>
         </div>
-      ) : (
+      ) : loadError ? (
+        <div className="text-center py-8 mb-12 bg-amber-50 border border-amber-200 rounded-2xl px-6">
+          <p className="text-amber-700 text-sm font-medium">
+            No se pudieron cargar todos los productos desde el servidor. Mostrando productos por defecto.
+          </p>
+        </div>
+      ) : null}
+
+      {!loading && (
         <>
           <div
+            role="tabpanel"
+            aria-labelledby={`tab-${activeTab}`}
+            id={`tabpanel-${activeTab}`}
             className={`rounded-3xl p-8 mb-12 ${
               isPremiumTab
                 ? "bg-gradient-to-br from-dark-elegant to-slate-900 border border-brand-copper/30"

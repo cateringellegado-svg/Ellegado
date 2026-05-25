@@ -12,6 +12,8 @@ const FALLBACK_IMAGES = [
   "/event_vibe.webp",
 ];
 
+const isUnique = (arr: string[]) => new Set(arr).size === arr.length;
+
 const FALLBACK_ALT = [
   "Evento al aire libre",
   "Detalles de mesa",
@@ -41,7 +43,7 @@ export default function Gallery() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {images.map((src, i) => (
             <div
-              key={`${src}-${i}`}
+              key={isUnique(images) ? src : i}
               className="rounded-2xl overflow-hidden shadow-lg h-64 md:h-80 group"
             >
               <Image

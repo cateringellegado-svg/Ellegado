@@ -47,7 +47,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (pathname === "/admin/login") return;
       warningTimer = setTimeout(() => setIdleWarning(true), IDLE_TIMEOUT - 60_000);
       idleTimer = setTimeout(async () => {
-        await supabase?.auth.signOut();
+        try {
+          await supabase?.auth.signOut();
+        } catch (e) {
+          console.error("Error signing out on idle:", e);
+        }
         if (mounted) router.push("/admin/login");
       }, IDLE_TIMEOUT);
     };
@@ -57,14 +61,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     resetIdle();
 
     async function checkAuth() {
-      if (pathname === "/admin/login") {
+      try {
+        if (pathname === "/admin/login") {
+          if (mounted) setChecking(false);
+          return;
+        }
+        if (!supabase) { router.push("/admin/login"); return; }
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session && mounted) router.push("/admin/login");
+      } catch (e) {
+        console.error("Error checking auth:", e);
+      } finally {
         if (mounted) setChecking(false);
-        return;
       }
-      if (!supabase) { router.push("/admin/login"); return; }
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session && mounted) router.push("/admin/login");
-      if (mounted) setChecking(false);
     }
     checkAuth();
 
@@ -73,9 +82,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }) ?? { data: null };
 
     const refreshInterval = setInterval(async () => {
-      if (pathname === "/admin/login") return;
-      const { data: { session } } = await supabase?.auth.getSession() ?? { data: { session: null } };
-      if (!session && mounted) router.push("/admin/login");
+      try {
+        if (pathname === "/admin/login") return;
+        const { data: { session } } = await supabase?.auth.getSession() ?? { data: { session: null } };
+        if (!session && mounted) router.push("/admin/login");
+      } catch (e) {
+        console.error("Error refreshing session:", e);
+      }
     }, 5 * 60 * 1000);
 
     return () => {
@@ -192,7 +205,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-8">{children}</main>
+        <main id="main-content" className="flex-1 p-4 md:p-8">{children}</main>
       </div>
 
       {idleWarning && (

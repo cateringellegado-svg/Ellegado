@@ -28,6 +28,8 @@ export default function CookieConsent() {
 
   return (
     <div
+      role="dialog"
+      aria-label="Consentimiento de cookies"
       className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-brand-copper/20 shadow-2xl transition-transform duration-500"
       style={{ transform: "translateY(0)" }}
     >

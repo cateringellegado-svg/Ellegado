@@ -1,15 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { WHATSAPP_NUMBER, WHATSAPP_MSG } from "@/lib/constants";
+import { getWhatsAppUrl } from "@/lib/constants";
 import { useSiteConfig } from "@/lib/site-config";
 
 function openWhatsApp() {
-  window.open(
-    `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`,
-    "_blank",
-    "noopener,noreferrer"
-  );
+  window.open(getWhatsAppUrl(), "_blank", "noopener,noreferrer");
 }
 
 export default function Hero() {

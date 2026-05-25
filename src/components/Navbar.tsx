@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useSiteConfig } from "@/lib/site-config";
 
@@ -9,12 +9,45 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const links = config.navbar.links;
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const menu = menuRef.current;
+    if (!menu) return;
+    const prevFocus = document.activeElement as HTMLElement | null;
+    const focusable = menu.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    first?.focus();
+    function trap(e: KeyboardEvent) {
+      if (e.key !== "Tab") return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last?.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first?.focus();
+        }
+      }
+    }
+    document.addEventListener("keydown", trap);
+    return () => {
+      document.removeEventListener("keydown", trap);
+      prevFocus?.focus();
+    };
+  }, [isOpen]);
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);
@@ -97,6 +130,7 @@ export default function Navbar() {
       </div>
 
       <div
+        ref={menuRef}
         id="mobile-menu"
         role="dialog"
         aria-modal="true"

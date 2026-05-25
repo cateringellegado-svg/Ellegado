@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import {
@@ -69,62 +69,73 @@ export default function AdminDashboard() {
   const [recent, setRecent] = useState<Cotizacion[]>([]);
   const [monthlyData, setMonthlyData] = useState<{ month: string; cotizaciones: number; ingresos: number }[]>([]);
   const [estadoData, setEstadoData] = useState<{ name: string; value: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     async function load() {
-      if (!supabase) return;
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      const startPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
-      const endPrevMonth = startOfMonth;
+      if (!supabase) { if (mountedRef.current) setLoading(false); return; }
+      try {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const startPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+        const endPrevMonth = startOfMonth;
 
-      const [
-        { data: monthCotiz },
-        { data: prevCotiz },
-        { data: eventos },
-        { data: clientes_count },
-        { data: recentCots },
-        { data: allCotiz },
-        { data: estadoCount },
-      ] = await Promise.all([
-        supabase.from("cotizaciones").select("presupuesto").gte("created_at", startOfMonth),
-        supabase.from("cotizaciones").select("presupuesto").gte("created_at", startPrevMonth).lt("created_at", endPrevMonth),
-        supabase.from("eventos").select("id").eq("estado", "confirmado"),
-        supabase.from("clientes").select("id", { count: "exact", head: true }),
-        supabase.from("cotizaciones").select("*").order("created_at", { ascending: false }).limit(5),
-        supabase.from("cotizaciones").select("created_at, presupuesto").gte("created_at", new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString()).order("created_at", { ascending: true }),
-        supabase.from("cotizaciones").select("estado"),
-      ]);
+        const [
+          { data: monthCotiz },
+          { data: prevCotiz },
+          { data: eventos },
+          { data: clientes_count },
+          { data: recentCots },
+          { data: allCotiz },
+          { data: estadoCount },
+        ] = await Promise.all([
+          supabase.from("cotizaciones").select("presupuesto").gte("created_at", startOfMonth),
+          supabase.from("cotizaciones").select("presupuesto").gte("created_at", startPrevMonth).lt("created_at", endPrevMonth),
+          supabase.from("eventos").select("id").eq("estado", "confirmado"),
+          supabase.from("clientes").select("id", { count: "exact", head: true }),
+          supabase.from("cotizaciones").select("*").order("created_at", { ascending: false }).limit(5),
+          supabase.from("cotizaciones").select("created_at, presupuesto").gte("created_at", new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString()).order("created_at", { ascending: true }),
+          supabase.from("cotizaciones").select("estado"),
+        ]);
 
-      setStats({
-        cotizaciones: (monthCotiz || []).length,
-        eventos: (eventos || []).length,
-        clientes: clientes_count?.length ?? 0,
-        ingresos: (monthCotiz || []).reduce((s, c) => s + (c.presupuesto || 0), 0),
-        cotizacionesPrev: (prevCotiz || []).length,
-        ingresosPrev: (prevCotiz || []).reduce((s, c) => s + (c.presupuesto || 0), 0),
-      });
-      setRecent(recentCots || []);
+        setStats({
+          cotizaciones: (monthCotiz || []).length,
+          eventos: (eventos || []).length,
+          clientes: clientes_count?.length ?? 0,
+          ingresos: (monthCotiz || []).reduce((s, c) => s + (c.presupuesto || 0), 0),
+          cotizacionesPrev: (prevCotiz || []).length,
+          ingresosPrev: (prevCotiz || []).reduce((s, c) => s + (c.presupuesto || 0), 0),
+        });
+        setRecent(recentCots || []);
 
-      // Monthly trend
-      const monthMap: Record<string, { cotizaciones: number; ingresos: number }> = {};
-      (allCotiz || []).forEach((c: { created_at: string; presupuesto: number | null }) => {
-        const m = new Date(c.created_at).toLocaleDateString("es-AR", { month: "short", year: "2-digit" });
-        if (!monthMap[m]) monthMap[m] = { cotizaciones: 0, ingresos: 0 };
-        monthMap[m].cotizaciones++;
-        monthMap[m].ingresos += c.presupuesto || 0;
-      });
-      setMonthlyData(Object.entries(monthMap).map(([month, d]) => ({ month, ...d })));
+        const monthMap: Record<string, { cotizaciones: number; ingresos: number }> = {};
+        (allCotiz || []).forEach((c: { created_at: string; presupuesto: number | null }) => {
+          const m = new Date(c.created_at).toLocaleDateString("es-AR", { month: "short", year: "2-digit" });
+          if (!monthMap[m]) monthMap[m] = { cotizaciones: 0, ingresos: 0 };
+          monthMap[m].cotizaciones++;
+          monthMap[m].ingresos += c.presupuesto || 0;
+        });
+        setMonthlyData(Object.entries(monthMap).map(([month, d]) => ({ month, ...d })));
 
-      // Estado distribution
-      const estadoMap: Record<string, number> = {};
-      (estadoCount || []).forEach((c: { estado: string }) => {
-        estadoMap[c.estado] = (estadoMap[c.estado] || 0) + 1;
-      });
-      setEstadoData(Object.entries(estadoMap).map(([name, value]) => ({ name, value })));
+        const estadoMap: Record<string, number> = {};
+        (estadoCount || []).forEach((c: { estado: string }) => {
+          estadoMap[c.estado] = (estadoMap[c.estado] || 0) + 1;
+        });
+        setEstadoData(Object.entries(estadoMap).map(([name, value]) => ({ name, value })));
+      } catch (e) {
+        console.error("Error loading dashboard data:", e);
+      } finally {
+        if (mountedRef.current) setLoading(false);
+      }
     }
     load();
+    return () => { mountedRef.current = false; };
   }, []);
+
+  const pctChange = (curr: number, prev: number) =>
+    prev > 0 ? ((curr / prev - 1) * 100).toFixed(0) : "+100";
 
   const cards = [
     {
@@ -134,13 +145,15 @@ export default function AdminDashboard() {
       sub: "vs mes anterior",
       icon: "document",
       href: "/admin/cotizaciones",
+      change: stats.cotizaciones - stats.cotizacionesPrev,
+      changePct: pctChange(stats.cotizaciones, stats.cotizacionesPrev),
     },
     {
       label: "Eventos",
       value: stats.eventos,
       sub: "Confirmados",
       icon: "calendar",
-      href: "/admin/cotizaciones",
+      href: "/admin/eventos",
     },
     {
       label: "Clientes",
@@ -155,9 +168,17 @@ export default function AdminDashboard() {
       prev: stats.ingresosPrev,
       sub: "vs mes anterior",
       icon: "money",
-      href: "/admin/configuracion",
+      href: "/admin/cotizaciones",
+      change: stats.ingresos - stats.ingresosPrev,
+      changePct: pctChange(stats.ingresos, stats.ingresosPrev),
     },
   ];
+
+  if (loading) {
+    return (
+      <div className="animate-pulse bg-slate-200 rounded-2xl p-8 h-64" />
+    );
+  }
 
   return (
     <>
@@ -190,9 +211,9 @@ export default function AdminDashboard() {
             <p className="text-3xl font-serif text-dark-elegant">{card.value}</p>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-xs text-slate-500">{card.sub}</p>
-              {card.prev !== undefined && (
-                <span className={`text-xs font-medium ${stats.cotizaciones >= stats.cotizacionesPrev ? "text-green-600" : "text-red-500"}`}>
-                  {card.prev > 0 ? ((stats.cotizaciones / card.prev - 1) * 100).toFixed(0) : "+100"}%
+              {card.change !== undefined && (
+                <span className={`text-xs font-medium ${card.change >= 0 ? "text-green-600" : "text-red-500"}`}>
+                  {card.changePct}%
                 </span>
               )}
             </div>

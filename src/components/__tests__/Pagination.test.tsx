@@ -12,27 +12,27 @@ describe("Pagination", () => {
 
   it("disables previous on first page", () => {
     render(<Pagination page={1} pageSize={10} total={50} onPageChange={() => {}} />);
-    const prev = screen.getByRole("button", { name: "Anterior" });
+    const prev = screen.getByRole("button", { name: "Página anterior" });
     expect(prev).toBeDisabled();
   });
 
   it("disables next on last page", () => {
     render(<Pagination page={5} pageSize={10} total={50} onPageChange={() => {}} />);
-    const next = screen.getByRole("button", { name: "Siguiente" });
+    const next = screen.getByRole("button", { name: "Página siguiente" });
     expect(next).toBeDisabled();
   });
 
   it("calls onPageChange when clicking next", async () => {
     const fn = vi.fn();
     render(<Pagination page={1} pageSize={10} total={50} onPageChange={fn} />);
-    await userEvent.click(screen.getByRole("button", { name: "Siguiente" }));
+    await userEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
     expect(fn).toHaveBeenCalledWith(2);
   });
 
   it("calls onPageChange when clicking previous", async () => {
     const fn = vi.fn();
     render(<Pagination page={3} pageSize={10} total={50} onPageChange={fn} />);
-    await userEvent.click(screen.getByRole("button", { name: "Anterior" }));
+    await userEvent.click(screen.getByRole("button", { name: "Página anterior" }));
     expect(fn).toHaveBeenCalledWith(2);
   });
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { uploadMenuImage, deleteMenuImage, validateImage } from "@/lib/storage";
 
@@ -35,6 +36,8 @@ export default function MenusPage() {
   const [showModal, setShowModal] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [notif, setNotif] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const quickFileRef = useRef<HTMLInputElement>(null);
@@ -48,12 +51,24 @@ export default function MenusPage() {
   };
 
   const load = async () => {
-    if (!supabase) return;
-    const { data } = await supabase.from("menu_items").select("*").order("orden");
-    setItems(data || []);
+    if (!supabase) { if (mountedRef.current) setLoading(false); return; }
+    try {
+      const { data } = await supabase.from("menu_items").select("*").order("orden");
+      setItems(data || []);
+    } catch (e) {
+      console.error("Error loading menus:", e);
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
   };
 
-  useEffect(() => { load(); }, []);
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    mountedRef.current = true;
+    load();
+    return () => { mountedRef.current = false; };
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const toggleActive = async (id: string, activo: boolean) => {
     await supabase?.from("menu_items").update({ activo: !activo }).eq("id", id);
@@ -175,6 +190,9 @@ export default function MenusPage() {
         </div>
       )}
 
+      {loading ? (
+        <div className="animate-pulse bg-slate-200 rounded-2xl p-8 h-64" />
+      ) : (
       <div className="grid grid-cols-1 gap-8">
         {grouped.map((group) => (
           <div key={group.key} className="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
@@ -186,7 +204,7 @@ export default function MenusPage() {
                     <div className="flex items-center gap-4 flex-1">
                       <div className="relative group/img w-16 h-16 rounded-lg overflow-hidden bg-white border border-brand-copper/10 shrink-0">
                         {item.imagen_url ? (
-                          <img src={item.imagen_url} alt={item.nombre} className="w-full h-full object-cover" />
+                          <Image src={item.imagen_url} alt={item.nombre} width={800} height={600} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-300">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -236,9 +254,10 @@ export default function MenusPage() {
           </div>
         ))}
       </div>
+      )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" role="dialog" aria-modal="true" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-serif text-2xl text-dark-elegant">{editing?.id ? "Editar Item" : "Agregar Item"}</h2>
@@ -273,7 +292,7 @@ export default function MenusPage() {
                     </div>
                   ) : editing?.imagen_url ? (
                     <div className="relative">
-                      <img src={editing.imagen_url} alt="Preview" className="w-full h-40 object-cover rounded-lg" />
+                      <Image src={editing.imagen_url} alt="Preview" width={800} height={600} className="w-full h-40 object-cover rounded-lg" />
                       <div className="absolute inset-0 bg-black/0 hover:bg-black/30 flex items-center justify-center gap-3 transition-all rounded-lg group">
                         <span className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">Click para cambiar</span>
                       </div>

@@ -24,6 +24,7 @@ export default function Pagination({ page, pageSize, total, onPageChange }: Pagi
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
+          aria-label="Página anterior"
           className="px-3 py-1.5 text-xs rounded-lg border border-brand-copper/20 text-slate-600 hover:bg-cream disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
         >
           Anterior
@@ -31,6 +32,7 @@ export default function Pagination({ page, pageSize, total, onPageChange }: Pagi
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
+          aria-label="Página siguiente"
           className="px-3 py-1.5 text-xs rounded-lg border border-brand-copper/20 text-slate-600 hover:bg-cream disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
         >
           Siguiente

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import Pagination from "@/components/Pagination";
 
@@ -25,26 +25,40 @@ export default function ClientesPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
 
   const load = useCallback(async (searchTerm: string, pageNum: number) => {
-    if (!supabase) return;
+    if (!supabase) { if (mountedRef.current) setLoading(false); return; }
     const from = (pageNum - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
-    let countQuery = supabase.from("clientes").select("*", { count: "exact", head: true });
-    let dataQuery = supabase.from("clientes").select("*").order("created_at", { ascending: false }).range(from, to);
+    try {
+      let countQuery = supabase.from("clientes").select("*", { count: "exact", head: true });
+      let dataQuery = supabase.from("clientes").select("*").order("created_at", { ascending: false }).range(from, to);
 
-    if (searchTerm) {
-      countQuery = countQuery.or(`nombre.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
-      dataQuery = dataQuery.or(`nombre.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+      if (searchTerm) {
+        countQuery = countQuery.or(`nombre.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+        dataQuery = dataQuery.or(`nombre.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+      }
+
+      const [{ count }, { data }] = await Promise.all([countQuery, dataQuery]);
+      setTotal(count ?? 0);
+      setClientes(data || []);
+    } catch (e) {
+      console.error("Error loading clientes:", e);
+    } finally {
+      if (mountedRef.current) setLoading(false);
     }
-
-    const [{ count }, { data }] = await Promise.all([countQuery, dataQuery]);
-    setTotal(count ?? 0);
-    setClientes(data || []);
   }, []);
 
-  useEffect(() => { load(search, page); }, [page, search, load]);
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    mountedRef.current = true;
+    load(search, page);
+    return () => { mountedRef.current = false; };
+  }, [page, search, load]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const exportCSV = () => {
     const headers = ["Nombre", "Email", "Teléfono", "Registrado", "Último Contacto"];
@@ -74,7 +88,10 @@ export default function ClientesPage() {
           </button>
         </div>
       </div>
-      <div className="bg-white rounded-2xl shadow-lg border border-brand-copper/10 overflow-hidden">
+      {loading ? (
+        <div className="animate-pulse bg-slate-200 rounded-2xl p-8 h-64" />
+      ) : (
+      <div className="bg-white rounded-2xl shadow-lg border border-brand-copper/10 overflow-x-auto">
         <table className="w-full">
           <thead className="bg-cream border-b border-brand-copper/10">
             <tr>
@@ -101,6 +118,7 @@ export default function ClientesPage() {
         </table>
         <Pagination page={page} pageSize={PAGE_SIZE} total={total} onPageChange={setPage} />
       </div>
+      )}
     </>
   );
 }

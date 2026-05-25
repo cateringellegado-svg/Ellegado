@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { WHATSAPP_NUMBER } from "@/lib/constants";
 import { uploadSiteImage, deleteSiteImage } from "@/lib/storage";
@@ -87,46 +88,70 @@ export default function CMSPage() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("general");
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [activeSection, setActiveSection] = useState("colors");
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     async function load() {
-      if (!supabase) return;
-      const { data } = await supabase.from("site_config").select("*");
-      if (!data) return;
-      const map: Record<string, string> = {};
-      data.forEach((c: { key: string; value: string }) => { map[c.key] = c.value; });
-      const keys = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar"] as const;
-      keys.forEach((k) => {
-        if (map[k]) setConfig((p) => ({ ...p, [k]: tryParse(map[k], p[k]) }));
-      });
+      if (!supabase) { if (mountedRef.current) setLoading(false); return; }
+      try {
+        const { data } = await supabase.from("site_config").select("*");
+        if (!data) return;
+        const map: Record<string, string> = {};
+        data.forEach((c: { key: string; value: string }) => { map[c.key] = c.value; });
+        const keys = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar"] as const;
+        keys.forEach((k) => {
+          if (map[k]) setConfig((p) => ({ ...p, [k]: tryParse(map[k], p[k]) }));
+        });
+      } catch (e) {
+        console.error("Error loading CMS config:", e);
+      } finally {
+        if (mountedRef.current) setLoading(false);
+      }
     }
     load();
+    return () => { mountedRef.current = false; };
   }, []);
 
   const save = async (key: string, value: unknown) => {
     if (!supabase) return;
     setSaving(true);
-    const { error } = await supabase.from("site_config").upsert(
-      { key, value: JSON.stringify(value) },
-      { onConflict: "key" }
-    );
-    if (error) setMsg("Error: " + error.message);
-    else setMsg(`"${key}" guardado`);
-    setSaving(false);
+    try {
+      const { error } = await supabase.from("site_config").upsert(
+        { key, value: JSON.stringify(value) },
+        { onConflict: "key" }
+      );
+      if (error) setMsg("Error: " + error.message);
+      else setMsg(`"${key}" guardado`);
+    } catch (e) {
+      console.error("Error saving CMS config:", e);
+      setMsg("Error al guardar configuración");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveAll = async () => {
     setSaving(true);
     setMsg("");
-    const keys: (keyof CMSConfig)[] = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar"];
-    for (const key of keys) {
-      await supabase?.from("site_config").upsert({ key, value: JSON.stringify(config[key]) }, { onConflict: "key" });
+    try {
+      const keys: (keyof CMSConfig)[] = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar"];
+      const errors: string[] = [];
+      for (const key of keys) {
+        const { error } = await supabase?.from("site_config").upsert({ key, value: JSON.stringify(config[key]) }, { onConflict: "key" }) ?? {};
+        if (error) errors.push(`${key}: ${error.message}`);
+      }
+      setMsg(errors.length ? "Error en: " + errors.join(", ") : "Configuración guardada correctamente");
+    } catch (e) {
+      console.error("Error saving all CMS config:", e);
+      setMsg("Error al guardar toda la configuración");
+    } finally {
+      setSaving(false);
     }
-    setMsg("Configuración guardada correctamente");
-    setSaving(false);
   };
 
   const handleImageUpload = async (key: string, file: File) => {
@@ -187,6 +212,10 @@ export default function CMSPage() {
 
   return (
     <>
+      {loading ? (
+        <div className="animate-pulse bg-slate-200 rounded-2xl p-8 h-64" />
+      ) : (
+      <>
       <div className="flex justify-between items-center mb-8">
         <h1 className="font-serif text-4xl text-dark-elegant">CMS del Sitio</h1>
         <button onClick={saveAll} disabled={saving} className="bg-brand-copper text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-brand-copper/30 transition-all text-sm font-medium cursor-pointer disabled:opacity-50">
@@ -263,7 +292,7 @@ export default function CMSPage() {
                         </div>
                       ) : config.images[f.key] ? (
                         <div className="relative w-full h-full group">
-                          <img src={config.images[f.key] as string} alt={f.label} className="w-full h-full object-cover" />
+                          <Image src={config.images[f.key] as string} alt={f.label} width={800} height={600} className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 flex items-center justify-center transition-all"><span className="text-white text-xs opacity-0 group-hover:opacity-100">Click para cambiar</span></div>
                           <button onClick={(e) => { e.stopPropagation(); removeImage(f.key); }} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all cursor-pointer" aria-label={`Eliminar ${f.label}`}>×</button>
                         </div>
@@ -281,8 +310,8 @@ export default function CMSPage() {
                 <h3 className="font-serif text-xl text-dark-elegant mb-4">Galería de Imágenes</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {(config.images.gallery as string[] || []).map((url, i) => (
-                    <div key={i} className="relative group rounded-xl overflow-hidden aspect-[4/3] border border-brand-copper/10">
-                      <img src={url} alt={`Galería ${i + 1}`} className="w-full h-full object-cover" />
+                    <div key={url + '-' + i} className="relative group rounded-xl overflow-hidden aspect-[4/3] border border-brand-copper/10">
+                      <Image src={url} alt={`Galería ${i + 1}`} width={800} height={600} className="w-full h-full object-cover" />
                       <button onClick={() => removeGalleryImage(i)} className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all cursor-pointer" aria-label="Eliminar imagen">×</button>
                     </div>
                   ))}
@@ -352,7 +381,7 @@ export default function CMSPage() {
               <div className="mt-6">
                 <h3 className="font-serif text-lg text-dark-elegant mb-4">Estadísticas del Hero</h3>
                 {(config.hero.stats as { value: string; label: string }[] || []).map((stat, i) => (
-                  <div key={i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
+                  <div key={stat.label + '-' + i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
                     <input type="text" value={stat.value} onChange={(e) => { const stats = [...config.hero.stats as { value: string; label: string }[]]; stats[i] = { ...stats[i], value: e.target.value }; setConfig((p) => ({ ...p, hero: { ...p.hero, stats } })); }} className="w-24 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm text-center" placeholder="Valor" />
                     <input type="text" value={stat.label} onChange={(e) => { const stats = [...config.hero.stats as { value: string; label: string }[]]; stats[i] = { ...stats[i], label: e.target.value }; setConfig((p) => ({ ...p, hero: { ...p.hero, stats } })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Label" />
                     <button onClick={() => { const stats = (config.hero.stats as { value: string; label: string }[] || []).filter((_, j) => j !== i); setConfig((p) => ({ ...p, hero: { ...p.hero, stats } })); }} className="text-red-400 hover:text-red-600 cursor-pointer" aria-label="Eliminar estadística">×</button>
@@ -412,7 +441,7 @@ export default function CMSPage() {
               </div>
               <div className="space-y-4">
                 {(config.features.items as { icon: string; title: string; text: string }[] || []).map((item, i) => (
-                  <div key={i} className="p-4 bg-cream rounded-xl border border-brand-copper/10">
+                  <div key={item.title + '-' + i} className="p-4 bg-cream rounded-xl border border-brand-copper/10">
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-xs font-semibold text-slate-500 uppercase">Feature #{i + 1}</span>
                       <button onClick={() => { const items = (config.features.items as { icon: string; title: string; text: string }[]).filter((_, j) => j !== i); setConfig((p) => ({ ...p, features: { ...p.features, items } })); }} className="text-red-400 hover:text-red-600 text-sm cursor-pointer">Eliminar</button>
@@ -460,7 +489,7 @@ export default function CMSPage() {
               </div>
               <div className="space-y-4">
                 {(config.comingSoon.items as { title: string; description: string; icon: string }[] || []).map((item, i) => (
-                  <div key={i} className="p-4 bg-cream rounded-xl border border-brand-copper/10">
+                  <div key={item.title + '-' + i} className="p-4 bg-cream rounded-xl border border-brand-copper/10">
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-xs font-semibold text-slate-500 uppercase">Servicio #{i + 1}</span>
                       <button onClick={() => { const items = (config.comingSoon.items as { title: string; description: string; icon: string }[]).filter((_, j) => j !== i); setConfig((p) => ({ ...p, comingSoon: { ...p.comingSoon, items } })); }} className="text-red-400 hover:text-red-600 text-sm cursor-pointer">Eliminar</button>
@@ -488,7 +517,7 @@ export default function CMSPage() {
               </div>
               <h3 className="font-serif text-lg text-dark-elegant mb-4">Links de Navegación</h3>
               {(config.navbar.links as { label: string; href: string }[] || []).map((link, i) => (
-                <div key={i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
+                <div key={link.label + '-' + i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
                   <input type="text" value={link.label} onChange={(e) => { const links = [...config.navbar.links as { label: string; href: string }[]]; links[i] = { ...links[i], label: e.target.value }; setConfig((p) => ({ ...p, navbar: { ...p.navbar, links } })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Label" />
                   <input type="text" value={link.href} onChange={(e) => { const links = [...config.navbar.links as { label: string; href: string }[]]; links[i] = { ...links[i], href: e.target.value }; setConfig((p) => ({ ...p, navbar: { ...p.navbar, links } })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm font-mono text-xs" placeholder="#seccion" />
                   <button onClick={() => { const links = (config.navbar.links as { label: string; href: string }[]).filter((_, j) => j !== i); setConfig((p) => ({ ...p, navbar: { ...p.navbar, links } })); }} className="text-red-400 hover:text-red-600 cursor-pointer">×</button>
@@ -525,7 +554,7 @@ export default function CMSPage() {
               </div>
               <h3 className="font-serif text-lg text-dark-elegant mb-4">Horarios</h3>
               {(config.footer.schedule as { days: string; hours: string }[] || []).map((s, i) => (
-                <div key={i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
+                <div key={s.days + '-' + i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
                   <input type="text" value={s.days} onChange={(e) => { const schedule = [...config.footer.schedule as { days: string; hours: string }[]]; schedule[i] = { ...schedule[i], days: e.target.value }; setConfig((p) => ({ ...p, footer: { ...p.footer, schedule } })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Días" />
                   <input type="text" value={s.hours} onChange={(e) => { const schedule = [...config.footer.schedule as { days: string; hours: string }[]]; schedule[i] = { ...schedule[i], hours: e.target.value }; setConfig((p) => ({ ...p, footer: { ...p.footer, schedule } })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Horarios" />
                   <button onClick={() => { const schedule = (config.footer.schedule as { days: string; hours: string }[]).filter((_, j) => j !== i); setConfig((p) => ({ ...p, footer: { ...p.footer, schedule } })); }} className="text-red-400 hover:text-red-600 cursor-pointer">×</button>
@@ -580,6 +609,8 @@ export default function CMSPage() {
           )}
         </div>
       </div>
+      </>
+      )}
     </>
   );
 }

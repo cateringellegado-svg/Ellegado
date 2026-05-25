@@ -46,7 +46,7 @@ export default function LegalPageShell({
         </div>
       </nav>
 
-      <main className="flex-grow py-20 px-6">
+      <main id="main-content" className="flex-grow py-20 px-6">
         <div className="max-w-3xl mx-auto bg-white rounded-3xl p-10 md:p-16 shadow-xl border border-brand-copper/10">
           <div className="text-center mb-12 border-b border-brand-copper/10 pb-8">
             <span className="text-brand-copper font-medium tracking-[0.4em] uppercase text-xs mb-4 block">

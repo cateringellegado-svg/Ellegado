@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import Pagination from "@/components/Pagination";
 
@@ -49,38 +49,59 @@ export default function CotizacionesPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
+  const loadKeyRef = useRef("");
+  const mountedRef = useRef(true);
+  const [loading, setLoading] = useState(true);
+
   const load = useCallback(async (estadoFilter: string, searchTerm: string, pageNum: number) => {
-    if (!supabase) return;
+    if (!supabase) { if (mountedRef.current) setLoading(false); return; }
+    const key = `${estadoFilter}|${searchTerm}|${pageNum}`;
+    if (loadKeyRef.current === key) return;
+    loadKeyRef.current = key;
     const from = (pageNum - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
-    let countQuery = supabase
-      .from("cotizaciones")
-      .select("*", { count: "exact", head: true });
-    if (estadoFilter) countQuery = countQuery.eq("estado", estadoFilter);
-    if (searchTerm) countQuery = countQuery.or(`cliente_nombre.ilike.%${searchTerm}%,cliente_email.ilike.%${searchTerm}%`);
+    try {
+      let countQuery = supabase
+        .from("cotizaciones")
+        .select("*", { count: "exact", head: true });
+      if (estadoFilter) countQuery = countQuery.eq("estado", estadoFilter);
+      if (searchTerm) countQuery = countQuery.or(`cliente_nombre.ilike.%${searchTerm}%,cliente_email.ilike.%${searchTerm}%`);
 
-    let dataQuery = supabase
-      .from("cotizaciones")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .range(from, to);
-    if (estadoFilter) dataQuery = dataQuery.eq("estado", estadoFilter);
-    if (searchTerm) dataQuery = dataQuery.or(`cliente_nombre.ilike.%${searchTerm}%,cliente_email.ilike.%${searchTerm}%`);
+      let dataQuery = supabase
+        .from("cotizaciones")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(from, to);
+      if (estadoFilter) dataQuery = dataQuery.eq("estado", estadoFilter);
+      if (searchTerm) dataQuery = dataQuery.or(`cliente_nombre.ilike.%${searchTerm}%,cliente_email.ilike.%${searchTerm}%`);
 
-    const [{ count }, { data: result }] = await Promise.all([countQuery, dataQuery]);
-    setTotal(count ?? 0);
-    setData(result || []);
+      const [{ count }, { data: result }] = await Promise.all([countQuery, dataQuery]);
+      setTotal(count ?? 0);
+      setData(result || []);
+    } catch (e) {
+      console.error("Error loading cotizaciones:", e);
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
   }, []);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
+    mountedRef.current = true;
     setPage(1);
     load(filter, search, 1);
+    return () => { mountedRef.current = false; };
   }, [filter, search, load]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
+    mountedRef.current = true;
     load(filter, search, page);
+    return () => { mountedRef.current = false; };
   }, [page, filter, search, load]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -142,7 +163,10 @@ export default function CotizacionesPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-lg border border-brand-copper/10 overflow-hidden">
+      {loading ? (
+        <div className="animate-pulse bg-slate-200 rounded-2xl p-8 h-64" />
+      ) : (
+      <div className="bg-white rounded-2xl shadow-lg border border-brand-copper/10 overflow-x-auto">
         <table className="w-full">
           <thead className="bg-cream border-b border-brand-copper/10">
             <tr>
@@ -194,9 +218,10 @@ export default function CotizacionesPage() {
         </table>
         <Pagination page={page} pageSize={PAGE_SIZE} total={total} onPageChange={handlePageChange} />
       </div>
+      )}
 
       {selected && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" onClick={() => setSelected(null)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" role="dialog" aria-modal="true" onClick={() => setSelected(null)}>
           <div className="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-serif text-2xl text-dark-elegant">Detalle Cotización</h2>
@@ -213,7 +238,7 @@ export default function CotizacionesPage() {
               {selected.servicios && (
                 <div>
                   <span className="font-semibold text-slate-600 block mb-1">Servicios:</span>
-                  <pre className="text-xs bg-cream p-3 rounded-lg overflow-auto max-h-32">{JSON.stringify(JSON.parse(selected.servicios), null, 2)}</pre>
+                  <pre className="text-xs bg-cream p-3 rounded-lg overflow-auto max-h-32">{(() => { try { return JSON.stringify(JSON.parse(selected.servicios), null, 2); } catch { return selected.servicios; } })()}</pre>
                 </div>
               )}
             </div>

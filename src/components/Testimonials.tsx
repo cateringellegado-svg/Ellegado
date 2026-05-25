@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useSiteConfig } from "@/lib/site-config";
 import type { SiteTestimonial } from "@/lib/site-config";
@@ -8,18 +8,47 @@ import type { SiteTestimonial } from "@/lib/site-config";
 export default function Testimonials() {
   const config = useSiteConfig();
   const [testimonials, setTestimonials] = useState<SiteTestimonial[]>([]);
+  const [loading, setLoading] = useState(true);
+  const mounted = useRef(true);
 
   useEffect(() => {
-    if (!supabase) return;
-    supabase
-      .from("testimonials")
-      .select("*")
-      .eq("active", true)
-      .order("orden", { ascending: true })
-      .then(({ data }) => {
-        if (data) setTestimonials(data as SiteTestimonial[]);
-      });
+    mounted.current = true;
+    (async () => {
+      if (!supabase) {
+        if (mounted.current) setLoading(false);
+        return;
+      }
+      try {
+        const { data } = await supabase
+          .from("testimonials")
+          .select("*")
+          .eq("active", true)
+          .order("orden", { ascending: true });
+        if (mounted.current && data) setTestimonials(data as SiteTestimonial[]);
+      } catch (err) {
+        console.error("Error al cargar testimonios:", err);
+        if (mounted.current) setTestimonials([]);
+      } finally {
+        if (mounted.current) setLoading(false);
+      }
+    })();
+    return () => { mounted.current = false; };
   }, []);
+
+  if (loading) {
+    return (
+      <section className="py-32 bg-white border-t border-brand-copper/5">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex justify-center py-12">
+            <div className="animate-pulse flex flex-col items-center gap-3">
+              <div className="w-12 h-12 border-4 border-brand-copper/20 border-t-brand-copper rounded-full animate-spin" />
+              <p className="text-slate-500 text-sm">Cargando testimonios...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (testimonials.length === 0) return null;
 
@@ -59,7 +88,7 @@ export default function Testimonials() {
                       {t.event}
                     </span>
                   </div>
-                  <div className="flex text-amber-500 text-sm">
+                  <div className="flex text-amber-500 text-sm" aria-label={`${t.rating} de 5 estrellas`}>
                     {"★".repeat(t.rating)}{"☆".repeat(5 - t.rating)}
                   </div>
                 </div>
