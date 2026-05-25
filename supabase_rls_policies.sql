@@ -8,6 +8,7 @@ ALTER TABLE cotizaciones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE menu_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE site_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE eventos ENABLE ROW LEVEL SECURITY;
 
 -- ====================================================================
@@ -81,6 +82,23 @@ CREATE POLICY "Public can view config"
 DROP POLICY IF EXISTS "Authenticated can manage config" ON config;
 CREATE POLICY "Authenticated can manage config"
     ON config FOR ALL
+    USING (auth.role() = 'authenticated')
+    WITH CHECK (auth.role() = 'authenticated');
+
+-- ====================================================================
+-- 5b. POLITICAS PARA site_config (CMS)
+-- Public puede leer (necesario para que el sitio público funcione)
+-- Authenticated puede CRUD completo (admin panel CMS)
+-- ====================================================================
+
+DROP POLICY IF EXISTS "Public can view site_config" ON site_config;
+CREATE POLICY "Public can view site_config"
+    ON site_config FOR SELECT
+    USING (true);
+
+DROP POLICY IF EXISTS "Authenticated can manage site_config" ON site_config;
+CREATE POLICY "Authenticated can manage site_config"
+    ON site_config FOR ALL
     USING (auth.role() = 'authenticated')
     WITH CHECK (auth.role() = 'authenticated');
 

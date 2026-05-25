@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-brand-copper: #AF7A54;
+  --color-brand-copper-light: #D9A78B;
+  --color-cream: #FAF9F6;
+  --color-dark-elegant: #1A1A1A;
+
+  --font-sans: var(--font-montserrat);
+  --font-serif: var(--font-cormorant);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-dark-elegant);
+    font-family: var(--font-sans);
+  }
+  ::selection {
+    background-color: rgba(175, 122, 84, 0.2);
+  }
+}
+
+/* Custom CSS utilities from previous input.css if any */
+@utility text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(to right, var(--color-brand-copper), var(--color-brand-copper-light));
+}
+
+@utility logo-glow {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+}

@@ -1,87 +1,36 @@
-# El Legado - Catering y Eventos
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Sitio web de El Legado Catering y Eventos - Argentina
+## Getting Started
 
-## Stack
-- HTML5 + TailwindCSS (build process)
-- JavaScript vanilla
-- Supabase (DB, Auth, Storage)
-- Vercel (hosting)
+First, run the development server:
 
-## Desarrollo
-
-### Prerequisitos
-- Node.js 20+
-- npm
-
-### Instalación
-```bash
-npm install
-```
-
-### Build CSS (Tailwind)
-```bash
-npm run build
-```
-
-### Watch mode (desarrollo)
 ```bash
 npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-### Tests E2E
-```bash
-npm test
-```
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### Tests E2E con UI
-```bash
-npm run test:ui
-```
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## Estructura
-```
-├── index.html              # Página principal
-├── admin/                  # Panel de administración
-│   ├── index.html
-│   ├── login.html
-│   └── js/
-├── assets/
-│   ├── css/
-│   │   ├── input.css       # Tailwind input
-│   │   └── output.css      # Built CSS (no commitear)
-│   └── js/
-│       ├── config.js
-│       └── main.js
-├── tests/
-│   └── e2e/                # Playwright tests
-├── .github/workflows/      # CI/CD pipeline
-├── package.json
-├── tailwind.config.js
-├── postcss.config.js
-└── playwright.config.js
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Deploy
+## Learn More
 
-### Vercel (Automático)
-1. Push a `main`
-2. GitHub Actions corre tests y deploy
-3. Disponible en `ellegado.vercel.app`
+To learn more about Next.js, take a look at the following resources:
 
-### Variables de Entorno (Vercel)
-Configurar en Vercel Dashboard > Settings > Environment Variables:
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `VERCEL_ORG_ID`
-- `VERCEL_PROJECT_ID`
-- `VERCEL_TOKEN`
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-### CI/CD Pipeline
-- Push a `main` → Build → Tests → Deploy
-- PR → Build → Tests (sin deploy)
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Legal
-- Argentina (Ley 25.326)
-- Teléfono: +54 11 7675 3854
-- Email: catering.ellegado@gmail.com
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

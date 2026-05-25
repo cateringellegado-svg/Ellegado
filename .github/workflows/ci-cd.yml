@@ -9,142 +9,68 @@ on:
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
 jobs:
-  # Job 1: Build and Test
   build-and-test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
-      - name: Build CSS (Tailwind)
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Build Next.js
         run: npm run build
-      
-      - name: Verify CSS output
-        run: |
-          if [ ! -f assets/css/output.css ]; then
-            echo "❌ CSS build failed - output.css not found"
-            exit 1
-          fi
-          CSS_SIZE=$(stat -c%s assets/css/output.css)
-          echo "✅ CSS built successfully: ${CSS_SIZE} bytes"
-          if [ $CSS_SIZE -gt 51200 ]; then
-            echo "⚠️ Warning: CSS bundle is larger than 50KB"
-          fi
-      
-      - name: Validate HTML
-        run: |
-          echo "Checking HTML files..."
-          for file in *.html; do
-            if [ -f "$file" ]; then
-              echo "✅ $file exists"
-            fi
-          done
-      
-      - name: Validate JavaScript
-        run: |
-          echo "Checking JS files..."
-          for file in assets/js/*.js admin/js/*.js; do
-            if [ -f "$file" ]; then
-              node -c "$file" && echo "✅ $file syntax OK" || echo "❌ $file syntax error"
-            fi
-          done
-      
+
       - name: Check for hardcoded secrets
         run: |
           echo "Scanning for hardcoded secrets..."
-          if grep -r "eyJhbGci" --include="*.js" --include="*.html" .; then
+          if grep -r "eyJhbGci" --include="*.ts" --include="*.tsx" --include="*.js" src/; then
             echo "❌ Found hardcoded Supabase keys!"
             exit 1
           else
             echo "✅ No hardcoded secrets found"
           fi
-      
-      - name: Check for broken links (internal)
-        run: |
-          echo "Checking internal links..."
-          BROKEN=0
-          for file in *.html; do
-            if [ -f "$file" ]; then
-              LINKS=$(grep -oP 'href="[^"]*\.html"' "$file" | sed 's/href="//;s/"//' || true)
-              for link in $LINKS; do
-                if [ ! -f "$link" ]; then
-                  echo "❌ Broken link in $file: $link"
-                  BROKEN=$((BROKEN + 1))
-                fi
-              done
-            fi
-          done
-          if [ $BROKEN -eq 0 ]; then
-            echo "✅ No broken internal links"
-          else
-            echo "❌ Found $BROKEN broken links"
-            exit 1
-          fi
-      
-      - name: Upload CSS artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: built-css
-          path: assets/css/output.css
-          retention-days: 7
 
-  # Job 2: E2E Tests
   e2e-tests:
     needs: build-and-test
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
-      
-      - name: Build CSS
-        run: npm run build
-      
-      - name: Serve site locally
-        run: npx serve . -l 3000 &
-        env:
-          PORT: 3000
-      
-      - name: Wait for server
-        run: |
-          for i in $(seq 1 30); do
-            if curl -s http://localhost:3000 > /dev/null; then
-              echo "Server is ready"
-              break
-            fi
-            sleep 1
-          done
-      
+
       - name: Run Playwright tests
         run: npm test
-        continue-on-error: true
-      
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -153,39 +79,38 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-  # Job 3: Deploy to Vercel (only on main branch)
   deploy:
     needs: [build-and-test, e2e-tests]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
-      - name: Build CSS
+
+      - name: Build project
         run: npm run build
-      
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
-      
+
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-      
-      - name: Build project
+
+      - name: Build for Vercel
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-      
+
       - name: Deploy to Vercel
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-      
-      - name: Deployment success
-        run: echo "✅ Deployed to production successfully"
