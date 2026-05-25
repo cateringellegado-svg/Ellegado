@@ -4,7 +4,7 @@ import { useSiteConfig } from "@/lib/site-config";
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   bowl: (
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15.546c-.523 0-1.046.523-1.046 1.046s.523 1.046 1.046 1.046 1.046-.523 1.046-1.046-.523-1.046-1.046-1.046zM9.684 13.536a3 3 0 104.632 4.632m-4.632-4.632a3 3 0 014.632 4.632m-4.632-4.632a3 3 0 014.632-4.632M9.684 13.536V6.404M21 15.546V9.404m-9.316 4.132a3 3 0 11-4.632-4.632m4.632 4.632a3 3 0 11-4.632 4.632m4.632-4.632a3 3 0 114.632-4.632" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10.5h18M3 10.5a9 9 0 0118 0M3 10.5l1.5 9a3 3 0 003 3h9a3 3 0 003-3l1.5-9M9 7.5l1.5-3h3l1.5 3" />
   ),
   smoothie: (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
