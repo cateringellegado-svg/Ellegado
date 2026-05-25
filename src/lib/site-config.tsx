@@ -31,9 +31,18 @@ export interface SiteFestin {
   ctaText: string;
 }
 
+export interface SiteFooterSchedule {
+  days: string;
+  hours: string;
+}
+
 export interface SiteFooter {
   text: string;
   copyright: string;
+  schedule: SiteFooterSchedule[];
+  address: string;
+  phone: string;
+  mapUrl: string;
 }
 
 export interface SiteSocial {
@@ -67,6 +76,61 @@ export interface SiteImages {
   gallery: string[];
 }
 
+export interface SiteSEO {
+  metaTitle: string;
+  metaDescription: string;
+  keywords: string[];
+  ogImage: string;
+}
+
+export interface SiteFeature {
+  icon: string;
+  title: string;
+  text: string;
+}
+
+export interface SiteFeatures {
+  title: string;
+  items: SiteFeature[];
+}
+
+export interface SiteCTA {
+  title: string;
+  text: string;
+  buttonText: string;
+}
+
+export interface SiteComingSoonService {
+  title: string;
+  description: string;
+  icon: string;
+}
+
+export interface SiteComingSoon {
+  title: string;
+  items: SiteComingSoonService[];
+}
+
+export interface SiteNavbarLink {
+  label: string;
+  href: string;
+}
+
+export interface SiteNavbar {
+  logoUrl: string;
+  links: SiteNavbarLink[];
+}
+
+export interface SiteTestimonial {
+  id: string;
+  name: string;
+  text: string;
+  event: string;
+  rating: number;
+  menu: string;
+  active: boolean;
+}
+
 export interface SiteConfig {
   colors: SiteColors;
   hero: SiteHero;
@@ -77,6 +141,11 @@ export interface SiteConfig {
   contact: SiteContact;
   sections: SiteSections;
   images: SiteImages;
+  seo: SiteSEO;
+  features: SiteFeatures;
+  cta: SiteCTA;
+  comingSoon: SiteComingSoon;
+  navbar: SiteNavbar;
 }
 
 const DEFAULT_COLORS: SiteColors = {
@@ -102,7 +171,7 @@ const DEFAULT_HERO: SiteHero = {
 const DEFAULT_ABOUT: SiteAbout = {
   title: "Nuestra Filosofía",
   text: "Cada evento es una historia única que merece ser contada con los sabores más exquisitos y la atención más cálida.",
-  highlight: "",
+  highlight: "Tradición, calidad y pasión en cada bocado.",
 };
 
 const DEFAULT_FESTIN: SiteFestin = {
@@ -114,6 +183,13 @@ const DEFAULT_FESTIN: SiteFestin = {
 const DEFAULT_FOOTER: SiteFooter = {
   text: "Haz Eterno Cada Momento",
   copyright: "© 2026 El Legado. Todos los derechos reservados.",
+  schedule: [
+    { days: "Lunes a Viernes", hours: "9:00 – 20:00" },
+    { days: "Sábados", hours: "10:00 – 18:00" },
+  ],
+  address: "Buenos Aires, Argentina",
+  phone: "+54 11 7675-3854",
+  mapUrl: "https://maps.google.com",
 };
 
 const DEFAULT_SOCIAL: SiteSocial = {
@@ -144,7 +220,51 @@ const DEFAULT_IMAGES: SiteImages = {
   festin: "/gourmet_canapes.webp",
   logo: "/logo.webp",
   favicon: "/favicon.webp",
-  gallery: ["/hero_catering.webp", "/event_vibe.webp", "/gourmet_canapes.webp", "/gourmet_canapes.webp", "/hero_catering.webp", "/event_vibe.webp"],
+  gallery: ["/hero_catering.webp", "/event_vibe.webp", "/gourmet_canapes.webp", "/hero_catering.webp", "/event_vibe.webp", "/gourmet_canapes.webp"],
+};
+
+const DEFAULT_SEO: SiteSEO = {
+  metaTitle: "EL LEGADO - Catering y Eventos | Haz Eterno Cada Momento",
+  metaDescription: "Servicio de catering premium para eventos inolvidables. Bodas, cumpleaños, eventos corporativos y más. Buenos Aires.",
+  keywords: ["catering", "eventos", "catering premium", "Buenos Aires", "bodas", "fiestas"],
+  ogImage: "/hero_catering.webp",
+};
+
+const DEFAULT_FEATURES: SiteFeatures = {
+  title: "¿Por Qué Elegirnos?",
+  items: [
+    { icon: "chef", title: "Cocina Artesanal", text: "Cada bocado es preparado con ingredientes seleccionados y recetas únicas que marcan la diferencia." },
+    { icon: "sparkles", title: "Presentación Impecable", text: "El arte de presentar cada plato como una obra maestra visual que cautiva a tus invitados." },
+    { icon: "heart", title: "Atención Personalizada", text: "Escuchamos tus ideas y las transformamos en una experiencia gastronómica a tu medida." },
+    { icon: "star", title: "Calidad Premium", text: "Estándares de calidad que superan expectativas, con ingredientes frescos y de primera línea." },
+  ],
+};
+
+const DEFAULT_CTA: SiteCTA = {
+  title: "¿Listo para tu evento perfecto?",
+  text: "Contactanos hoy y empecemos a planificar juntos el catering que hará inolvidable tu ocasión especial.",
+  buttonText: "Cotizá tu Evento",
+};
+
+const DEFAULT_COMING_SOON: SiteComingSoon = {
+  title: "Próximamente",
+  items: [
+    { title: "Bowls Saludables", description: "Bowls nutritivos con ingredientes frescos y opciones vegetarianas", icon: "bowl" },
+    { title: "Barra de Smoothies", description: "Estación interactiva de smoothies naturales y funcionales", icon: "smoothie" },
+    { title: "Noche de Parrilla", description: "Experiencia de parrilla argentina para eventos al aire libre", icon: "grill" },
+    { title: "Cheese & Wine", description: "Selección de quesos artesanales maridados con vinos premium", icon: "cheese" },
+  ],
+};
+
+const DEFAULT_NAVBAR: SiteNavbar = {
+  logoUrl: "/logo.webp",
+  links: [
+    { label: "Inicio", href: "#hero" },
+    { label: "Nosotros", href: "#about" },
+    { label: "Festín", href: "#festin" },
+    { label: "Galería", href: "#gallery" },
+    { label: "Contacto", href: "#contact" },
+  ],
 };
 
 export const DEFAULT_SITE_CONFIG: SiteConfig = {
@@ -157,6 +277,11 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   contact: DEFAULT_CONTACT,
   sections: DEFAULT_SECTIONS,
   images: DEFAULT_IMAGES,
+  seo: DEFAULT_SEO,
+  features: DEFAULT_FEATURES,
+  cta: DEFAULT_CTA,
+  comingSoon: DEFAULT_COMING_SOON,
+  navbar: DEFAULT_NAVBAR,
 };
 
 function tryParse(val: string | null, fallback: unknown) {
@@ -186,10 +311,14 @@ export async function fetchSiteConfigFromDB(): Promise<SiteConfig> {
     contact: tryParse(map.contact, DEFAULT_CONTACT) as SiteContact,
     sections: tryParse(map.sections, DEFAULT_SECTIONS) as SiteSections,
     images: tryParse(map.images, DEFAULT_IMAGES) as SiteImages,
+    seo: tryParse(map.seo, DEFAULT_SEO) as SiteSEO,
+    features: tryParse(map.features, DEFAULT_FEATURES) as SiteFeatures,
+    cta: tryParse(map.cta, DEFAULT_CTA) as SiteCTA,
+    comingSoon: tryParse(map.comingSoon, DEFAULT_COMING_SOON) as SiteComingSoon,
+    navbar: tryParse(map.navbar, DEFAULT_NAVBAR) as SiteNavbar,
   };
 }
 
-// React Context for site config
 const SiteConfigContext = createContext<SiteConfig>(DEFAULT_SITE_CONFIG);
 
 export function SiteConfigProvider({ children }: { children: React.ReactNode }) {
@@ -206,7 +335,11 @@ export function SiteConfigProvider({ children }: { children: React.ReactNode }) 
       document.documentElement.style.setProperty("--color-cream", config.colors.background);
       document.documentElement.style.setProperty("--color-dark-elegant", config.colors.text);
     }
-  }, [config.colors]);
+    const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (favicon && config.images.favicon) {
+      favicon.href = config.images.favicon;
+    }
+  }, [config.colors, config.images.favicon]);
 
   return (
     <SiteConfigContext.Provider value={config}>

@@ -2,6 +2,7 @@
 
 import { ToastProvider } from "./Toast";
 import { SiteConfigProvider } from "@/lib/site-config";
+import DynamicSEO from "./DynamicSEO";
 
 export default function ClientLayout({
   children,
@@ -10,6 +11,7 @@ export default function ClientLayout({
 }) {
   return (
     <SiteConfigProvider>
+      <DynamicSEO />
       <ToastProvider>{children}</ToastProvider>
     </SiteConfigProvider>
   );

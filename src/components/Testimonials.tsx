@@ -1,4 +1,28 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useSiteConfig } from "@/lib/site-config";
+import type { SiteTestimonial } from "@/lib/site-config";
+
 export default function Testimonials() {
+  const config = useSiteConfig();
+  const [testimonials, setTestimonials] = useState<SiteTestimonial[]>([]);
+
+  useEffect(() => {
+    if (!supabase) return;
+    supabase
+      .from("testimonials")
+      .select("*")
+      .eq("active", true)
+      .order("orden", { ascending: true })
+      .then(({ data }) => {
+        if (data) setTestimonials(data as SiteTestimonial[]);
+      });
+  }, []);
+
+  if (testimonials.length === 0) return null;
+
   return (
     <section
       id="testimonios"
@@ -20,64 +44,36 @@ export default function Testimonials() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-12 lg:gap-16 text-left">
-          <article className="bg-cream rounded-3xl p-8 border border-brand-copper/10 hover:shadow-xl hover:scale-[1.01] transition-all duration-500 flex flex-col justify-between group">
-            <div className="space-y-6">
-              <div className="flex justify-between items-center border-b border-brand-copper/10 pb-4">
-                <div>
-                  <h4 className="font-serif text-2xl font-semibold text-brand-copper italic">
-                    Boda de Sofía &amp; Diego
-                  </h4>
-                  <span className="text-[10px] text-slate-600 tracking-wider uppercase font-medium">
-                    Boda al Aire Libre &bull; 120 Invitados
-                  </span>
+          {testimonials.map((t) => (
+            <article
+              key={t.id}
+              className="bg-cream rounded-3xl p-8 border border-brand-copper/10 hover:shadow-xl hover:scale-[1.01] transition-all duration-500 flex flex-col justify-between group"
+            >
+              <div className="space-y-6">
+                <div className="flex justify-between items-center border-b border-brand-copper/10 pb-4">
+                  <div>
+                    <h4 className="font-serif text-2xl font-semibold text-brand-copper italic">
+                      {t.name}
+                    </h4>
+                    <span className="text-[10px] text-slate-600 tracking-wider uppercase font-medium">
+                      {t.event}
+                    </span>
+                  </div>
+                  <div className="flex text-amber-500 text-sm">
+                    {"★".repeat(t.rating)}{"☆".repeat(5 - t.rating)}
+                  </div>
                 </div>
-                <div className="flex text-amber-500 text-sm">★★★★★</div>
+                <p className="font-serif text-lg text-slate-700 italic leading-relaxed">
+                  &ldquo;{t.text}&rdquo;
+                </p>
               </div>
-              <p className="font-serif text-lg text-slate-700 italic leading-relaxed">
-                &ldquo;El servicio de El Legado fue sencillamente excepcional.
-                Nuestros invitados no pararon de elogiar los mini churrascos
-                gourmet y la fina variedad dulce. El trato tan humano y
-                profesional del personal nos dio una tranquilidad impagable en
-                nuestro gran día. ¡Hicieron eterno nuestro momento!&rdquo;
-              </p>
-            </div>
-            <div className="mt-8 pt-4 border-t border-brand-copper/5 flex items-center justify-between text-[10px] font-semibold text-brand-copper tracking-widest uppercase">
-              <span>Menú: Salado + Dulce + Staff</span>
-              <span className="text-[9px] text-slate-400 font-normal normal-case">
-                Vía Google Reviews
-              </span>
-            </div>
-          </article>
-
-          <article className="bg-cream rounded-3xl p-8 border border-brand-copper/10 hover:shadow-xl hover:scale-[1.01] transition-all duration-500 flex flex-col justify-between group">
-            <div className="space-y-6">
-              <div className="flex justify-between items-center border-b border-brand-copper/10 pb-4">
-                <div>
-                  <h4 className="font-serif text-2xl font-semibold text-brand-copper italic">
-                    Lanzamiento Corporativo Tech
-                  </h4>
-                  <span className="text-[10px] text-slate-600 tracking-wider uppercase font-medium">
-                    Evento Empresarial &bull; 80 Invitados
-                  </span>
+              {t.menu && (
+                <div className="mt-8 pt-4 border-t border-brand-copper/5 flex items-center justify-between text-[10px] font-semibold text-brand-copper tracking-widest uppercase">
+                  <span>Menú: {t.menu}</span>
                 </div>
-                <div className="flex text-amber-500 text-sm">★★★★★</div>
-              </div>
-              <p className="font-serif text-lg text-slate-700 italic leading-relaxed">
-                &ldquo;Organizar el catering para eventos corporativos suele ser
-                complejo, pero con El Legado todo fluyó a la perfección. La
-                presentación de los canapés fue impecable y elegante, los
-                sabores exquisitos y el servicio de vajilla y garzones
-                sumamente profesional. Un éxito total recomendado al
-                100%.&rdquo;
-              </p>
-            </div>
-            <div className="mt-8 pt-4 border-t border-brand-copper/5 flex items-center justify-between text-[10px] font-semibold text-brand-copper tracking-widest uppercase">
-              <span>Menú: Salado + Staff + Decoración</span>
-              <span className="text-[9px] text-slate-400 font-normal normal-case">
-                Vía LinkedIn Reviews
-              </span>
-            </div>
-          </article>
+              )}
+            </article>
+          ))}
         </div>
       </div>
     </section>

@@ -4,16 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useSiteConfig } from "@/lib/site-config";
 
-const NAV_LINKS = [
-  { href: "#inicio", label: "Inicio" },
-  { href: "#filosofia", label: "Filosofía" },
-  { href: "#festin", label: "El Festín" },
-];
-
 export default function Navbar() {
   const config = useSiteConfig();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const links = config.navbar.links;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -54,12 +49,12 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         <a
-          href="#inicio"
+          href={links[0]?.href || "#hero"}
           className="flex items-center gap-3 group"
           aria-label="Volver al inicio"
         >
           <Image
-            src="/logo.webp"
+            src={config.navbar.logoUrl}
             alt="Logo EL LEGADO"
             width={40}
             height={40}
@@ -71,7 +66,7 @@ export default function Navbar() {
         </a>
 
         <div className="flex items-center space-x-4 md:space-x-8 text-[10px] md:text-xs font-medium tracking-[0.2em] uppercase">
-          {NAV_LINKS.map((link) => (
+          {links.slice(0, 3).map((link) => (
             <a
               key={link.href}
               href={link.href}
@@ -95,32 +90,12 @@ export default function Navbar() {
             aria-controls="mobile-menu"
           >
             {isOpen ? (
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
           </button>
@@ -137,7 +112,7 @@ export default function Navbar() {
         }`}
         onKeyDown={handleKeyDown}
       >
-        {NAV_LINKS.map((link) => (
+        {links.map((link) => (
           <a
             key={link.href}
             href={link.href}
@@ -160,18 +135,8 @@ export default function Navbar() {
           className="absolute top-6 right-6 text-brand-copper z-50 pointer-events-auto"
           aria-label="Cerrar menú"
         >
-          <svg
-            className="w-8 h-8 pointer-events-none"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
+          <svg className="w-8 h-8 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
