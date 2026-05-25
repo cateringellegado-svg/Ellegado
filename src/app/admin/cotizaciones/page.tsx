@@ -44,19 +44,21 @@ const PAGE_SIZE = 10;
 export default function CotizacionesPage() {
   const [data, setData] = useState<Cotizacion[]>([]);
   const [filter, setFilter] = useState("");
+  const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Cotizacion | null>(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
-  const load = useCallback(async (estadoFilter: string, pageNum: number) => {
+  const load = useCallback(async (estadoFilter: string, searchTerm: string, pageNum: number) => {
     if (!supabase) return;
     const from = (pageNum - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
-    const countQuery = supabase
+    let countQuery = supabase
       .from("cotizaciones")
       .select("*", { count: "exact", head: true });
-    if (estadoFilter) countQuery.eq("estado", estadoFilter);
+    if (estadoFilter) countQuery = countQuery.eq("estado", estadoFilter);
+    if (searchTerm) countQuery = countQuery.or(`cliente_nombre.ilike.%${searchTerm}%,cliente_email.ilike.%${searchTerm}%`);
 
     let dataQuery = supabase
       .from("cotizaciones")
@@ -64,6 +66,7 @@ export default function CotizacionesPage() {
       .order("created_at", { ascending: false })
       .range(from, to);
     if (estadoFilter) dataQuery = dataQuery.eq("estado", estadoFilter);
+    if (searchTerm) dataQuery = dataQuery.or(`cliente_nombre.ilike.%${searchTerm}%,cliente_email.ilike.%${searchTerm}%`);
 
     const [{ count }, { data: result }] = await Promise.all([countQuery, dataQuery]);
     setTotal(count ?? 0);
@@ -72,12 +75,12 @@ export default function CotizacionesPage() {
 
   useEffect(() => {
     setPage(1);
-    load(filter, 1);
-  }, [filter, load]);
+    load(filter, search, 1);
+  }, [filter, search, load]);
 
   useEffect(() => {
-    load(filter, page);
-  }, [page, filter, load]);
+    load(filter, search, page);
+  }, [page, filter, search, load]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -85,7 +88,7 @@ export default function CotizacionesPage() {
 
   const updateEstado = async (id: string, estado: string) => {
     await supabase?.from("cotizaciones").update({ estado }).eq("id", id);
-    load(filter, page);
+    load(filter, search, page);
   };
 
   const exportCSV = () => {
@@ -124,6 +127,10 @@ export default function CotizacionesPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             Exportar CSV
           </button>
+          <div className="relative">
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar cliente o email..." className="bg-white border border-brand-copper/20 rounded-lg pl-9 pr-4 py-2 text-sm w-48 focus:outline-none focus:border-brand-copper" />
+            <svg className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          </div>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}

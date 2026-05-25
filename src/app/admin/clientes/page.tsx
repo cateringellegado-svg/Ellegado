@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import Pagination from "@/components/Pagination";
 
@@ -11,7 +11,6 @@ interface Cliente {
   telefono: string | null;
   created_at: string;
   ultimo_contacto: string | null;
-  total_eventos?: number;
 }
 
 function formatDate(d: string | null) {
@@ -25,32 +24,56 @@ export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    async function load() {
-      if (!supabase) return;
-      const from = (page - 1) * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
+  const load = useCallback(async (searchTerm: string, pageNum: number) => {
+    if (!supabase) return;
+    const from = (pageNum - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
 
-      const { count } = await supabase
-        .from("clientes")
-        .select("*", { count: "exact", head: true });
+    let countQuery = supabase.from("clientes").select("*", { count: "exact", head: true });
+    let dataQuery = supabase.from("clientes").select("*").order("created_at", { ascending: false }).range(from, to);
 
-      const { data } = await supabase
-        .from("clientes")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .range(from, to);
-
-      setTotal(count ?? 0);
-      setClientes(data || []);
+    if (searchTerm) {
+      countQuery = countQuery.or(`nombre.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+      dataQuery = dataQuery.or(`nombre.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
     }
-    load();
-  }, [page]);
+
+    const [{ count }, { data }] = await Promise.all([countQuery, dataQuery]);
+    setTotal(count ?? 0);
+    setClientes(data || []);
+  }, []);
+
+  useEffect(() => { load(search, page); }, [page, search, load]);
+
+  const exportCSV = () => {
+    const headers = ["Nombre", "Email", "Teléfono", "Registrado", "Último Contacto"];
+    const rows = clientes.map((c) => [c.nombre || "", c.email || "", c.telefono || "", formatDate(c.created_at), formatDate(c.ultimo_contacto)]);
+    const csv = [headers.join(","), ...rows.map((r) => r.map((v) => `"${v.replace(/"/g, '""')}"`).join(","))].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `clientes_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <>
-      <h1 className="font-serif text-4xl text-dark-elegant mb-8">Clientes</h1>
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
+        <h1 className="font-serif text-4xl text-dark-elegant">Clientes</h1>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Buscar cliente o email..." className="bg-white border border-brand-copper/20 rounded-lg pl-9 pr-4 py-2 text-sm w-48 focus:outline-none focus:border-brand-copper" />
+            <svg className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          </div>
+          <button onClick={exportCSV} disabled={clientes.length === 0} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            Exportar CSV
+          </button>
+        </div>
+      </div>
       <div className="bg-white rounded-2xl shadow-lg border border-brand-copper/10 overflow-hidden">
         <table className="w-full">
           <thead className="bg-cream border-b border-brand-copper/10">
