@@ -3,11 +3,7 @@ import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { SiteConfigProvider } from "@/lib/site-config";
 import { ToastProvider } from "@/components/Toast";
 import DynamicSEO from "@/components/DynamicSEO";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
-import BackToTop from "@/components/BackToTop";
-import CookieConsent from "@/components/CookieConsent";
+import PublicLayoutWrapper from "@/components/PublicLayoutWrapper";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -58,14 +54,9 @@ export default function RootLayout({
         <SiteConfigProvider>
           <DynamicSEO />
           <ToastProvider>
-            <Navbar />
-            <main id="main-content">
+            <PublicLayoutWrapper>
               {children}
-            </main>
-            <Footer />
-            <WhatsAppButton />
-            <BackToTop />
-            <CookieConsent />
+            </PublicLayoutWrapper>
           </ToastProvider>
         </SiteConfigProvider>
 

@@ -89,7 +89,9 @@ describe("Legalidad Fiscal — Factura Tipo C sin IVA", () => {
   it("rechaza factura Tipo C con iva_desglosado > 0", () => {
     const result = validarFacturaTipoC({ ...baseFacturaC, iva_desglosado: 10500 });
     expect(result.valid).toBe(false);
-    expect(result.error).toContain("no deben desglosar IVA");
+    if (!result.valid) {
+      expect(result.error).toContain("no deben desglosar IVA");
+    }
   });
 
   it("rechaza factura Tipo C con total cero o negativo", () => {

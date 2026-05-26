@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function AdminLogin() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -22,7 +23,10 @@ export default function AdminLogin() {
         password,
       });
       if (authError) throw authError;
-      router.push("/admin");
+      // Force session refresh so the client picks up the new session
+      await supabase.auth.getSession();
+      const redirectTo = searchParams.get("redirect") || "/admin/financiero";
+      router.push(redirectTo);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error al iniciar sesión";
       setError(message);
