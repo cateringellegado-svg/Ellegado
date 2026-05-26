@@ -3,12 +3,12 @@
 import { getWhatsAppUrl } from "@/lib/constants";
 import { useSiteConfig } from "@/lib/site-config";
 
-function openWhatsApp() {
-  window.open(getWhatsAppUrl(), "_blank", "noopener,noreferrer");
-}
-
 export default function CTA() {
   const config = useSiteConfig();
+
+  function openWhatsApp() {
+    window.open(getWhatsAppUrl(config.contact.whatsapp), "_blank", "noopener,noreferrer");
+  }
 
   return (
     <section

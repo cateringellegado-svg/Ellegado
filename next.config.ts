@@ -28,6 +28,20 @@ const cspHeader = `
 `;
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: (() => {
+      try {
+        return supabaseUrl ? [
+          {
+            protocol: "https",
+            hostname: new URL(supabaseUrl).hostname,
+          },
+        ] : [];
+      } catch {
+        return [];
+      }
+    })(),
+  },
   async headers() {
     return [
       {

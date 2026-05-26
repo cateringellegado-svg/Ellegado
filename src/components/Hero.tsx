@@ -4,12 +4,12 @@ import Image from "next/image";
 import { getWhatsAppUrl } from "@/lib/constants";
 import { useSiteConfig } from "@/lib/site-config";
 
-function openWhatsApp() {
-  window.open(getWhatsAppUrl(), "_blank", "noopener,noreferrer");
-}
-
 export default function Hero() {
   const config = useSiteConfig();
+
+  function openWhatsApp() {
+    window.open(getWhatsAppUrl(config.contact.whatsapp), "_blank", "noopener,noreferrer");
+  }
 
   const heroImage = config.images.hero || "/hero_catering.webp";
   const heroAlt = config.images.hero ? "Hero" : "Fondo de catering elegante";

@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import type { CotizacionSeleccion } from "@/types";
 import { useToast } from "./Toast";
 import { getWhatsAppUrl } from "@/lib/constants";
+import { useSiteConfig } from "@/lib/site-config";
 const WHATSAPP_MSG_PREFIX =
   "Hola El Legado, me gustaría solicitar una cotización de catering.";
 
@@ -20,6 +21,7 @@ export default function CotizacionModal({
   cotizacion,
   total,
 }: Props) {
+  const config = useSiteConfig();
   const { showToast } = useToast();
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -46,7 +48,7 @@ export default function CotizacionModal({
       const mensajePersonal = `Mi nombre es ${nombre}. Quedo atento a su respuesta para coordinar los detalles.`;
       const mensaje = `${WHATSAPP_MSG_PREFIX}\n\n*Productos solicitados:*\n${productosTexto}\n\n*Total estimado:* ${totalFormat}\n\n${mensajePersonal}`;
 
-      const waUrl = getWhatsAppUrl(mensaje);
+      const waUrl = getWhatsAppUrl(config.contact.whatsapp, mensaje);
 
       try {
         const res = await fetch("/api/cotizaciones", {
@@ -157,6 +159,7 @@ export default function CotizacionModal({
             <input
               type="text"
               required
+              autoFocus
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper"

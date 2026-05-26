@@ -7,9 +7,6 @@ const FALLBACK_IMAGES = [
   "/hero_catering.webp",
   "/event_vibe.webp",
   "/gourmet_canapes.webp",
-  "/gourmet_canapes.webp",
-  "/hero_catering.webp",
-  "/event_vibe.webp",
 ];
 
 const isUnique = (arr: string[]) => new Set(arr).size === arr.length;
@@ -18,14 +15,11 @@ const FALLBACK_ALT = [
   "Evento al aire libre",
   "Detalles de mesa",
   "Bocados premium",
-  "Canapés dulces",
-  "Celebración corporativa",
-  "Ambiente elegante",
 ];
 
 export default function Gallery() {
   const config = useSiteConfig();
-  const images = config.images.gallery.length >= 6 ? config.images.gallery : FALLBACK_IMAGES;
+  const images = config.images.gallery.length > 0 ? config.images.gallery : FALLBACK_IMAGES;
 
   return (
     <section id="galeria" className="py-24 bg-cream">

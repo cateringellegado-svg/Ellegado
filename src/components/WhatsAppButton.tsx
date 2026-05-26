@@ -1,10 +1,12 @@
 "use client";
 
 import { getWhatsAppUrl } from "@/lib/constants";
+import { useSiteConfig } from "@/lib/site-config";
 
 export default function WhatsAppButton() {
+  const config = useSiteConfig();
   const handleClick = () => {
-    window.open(getWhatsAppUrl(), "_blank", "noopener,noreferrer");
+    window.open(getWhatsAppUrl(config.contact.whatsapp), "_blank", "noopener,noreferrer");
   };
 
   return (
