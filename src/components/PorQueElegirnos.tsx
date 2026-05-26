@@ -40,7 +40,7 @@ export default function PorQueElegirnos() {
               className="text-center p-6 bg-cream rounded-2xl border border-brand-copper/10 hover:-translate-y-2 transition-transform duration-300"
             >
               <div className="w-16 h-16 bg-brand-copper/10 text-brand-copper rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   {ICON_MAP[f.icon] || ICON_MAP.star}
                 </svg>
               </div>

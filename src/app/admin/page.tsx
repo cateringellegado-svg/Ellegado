@@ -86,7 +86,7 @@ export default function AdminDashboard() {
           { data: monthCotiz },
           { data: prevCotiz },
           { data: eventos },
-          { data: clientes_count },
+          { count: clientes_count },
           { data: recentCots },
           { data: allCotiz },
           { data: estadoCount },
@@ -103,7 +103,7 @@ export default function AdminDashboard() {
         setStats({
           cotizaciones: (monthCotiz || []).length,
           eventos: (eventos || []).length,
-          clientes: clientes_count?.length ?? 0,
+          clientes: clientes_count ?? 0,
           ingresos: (monthCotiz || []).reduce((s, c) => s + (c.presupuesto || 0), 0),
           cotizacionesPrev: (prevCotiz || []).length,
           ingresosPrev: (prevCotiz || []).reduce((s, c) => s + (c.presupuesto || 0), 0),

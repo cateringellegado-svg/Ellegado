@@ -16,7 +16,7 @@ export default function CTA() {
       className="py-40 bg-brand-copper text-white text-center px-6 relative overflow-hidden"
     >
       <div className="absolute inset-0 opacity-10 pointer-events-none">
-        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
         </svg>
       </div>

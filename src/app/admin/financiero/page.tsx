@@ -158,7 +158,7 @@ export default function FinancieroPage() {
     setMsg("");
 
     const monto = Number(form.monto);
-    if (!form.cliente_id || !monto || monto <= 0) {
+    if (!form.cliente_id || isNaN(monto) || monto <= 0) {
       setMsg("Completá todos los campos obligatorios.");
       setSaving(false);
       return;
@@ -425,6 +425,7 @@ export default function FinancieroPage() {
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6"
           role="dialog"
           aria-modal="true"
+          aria-label="Registrar Pago Manual"
           onClick={() => setShowModal(false)}
         >
           <div

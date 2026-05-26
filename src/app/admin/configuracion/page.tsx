@@ -137,7 +137,7 @@ export default function ConfiguracionPage() {
         <button onClick={saveConfig} disabled={saving} className="bg-brand-copper text-white px-8 py-3 rounded-lg shadow-lg hover:shadow-brand-copper/30 transition-all font-medium cursor-pointer disabled:opacity-50">
           {saving ? "Guardando..." : "Guardar Configuración"}
         </button>
-        {msg && <p className={`text-sm ${msg.includes("Error") ? "text-red-500" : "text-green-600"}`}>{msg}</p>}
+        {msg && <p className={`text-sm ${msg.includes("Error") ? "text-red-500" : "text-green-600"}`} role="alert">{msg}</p>}
       </div>
       )}
     </>

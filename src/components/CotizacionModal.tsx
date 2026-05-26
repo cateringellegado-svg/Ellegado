@@ -68,8 +68,12 @@ export default function CotizacionModal({
         });
 
         if (!res.ok) {
-          const err = await res.json();
-          showToast(err.error || "Error al enviar cotización", "error");
+          let errMsg = "Error al enviar cotización";
+          try {
+            const err = await res.json();
+            errMsg = err.error || errMsg;
+          } catch {}
+          showToast(errMsg, "error");
           setSubmitting(false);
           return;
         }
@@ -153,10 +157,11 @@ export default function CotizacionModal({
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
+            <label htmlFor="cotizacion-nombre" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
               Nombre y Apellido *
             </label>
             <input
+              id="cotizacion-nombre"
               type="text"
               required
               autoFocus
@@ -166,10 +171,11 @@ export default function CotizacionModal({
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
+            <label htmlFor="cotizacion-telefono" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
               Teléfono *
             </label>
             <input
+              id="cotizacion-telefono"
               type="tel"
               required
               value={telefono}
@@ -180,10 +186,11 @@ export default function CotizacionModal({
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
+            <label htmlFor="cotizacion-email" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
               Email
             </label>
             <input
+              id="cotizacion-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}

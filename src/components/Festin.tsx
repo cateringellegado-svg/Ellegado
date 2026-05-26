@@ -64,6 +64,7 @@ export default function Festin() {
   const [loadError, setLoadError] = useState(false);
   const mounted = useRef(true);
   const [cotizacion, setCotizacion] = useState<CotizacionSeleccion>(() => {
+    if (typeof window === "undefined") return {};
     try {
       return JSON.parse(localStorage.getItem("legado_cotizacion") || "{}");
     } catch {
@@ -72,6 +73,7 @@ export default function Festin() {
   });
   const [modalOpen, setModalOpen] = useState(false);
   const [rateLimit, setRateLimit] = useState<number[]>(() => {
+    if (typeof window === "undefined") return [];
     try {
       return JSON.parse(localStorage.getItem("legado_rate_limit") || "[]");
     } catch {
@@ -256,6 +258,7 @@ export default function Festin() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"

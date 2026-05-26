@@ -11,7 +11,7 @@ export default function Error({
       <h1 className="font-serif text-6xl md:text-7xl text-brand-copper font-bold mb-4">
         Oops
       </h1>
-      <p className="font-serif text-2xl text-dark-elegant mb-4">
+      <p className="font-serif text-2xl text-dark-elegant mb-4" role="alert">
         Algo salió mal
       </p>
       <p className="text-slate-500 mb-8 max-w-md">

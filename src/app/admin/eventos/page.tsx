@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 interface Evento {
   id: string;
@@ -44,6 +45,7 @@ export default function EventosPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
 
@@ -102,12 +104,16 @@ export default function EventosPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar este evento?")) return;
-    const { error } = await supabase?.from("eventos").delete().eq("id", id) ?? {};
+    setConfirmDelete(id);
+  };
+
+  const confirmDeleteAction = async () => {
+    if (!confirmDelete) return;
+    const { error } = await supabase?.from("eventos").delete().eq("id", confirmDelete) ?? {};
     if (error) {
       setMsg("Error al eliminar: " + error.message);
-      return;
     }
+    setConfirmDelete(null);
     load();
   };
 
@@ -230,7 +236,7 @@ export default function EventosPage() {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" role="dialog" aria-modal="true" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" role="dialog" aria-modal="true" aria-label={editId ? "Editar Evento" : "Nuevo Evento"} onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-serif text-2xl text-dark-elegant">{editId ? "Editar Evento" : "Nuevo Evento"}</h2>
@@ -292,6 +298,14 @@ export default function EventosPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        title="Eliminar Evento"
+        message="¿Estás seguro de eliminar este evento? Esta acción no se puede deshacer."
+        onConfirm={confirmDeleteAction}
+        onCancel={() => setConfirmDelete(null)}
+      />
       </>
       )}
     </>

@@ -224,7 +224,7 @@ export default function CMSPage() {
       </div>
 
       {msg && (
-        <div className={`mb-4 px-4 py-3 rounded-lg text-sm ${msg.includes("Error") ? "bg-red-50 text-red-600 border border-red-200" : "bg-green-50 text-green-600 border border-green-200"}`}>
+        <div className={`mb-4 px-4 py-3 rounded-lg text-sm ${msg.includes("Error") ? "bg-red-50 text-red-600 border border-red-200" : "bg-green-50 text-green-600 border border-green-200"}`} role="alert">
           <div className="flex justify-between items-center">
             <span>{msg}</span>
             <button onClick={() => setMsg("")} className="ml-4 text-current opacity-50 hover:opacity-100 cursor-pointer">×</button>

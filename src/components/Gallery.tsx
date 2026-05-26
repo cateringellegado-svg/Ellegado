@@ -42,7 +42,7 @@ export default function Gallery() {
             >
               <Image
                 src={src}
-                alt={FALLBACK_ALT[i] || ""}
+                alt={FALLBACK_ALT[i] || `Galería ${i + 1}`}
                 width={400}
                 height={500}
                 sizes="(max-width: 768px) 50vw, 33vw"

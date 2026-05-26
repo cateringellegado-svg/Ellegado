@@ -221,7 +221,7 @@ export default function CotizacionesPage() {
       )}
 
       {selected && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" role="dialog" aria-modal="true" onClick={() => setSelected(null)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" role="dialog" aria-modal="true" aria-label="Detalle Cotización" onClick={() => setSelected(null)}>
           <div className="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-serif text-2xl text-dark-elegant">Detalle Cotización</h2>

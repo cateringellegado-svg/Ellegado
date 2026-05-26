@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { uploadMenuImage, deleteMenuImage, validateImage } from "@/lib/storage";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 interface MenuItem {
   id: string;
@@ -44,6 +45,7 @@ export default function MenusPage() {
   const dropRef = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [quickItemId, setQuickItemId] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; imagen_url?: string | null } | null>(null);
 
   const showNotif = (msg: string, type: "success" | "error") => {
     setNotif({ msg, type });
@@ -76,9 +78,14 @@ export default function MenusPage() {
   };
 
   const deleteItem = async (id: string, imagen_url?: string | null) => {
-    if (!confirm("¿Eliminar este item?")) return;
-    if (imagen_url) await deleteMenuImage(imagen_url);
-    await supabase?.from("menu_items").delete().eq("id", id);
+    setConfirmDelete({ id, imagen_url });
+  };
+
+  const confirmDeleteAction = async () => {
+    if (!confirmDelete) return;
+    if (confirmDelete.imagen_url) await deleteMenuImage(confirmDelete.imagen_url);
+    await supabase?.from("menu_items").delete().eq("id", confirmDelete.id);
+    setConfirmDelete(null);
     load();
   };
 
@@ -257,7 +264,7 @@ export default function MenusPage() {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" role="dialog" aria-modal="true" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" role="dialog" aria-modal="true" aria-label={editing?.id ? "Editar Item" : "Agregar Item"} onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-serif text-2xl text-dark-elegant">{editing?.id ? "Editar Item" : "Agregar Item"}</h2>
@@ -372,6 +379,14 @@ export default function MenusPage() {
         accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
         onChange={handleQuickFileSelect}
         className="hidden"
+      />
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        title="Eliminar Item"
+        message="¿Estás seguro de eliminar este item del menú? Esta acción no se puede deshacer."
+        onConfirm={confirmDeleteAction}
+        onCancel={() => setConfirmDelete(null)}
       />
     </>
   );
