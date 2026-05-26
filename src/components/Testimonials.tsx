@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import { useSiteConfig } from "@/lib/site-config";
 import type { SiteTestimonial } from "@/lib/site-config";
 
 export default function Testimonials() {
+  const supabase = createClient();
   const config = useSiteConfig();
   const [testimonials, setTestimonials] = useState<SiteTestimonial[]>([]);
   const [loading, setLoading] = useState(true);

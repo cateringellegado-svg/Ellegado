@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Image from "next/image";
 import type { Producto, CotizacionSeleccion } from "@/types";
-import { fetchProductsByCategory, supabase } from "@/lib/supabase";
+import { fetchProductsByCategory } from "@/lib/supabase";
 import CotizacionModal from "./CotizacionModal";
 import { useToast } from "./Toast";
 import { useSiteConfig } from "@/lib/site-config";

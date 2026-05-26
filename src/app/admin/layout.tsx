@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
 const NAV_ITEMS = [
@@ -37,6 +37,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [idleWarning, setIdleWarning] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const supabase = useMemo(() => createClient(), []);
+
   useEffect(() => {
     let mounted = true;
     let idleTimer: ReturnType<typeof setTimeout>;
@@ -50,7 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       warningTimer = setTimeout(() => setIdleWarning(true), IDLE_TIMEOUT - 60_000);
       idleTimer = setTimeout(async () => {
         try {
-          await supabase?.auth.signOut();
+          await supabase.auth.signOut();
         } catch (e) {
           console.error("Error signing out on idle:", e);
         }
@@ -68,7 +70,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           if (mounted) setChecking(false);
           return;
         }
-        if (!supabase) { router.push("/admin/login"); return; }
         const { data: { session } } = await supabase.auth.getSession();
         if (!session && mounted) router.push("/admin/login");
       } catch (e) {
@@ -79,14 +80,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
     checkAuth();
 
-    const { data: listener } = supabase?.auth.onAuthStateChange((event) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") router.push("/admin/login");
     }) ?? { data: null };
 
     const refreshInterval = setInterval(async () => {
       try {
         if (pathname === "/admin/login") return;
-        const { data: { session } } = await supabase?.auth.getSession() ?? { data: { session: null } };
+        const { data: { session } } = await supabase.auth.getSession();
         if (!session && mounted) router.push("/admin/login");
       } catch (e) {
         console.error("Error refreshing session:", e);
@@ -101,7 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       events.forEach((e) => window.removeEventListener(e, resetIdle));
       listener?.subscription.unsubscribe();
     };
-  }, [pathname, router]);
+  }, [pathname, router, supabase]);
 
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
@@ -119,7 +120,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const handleLogout = async () => {
-    await supabase?.auth.signOut();
+    await supabase.auth.signOut();
     router.push("/admin/login");
   };
 

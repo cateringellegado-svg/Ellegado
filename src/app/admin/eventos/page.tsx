@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
 interface Evento {
@@ -39,6 +39,7 @@ const emptyForm = {
 };
 
 export default function EventosPage() {
+  const supabase = createClient();
   const [data, setData] = useState<Evento[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);

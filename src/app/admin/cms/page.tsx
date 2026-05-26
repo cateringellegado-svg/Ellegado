@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import { WHATSAPP_NUMBER } from "@/lib/constants";
 import { uploadSiteImage, deleteSiteImage } from "@/lib/storage";
 
@@ -84,6 +84,7 @@ function sanitize(val: string) {
 }
 
 export default function CMSPage() {
+  const supabase = createClient();
   const [config, setConfig] = useState<CMSConfig>(DEFAULT_CMS);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");

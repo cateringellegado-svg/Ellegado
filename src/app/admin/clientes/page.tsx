@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import Pagination from "@/components/Pagination";
 
 interface Cliente {
@@ -21,6 +21,7 @@ function formatDate(d: string | null) {
 const PAGE_SIZE = 10;
 
 export default function ClientesPage() {
+  const supabase = createClient();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);

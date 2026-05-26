@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, createContext, useContext } from "react";
-import { supabase } from "./supabase";
+import { createClient } from "./supabase/client";
 
 export interface SiteColors {
   primary: string;
@@ -295,7 +295,7 @@ export function sanitizeText(val: string): string {
 }
 
 export async function fetchSiteConfigFromDB(): Promise<SiteConfig> {
-  if (!supabase) return DEFAULT_SITE_CONFIG;
+  const supabase = createClient();
   const { data } = await supabase.from("site_config").select("*");
   if (!data) return DEFAULT_SITE_CONFIG;
 

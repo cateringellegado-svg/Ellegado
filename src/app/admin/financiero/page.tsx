@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 interface ClienteSummary {
   id: string;
   nombre: string;
@@ -69,6 +69,7 @@ function formatFecha(d: string | null | undefined) {
 }
 
 export default function FinancieroPage() {
+  const supabase = createClient();
   const [ingresosMes, setIngresosMes] = useState(0);
   const [ingresosUSD, setIngresosUSD] = useState(0);
   const [pendientes, setPendientes] = useState(0);

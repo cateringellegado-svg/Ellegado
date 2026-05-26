@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import Pagination from "@/components/Pagination";
 
 interface Cotizacion {
@@ -42,6 +42,7 @@ function estadoClass(e: string) {
 const PAGE_SIZE = 10;
 
 export default function CotizacionesPage() {
+  const supabase = createClient();
   const [data, setData] = useState<Cotizacion[]>([]);
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");

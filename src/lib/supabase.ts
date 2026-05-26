@@ -1,19 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient as createBrowserClient } from "@/lib/supabase/client";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn("Supabase URL or Anon Key is missing. Running in offline mode.");
+function getClient() {
+  return createBrowserClient();
 }
 
-export const supabase =
-  supabaseUrl && supabaseUrl.startsWith("http")
-    ? createClient(supabaseUrl, supabaseAnonKey!)
-    : null;
-
 export async function fetchProductsByCategory(category: string) {
-  if (!supabase) return null;
+  const supabase = getClient();
   const { data, error } = await supabase
     .from("menu_items")
     .select("*")
@@ -28,7 +20,7 @@ export async function fetchProductsByCategory(category: string) {
 }
 
 export async function fetchSiteConfig() {
-  if (!supabase) return null;
+  const supabase = getClient();
   const { data, error } = await supabase.from("site_config").select("*");
   if (error) return null;
   return data as { key: string; value: string }[];

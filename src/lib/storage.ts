@@ -1,9 +1,13 @@
-import { supabase } from "./supabase";
+import { createClient } from "./supabase/client";
 
 const MENU_BUCKET = "menu-images";
 const SITE_BUCKET = "site-images";
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+
+function getSupabase() {
+  return createClient();
+}
 
 export function validateImage(file: File): string | null {
   if (!ALLOWED_TYPES.includes(file.type)) {
@@ -16,8 +20,7 @@ export function validateImage(file: File): string | null {
 }
 
 export async function uploadMenuImage(file: File): Promise<string | null> {
-  if (!supabase) return null;
-
+  const supabase = getSupabase();
   const error = validateImage(file);
   if (error) throw new Error(error);
 
@@ -42,7 +45,8 @@ function getFileNameFromUrl(url: string): string {
 }
 
 export async function deleteMenuImage(url: string): Promise<void> {
-  if (!supabase || !url) return;
+  if (!url) return;
+  const supabase = getSupabase();
   const fileName = getFileNameFromUrl(url);
   if (!fileName) return;
   await supabase.storage.from(MENU_BUCKET).remove([fileName]);
@@ -53,8 +57,7 @@ export function getImageName(url: string): string {
 }
 
 export async function uploadSiteImage(file: File): Promise<string | null> {
-  if (!supabase) return null;
-
+  const supabase = getSupabase();
   const error = validateImage(file);
   if (error) throw new Error(error);
 
@@ -75,7 +78,8 @@ export async function uploadSiteImage(file: File): Promise<string | null> {
 }
 
 export async function deleteSiteImage(url: string): Promise<void> {
-  if (!supabase || !url) return;
+  if (!url) return;
+  const supabase = getSupabase();
   const fileName = getFileNameFromUrl(url);
   if (!fileName) return;
   await supabase.storage.from(SITE_BUCKET).remove([fileName]);

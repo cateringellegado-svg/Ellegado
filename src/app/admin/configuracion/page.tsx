@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import { WHATSAPP_NUMBER } from "@/lib/constants";
 
 interface ConfigForm {
@@ -25,6 +25,7 @@ const DEFAULT_CONFIG: ConfigForm = {
 };
 
 export default function ConfiguracionPage() {
+  const supabase = createClient();
   const [form, setForm] = useState<ConfigForm>(DEFAULT_CONFIG);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");

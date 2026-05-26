@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import { uploadMenuImage, deleteMenuImage, validateImage } from "@/lib/storage";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
@@ -32,6 +32,7 @@ function formatARS(v: number | null) {
 }
 
 export default function MenusPage() {
+  const supabase = createClient();
   const [items, setItems] = useState<MenuItem[]>([]);
   const [editing, setEditing] = useState<Partial<MenuItem> | null>(null);
   const [showModal, setShowModal] = useState(false);

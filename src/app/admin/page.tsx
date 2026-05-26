@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
@@ -58,6 +58,7 @@ const ESTADO_COLORS: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
+  const supabase = createClient();
   const [stats, setStats] = useState({
     cotizaciones: 0,
     eventos: 0,

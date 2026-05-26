@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function AdminLogin() {
@@ -17,13 +17,17 @@ export default function AdminLogin() {
     setError("");
     setLoading(true);
     try {
-      if (!supabase) throw new Error("Supabase no está configurado");
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      const supabase = createClient();
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (authError) throw authError;
-      // Force session refresh so the client picks up the new session
+
+      if (data.session) {
+        await supabase.auth.setSession(data.session);
+      }
+
       await supabase.auth.getSession();
       const redirectTo = searchParams.get("redirect") || "/admin/financiero";
       router.push(redirectTo);
