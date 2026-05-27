@@ -3,6 +3,15 @@
 import Image from "next/image";
 import { useSiteConfig } from "@/lib/site-config";
 
+function highlightBrand(text: string): React.ReactNode[] {
+  const parts = text.split(/(El Legado)/g);
+  return parts.map((part, i) =>
+    part === "El Legado"
+      ? <span key={i} className="font-bold text-brand-copper underline decoration-brand-copper/20 underline-offset-8">{part}</span>
+      : part
+  );
+}
+
 export default function Philosophy() {
   const config = useSiteConfig();
   const about = config.about;
@@ -19,7 +28,7 @@ export default function Philosophy() {
             {about.title}
           </h2>
           <p className="text-xl md:text-3xl font-serif leading-relaxed text-slate-800 italic">
-            &ldquo;{about.text}&rdquo;
+            &ldquo;{highlightBrand(about.text)}&rdquo;
           </p>
           {about.highlight && (
             <p className="mt-8 text-lg text-slate-600 font-sans tracking-wide">

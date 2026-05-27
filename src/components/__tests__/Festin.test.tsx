@@ -5,6 +5,9 @@ import Festin from "@/components/Festin";
 vi.mock("@/lib/supabase", () => ({
   supabase: null,
   fetchProductsByCategory: vi.fn().mockResolvedValue(null),
+  fetchCombos: vi.fn().mockResolvedValue(null),
+  fetchConfiguracion: vi.fn().mockResolvedValue({ factor_ajuste: 1, entorno: "produccion" }),
+  insertLead: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock("@/lib/site-config", () => ({
@@ -39,6 +42,43 @@ const localStorageMock = (() => {
 
 vi.stubGlobal("localStorage", localStorageMock);
 
+async function goToStep4() {
+  await waitFor(() => {
+    expect(screen.getByText("Social")).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByText("Social"));
+  await waitFor(() => {
+    expect(screen.getByPlaceholderText("Ej: 50")).toBeInTheDocument();
+  });
+  fireEvent.change(screen.getByPlaceholderText("Ej: 50"), { target: { value: "50" } });
+  fireEvent.click(screen.getByText("Siguiente →"));
+  await waitFor(() => {
+    expect(screen.getByText(/Paso 3 de 4/)).toBeInTheDocument();
+  });
+  const today = new Date();
+  const minDate = new Date(today);
+  minDate.setDate(today.getDate() + 2);
+  const dateStr = minDate.toISOString().split("T")[0];
+  const dateInput = screen.getByTestId("fecha-input");
+  fireEvent.change(dateInput, { target: { value: dateStr } });
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "10:00" })).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByText("10:00"));
+  fireEvent.click(screen.getByText("Siguiente →"));
+  await waitFor(() => {
+    expect(screen.getByText(/Paso 4 de 4/)).toBeInTheDocument();
+  });
+}
+
+async function goToPersonalizar() {
+  await goToStep4();
+  fireEvent.click(screen.getByText("Personalizar menú →"));
+  await waitFor(() => {
+    expect(screen.queryByText("Canapés")).toBeInTheDocument();
+  });
+}
+
 describe("Festin", () => {
   beforeEach(() => {
     localStorageMock.clear();
@@ -47,14 +87,8 @@ describe("Festin", () => {
 
   it("renders fallback products when Supabase is unavailable", async () => {
     render(<Festin />);
-    await waitFor(() => {
-      expect(screen.queryByText("Canapés")).toBeInTheDocument();
-    });
-  });
-
-  it("shows loading state initially", () => {
-    render(<Festin />);
-    expect(screen.getByText("Cargando productos...")).toBeInTheDocument();
+    await goToPersonalizar();
+    expect(screen.getByText("Canapés")).toBeInTheDocument();
   });
 
   it("renders the section title from config", async () => {
@@ -64,8 +98,9 @@ describe("Festin", () => {
     });
   });
 
-  it("switches between tabs", async () => {
+  it("switches between tabs in personalizar mode", async () => {
     render(<Festin />);
+    await goToPersonalizar();
     const premiumTab = screen.getByRole("tab", { name: "Experiencia Premium" });
     fireEvent.click(premiumTab);
     await waitFor(() => {
@@ -75,9 +110,7 @@ describe("Festin", () => {
 
   it("shows toast when cotizar with no products selected", async () => {
     render(<Festin />);
-    await waitFor(() => {
-      expect(screen.queryByText("Canapés")).toBeInTheDocument();
-    });
+    await goToPersonalizar();
     const cotizarBtn = screen.getByText("Cotizar por WhatsApp");
     fireEvent.click(cotizarBtn);
   });
@@ -88,12 +121,10 @@ describe("Festin", () => {
 
   it("persists cotizacion to localStorage on change", async () => {
     render(<Festin />);
-    await waitFor(() => {
-      expect(screen.queryByText("Canapés")).toBeInTheDocument();
-    });
-    const increaseButtons = screen.getAllByRole("button", { name: /Aumentar/ });
-    if (increaseButtons.length > 0) {
-      fireEvent.click(increaseButtons[0]);
+    await goToPersonalizar();
+    const solicitarButtons = screen.getAllByText("Solicitar Lote de 50");
+    if (solicitarButtons.length > 0) {
+      fireEvent.click(solicitarButtons[0]);
       await waitFor(() => {
         expect(localStorageMock.setItem).toHaveBeenCalledWith(
           "legado_cotizacion",
@@ -101,5 +132,12 @@ describe("Festin", () => {
         );
       });
     }
+  });
+
+  it("shows mode selector with combo and personalizar options at step 4", async () => {
+    render(<Festin />);
+    await goToStep4();
+    expect(screen.getByText("Solución en Combos")).toBeInTheDocument();
+    expect(screen.getByText("Experiencia a Medida")).toBeInTheDocument();
   });
 });

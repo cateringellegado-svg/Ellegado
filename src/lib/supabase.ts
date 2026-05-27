@@ -19,9 +19,146 @@ export async function fetchProductsByCategory(category: string) {
   return data;
 }
 
+export async function fetchCombos() {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from("combos")
+    .select("*")
+    .eq("activo", true)
+    .order("orden");
+  if (error) {
+    console.error("Error fetching combos:", error);
+    return null;
+  }
+  return data as import("@/types").Combo[];
+}
+
+export async function insertLead(tipo_evento: string, num_invitados: number | null) {
+  const supabase = getClient();
+  const { error } = await supabase.from("leads").insert([
+    { tipo_evento, num_invitados },
+  ]);
+  if (error) {
+    console.error("Error inserting lead:", error);
+  }
+}
+
 export async function fetchSiteConfig() {
   const supabase = getClient();
   const { data, error } = await supabase.from("site_config").select("*");
   if (error) return null;
   return data as { key: string; value: string }[];
+}
+
+export async function fetchConfiguracion() {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from("configuracion")
+    .select("factor_ajuste, entorno")
+    .limit(1)
+    .single();
+  if (error) {
+    console.error("Error fetching configuracion:", error);
+    return null;
+  }
+  return data as { factor_ajuste: number; entorno?: string };
+}
+
+export async function checkComboCapacidad(comboId: string, fecha: string) {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .rpc("check_combo_capacidad", { p_combo_id: comboId, p_fecha: fecha });
+  if (error) {
+    console.error("Error checking combo capacity:", error);
+    return null;
+  }
+  return data as { disponible: boolean; cupo_total: number; cupo_usado: number }[];
+}
+
+export async function fetchConfiguracionCompleta() {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from("configuracion")
+    .select("*")
+    .limit(1)
+    .single();
+  if (error) {
+    console.error("Error fetching configuracion completa:", error);
+    return null;
+  }
+  return data as import("@/types").Configuracion;
+}
+
+export async function updateConfiguracionAdmin(values: {
+  factor_ajuste?: number;
+  mp_access_token?: string;
+  mp_access_token_test?: string;
+  entorno?: "produccion" | "prueba";
+  capacidad_diaria_total?: number;
+}) {
+  const supabase = getClient();
+  const id = (await supabase.from("configuracion").select("id").limit(1).single()).data?.id;
+  if (!id) {
+    const { error: insertError } = await supabase.from("configuracion").insert([{ factor_ajuste: 1.0, ...values }]);
+    return { error: insertError };
+  }
+  const { error } = await supabase.from("configuracion").update(values).eq("id", id);
+  return { error };
+}
+
+export async function fetchAllCombosAdmin() {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from("combos")
+    .select("*")
+    .order("orden");
+  if (error) {
+    console.error("Error fetching all combos:", error);
+    return null;
+  }
+  return data as import("@/types").Combo[];
+}
+
+export async function updateComboAdmin(
+  id: string,
+  values: { nombre?: string; descripcion?: string; precio?: number; activo?: boolean; orden?: number }
+) {
+  const supabase = getClient();
+  const { error } = await supabase.from("combos").update(values).eq("id", id);
+  return { error };
+}
+
+export async function fetchAdminLogs(limit = 50) {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from("admin_logs")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error("Error fetching admin logs:", error);
+    return null;
+  }
+  return data as import("@/types").AdminLog[];
+}
+
+export async function insertAdminLog(accion: string, detalle = "", referenciaId = "") {
+  const supabase = getClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { error } = await supabase.from("admin_logs").insert({
+    accion,
+    detalle,
+    usuario_email: user?.email || "",
+    referencia_id: referenciaId,
+  });
+  return { error };
+}
+
+export async function marcarReservaManual(cotizacionId: string) {
+  const supabase = getClient();
+  const { error } = await supabase
+    .from("cotizaciones")
+    .update({ pago_metodo: "manual", pago_status: "reserved", reserva_manual: true, estado: "confirmada" })
+    .eq("id", cotizacionId);
+  return { error };
 }

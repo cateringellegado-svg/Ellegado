@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Pagination from "@/components/Pagination";
+import { marcarReservaManual, fetchAdminLogs, insertAdminLog } from "@/lib/supabase";
 
 interface Cotizacion {
   id: string;
@@ -15,6 +16,19 @@ interface Cotizacion {
   presupuesto: number | null;
   servicios: string | null;
   estado: string;
+  pago_metodo?: string;
+  pago_status?: string;
+  reserva_manual?: boolean;
+  fecha_entrega?: string;
+}
+
+interface AdminLogEntry {
+  id: string;
+  accion: string;
+  detalle: string;
+  usuario_email: string;
+  referencia_id: string;
+  created_at: string;
 }
 
 const ESTADOS = ["nueva", "contactada", "confirmada", "completada"];
@@ -39,6 +53,15 @@ function estadoClass(e: string) {
   return map[e] || "bg-slate-100 text-slate-700";
 }
 
+function pagoStatusClass(s: string) {
+  const map: Record<string, string> = {
+    pending: "bg-yellow-100 text-yellow-700",
+    paid: "bg-green-100 text-green-700",
+    reserved: "bg-purple-100 text-purple-700",
+  };
+  return map[s] || "bg-slate-100 text-slate-700";
+}
+
 const PAGE_SIZE = 10;
 
 export default function CotizacionesPage() {
@@ -49,6 +72,9 @@ export default function CotizacionesPage() {
   const [selected, setSelected] = useState<Cotizacion | null>(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [logs, setLogs] = useState<AdminLogEntry[]>([]);
+  const [showLogs, setShowLogs] = useState(false);
+  const [msg, setMsg] = useState("");
 
   const loadKeyRef = useRef("");
   const mountedRef = useRef(true);
@@ -87,22 +113,24 @@ export default function CotizacionesPage() {
     }
   }, []);
 
-  /* eslint-disable react-hooks/set-state-in-effect */
+  const loadLogs = useCallback(async () => {
+    const data = await fetchAdminLogs(20);
+    if (data && mountedRef.current) setLogs(data);
+  }, []);
+
   useEffect(() => {
     mountedRef.current = true;
     setPage(1);
     load(filter, search, 1);
+    loadLogs();
     return () => { mountedRef.current = false; };
-  }, [filter, search, load]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+  }, [filter, search, load, loadLogs]);
 
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     mountedRef.current = true;
     load(filter, search, page);
     return () => { mountedRef.current = false; };
   }, [page, filter, search, load]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -113,8 +141,22 @@ export default function CotizacionesPage() {
     load(filter, search, page);
   };
 
+  const handleMarcarReserva = async (id: string, clienteNombre: string | null) => {
+    setMsg("");
+    const { error } = await marcarReservaManual(id);
+    if (error) {
+      setMsg("Error al marcar reserva: " + error.message);
+      return;
+    }
+    await insertAdminLog("reserva_manual", `Reserva manual: ${clienteNombre || "Sin nombre"}`, id);
+    setMsg("Reserva marcada como manual correctamente");
+    load(filter, search, page);
+    loadLogs();
+    setTimeout(() => setMsg(""), 3000);
+  };
+
   const exportCSV = () => {
-    const headers = ["Fecha", "Cliente", "Email", "Teléfono", "Tipo Evento", "Invitados", "Presupuesto", "Estado", "Servicios"];
+    const headers = ["Fecha", "Cliente", "Email", "Teléfono", "Tipo Evento", "Invitados", "Presupuesto", "Estado", "Pago Status", "Servicios"];
     const rows = data.map((c) => [
       formatDate(c.created_at),
       c.cliente_nombre || "",
@@ -124,6 +166,7 @@ export default function CotizacionesPage() {
       String(c.num_invitados ?? ""),
       String(c.presupuesto ?? ""),
       c.estado,
+      c.pago_status || "",
       c.servicios || "",
     ]);
     const csv = [headers.join(","), ...rows.map((r) => r.map((v) => `"${v.replace(/"/g, '""')}"`).join(","))].join("\n");
@@ -141,6 +184,15 @@ export default function CotizacionesPage() {
       <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
         <h1 className="font-serif text-4xl text-dark-elegant">Cotizaciones</h1>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => { setShowLogs(!showLogs); if (!showLogs) loadLogs(); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+              showLogs ? "bg-brand-copper text-white" : "bg-white border border-brand-copper/20 text-slate-600 hover:bg-cream"
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            Trazabilidad
+          </button>
           <button
             onClick={exportCSV}
             disabled={data.length === 0}
@@ -164,6 +216,39 @@ export default function CotizacionesPage() {
         </div>
       </div>
 
+      {msg && (
+        <div className={`mb-4 px-4 py-3 rounded-lg text-sm ${msg.includes("Error") ? "bg-red-50 text-red-600 border border-red-200" : "bg-green-50 text-green-600 border border-green-200"}`} role="alert">
+          {msg}
+        </div>
+      )}
+
+      {showLogs && (
+        <div className="mb-8 bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-serif text-xl text-dark-elegant">Trazabilidad de Cotizaciones</h2>
+            <button onClick={loadLogs} className="text-sm text-brand-copper hover:text-brand-copper-light cursor-pointer">Actualizar</button>
+          </div>
+          {logs.length > 0 ? (
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {logs.map((log) => (
+                <div key={log.id} className="flex items-start gap-3 p-3 bg-cream rounded-lg text-sm">
+                  <div className="w-2 h-2 mt-1.5 rounded-full shrink-0 bg-brand-copper/50" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-dark-elegant capitalize">{log.accion.replace(/_/g, " ")}</p>
+                    {log.detalle && <p className="text-xs text-slate-500 mt-0.5">{log.detalle}</p>}
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      {new Date(log.created_at).toLocaleString("es-AR")} · {log.usuario_email || "admin"}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-slate-400 text-sm">No hay eventos registrados aún.</div>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <div className="animate-pulse bg-slate-200 rounded-2xl p-8 h-64" />
       ) : (
@@ -177,6 +262,7 @@ export default function CotizacionesPage() {
               <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Invitados</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Presupuesto</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Estado</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Pago</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
@@ -201,19 +287,37 @@ export default function CotizacionesPage() {
                   </select>
                 </td>
                 <td className="px-6 py-4">
-                  <button
-                    onClick={() => setSelected(c)}
-                    className="text-brand-copper hover:text-brand-copper-light cursor-pointer"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </button>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${pagoStatusClass(c.pago_status || "pending")}`}>
+                    {(c.pago_status || "pending") === "reserved" ? "Reservado" : c.pago_status === "paid" ? "Pagado" : "Pendiente"}
+                  </span>
+                  {c.reserva_manual && <span className="ml-1 text-[10px] text-purple-500">(manual)</span>}
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSelected(c)}
+                      className="text-brand-copper hover:text-brand-copper-light cursor-pointer"
+                      title="Ver detalle"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                    {c.pago_status !== "reserved" && c.pago_status !== "paid" && (
+                      <button
+                        onClick={() => handleMarcarReserva(c.id, c.cliente_nombre)}
+                        className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors cursor-pointer"
+                        title="Marcar como reservado manualmente"
+                      >
+                        Reservar
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             )) : (
-              <tr><td colSpan={7} className="px-6 py-8 text-center text-slate-400">No hay cotizaciones</td></tr>
+              <tr><td colSpan={8} className="px-6 py-8 text-center text-slate-400">No hay cotizaciones</td></tr>
             )}
           </tbody>
         </table>
@@ -236,6 +340,8 @@ export default function CotizacionesPage() {
               <div><span className="font-semibold text-slate-600">Invitados:</span> <span className="text-dark-elegant">{selected.num_invitados}</span></div>
               <div><span className="font-semibold text-slate-600">Presupuesto:</span> <span className="text-dark-elegant">{formatARS(selected.presupuesto)}</span></div>
               <div><span className="font-semibold text-slate-600">Estado:</span> <span className={`text-xs px-2 py-1 rounded-full ${estadoClass(selected.estado)}`}>{selected.estado}</span></div>
+              <div><span className="font-semibold text-slate-600">Pago:</span> <span className={`text-xs px-2 py-1 rounded-full ${pagoStatusClass(selected.pago_status || "pending")}`}>{(selected.pago_status || "pending") === "reserved" ? "Reservado manualmente" : selected.pago_status === "paid" ? "Pagado vía MP" : "Pendiente"}</span></div>
+              {selected.fecha_entrega && <div><span className="font-semibold text-slate-600">Fecha Entrega:</span> <span className="text-dark-elegant">{selected.fecha_entrega}</span></div>}
               {selected.servicios && (
                 <div>
                   <span className="font-semibold text-slate-600 block mb-1">Servicios:</span>

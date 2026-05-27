@@ -5,6 +5,8 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { WHATSAPP_NUMBER } from "@/lib/constants";
 import { uploadSiteImage, deleteSiteImage } from "@/lib/storage";
+import { fetchAllCombosAdmin, updateComboAdmin } from "@/lib/supabase";
+import type { Combo } from "@/types";
 
 interface CMSConfig {
   colors: Record<string, string>;
@@ -93,6 +95,13 @@ export default function CMSPage() {
   const [activeTab, setActiveTab] = useState("general");
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [activeSection, setActiveSection] = useState("colors");
+  const [combos, setCombos] = useState<Combo[]>([]);
+  const [comboSaving, setComboSaving] = useState<string | null>(null);
+  const [comboMsg, setComboMsg] = useState("");
+
+  useEffect(() => {
+    fetchAllCombosAdmin().then((d) => { if (d) setCombos(d); });
+  }, []);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -209,6 +218,7 @@ export default function CMSPage() {
     { id: "social", label: "Redes Sociales" },
     { id: "contact", label: "Contacto" },
     { id: "sections", label: "Secciones" },
+    { id: "combos", label: "Combos" },
   ];
 
   return (
@@ -592,6 +602,97 @@ export default function CMSPage() {
                   <input type="tel" value={config.contact.whatsapp || ""} onChange={(e) => setConfig((p) => ({ ...p, contact: { ...p.contact, whatsapp: e.target.value.replace(/\D/g, "") } }))} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder={WHATSAPP_NUMBER} />
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeSection === "combos" && (
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-serif text-2xl text-dark-elegant">Gestión de Combos</h2>
+                <button
+                  onClick={async () => {
+                    const d = await fetchAllCombosAdmin();
+                    if (d) setCombos(d);
+                    setComboMsg("Combos actualizados");
+                    setTimeout(() => setComboMsg(""), 2000);
+                  }}
+                  className="text-sm text-brand-copper hover:text-brand-copper-light cursor-pointer flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                  Recargar
+                </button>
+              </div>
+              {comboMsg && <div className="mb-4 px-4 py-2 bg-green-50 text-green-600 text-sm rounded-lg border border-green-200">{comboMsg}</div>}
+              {combos.length > 0 ? (
+                <div className="space-y-4">
+                  {combos.map((combo) => (
+                    <div key={combo.id} className="p-4 bg-cream rounded-xl border border-brand-copper/10">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Nombre</label>
+                          <input
+                            type="text"
+                            value={combo.nombre}
+                            onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, nombre: e.target.value } : c))}
+                            className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Descripción</label>
+                          <input
+                            type="text"
+                            value={combo.descripcion}
+                            onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, descripcion: e.target.value } : c))}
+                            className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Precio ($)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={combo.precio}
+                            onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, precio: parseInt(e.target.value) || 0 } : c))}
+                            className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm"
+                          />
+                        </div>
+                        <div className="flex items-end gap-2">
+                          <label className="flex items-center gap-2 px-3 py-2 bg-white border border-brand-copper/20 rounded-lg cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={combo.activo ?? true}
+                              onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, activo: e.target.checked } : c))}
+                              className="w-4 h-4 text-brand-copper accent-brand-copper"
+                            />
+                            <span className="text-xs text-slate-600">Activo</span>
+                          </label>
+                          <button
+                            onClick={async () => {
+                              setComboSaving(combo.id);
+                              const { error } = await updateComboAdmin(combo.id, {
+                                nombre: combo.nombre,
+                                descripcion: combo.descripcion,
+                                precio: combo.precio,
+                                activo: combo.activo,
+                              });
+                              setComboSaving(null);
+                              if (error) setComboMsg("Error: " + error.message);
+                              else setComboMsg("Combo actualizado");
+                              setTimeout(() => setComboMsg(""), 2000);
+                            }}
+                            disabled={comboSaving === combo.id}
+                            className="px-4 py-2 bg-brand-copper text-white rounded-lg text-xs font-medium hover:bg-brand-copper-light transition-colors disabled:opacity-50 cursor-pointer"
+                          >
+                            {comboSaving === combo.id ? "..." : "Guardar"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-slate-400 text-sm">No hay combos registrados.</div>
+              )}
             </div>
           )}
 

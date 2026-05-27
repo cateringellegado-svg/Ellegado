@@ -6,6 +6,7 @@ describe("cotizacionSchema", () => {
     total_unidades: 10,
     productos: [{ nombre: "Canapés", cantidad: 2 }],
     total: 50000,
+    fecha_entrega: "2026-06-15",
     cliente_nombre: "Juan Pérez",
     cliente_email: "juan@example.com",
     cliente_telefono: "54123456789",

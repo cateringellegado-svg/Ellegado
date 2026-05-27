@@ -14,6 +14,7 @@ ALTER TABLE eventos ENABLE ROW LEVEL SECURITY;
 -- ====================================================================
 -- 2. POLITICAS PARA menu_items
 -- Public puede leer items activos (sitio publico)
+-- La columna `disponible` controla si se muestra "Solicitar Lote" o "Próximamente"
 -- Authenticated puede CRUD completo (admin panel)
 -- ====================================================================
 

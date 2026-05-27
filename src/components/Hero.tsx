@@ -55,24 +55,26 @@ export default function Hero() {
           {config.hero.tagline}
         </p>
 
-        <div className="flex justify-center gap-8 mb-12 pb-8 border-b border-brand-copper/20 max-w-lg mx-auto opacity-80">
-          {config.hero.stats.map((stat, i) => (
-            <div key={i} className="text-center">
-              <span className="block font-serif text-3xl text-brand-copper font-bold">
-                {stat.value}
-              </span>
-              <span className="text-[10px] uppercase tracking-widest text-slate-600">
-                {stat.label}
-              </span>
-            </div>
-          )).reduce((acc, elem, i, arr) => {
-            acc.push(elem);
-            if (i < arr.length - 1) {
-              acc.push(<div key={`sep-${i}`} className="w-px bg-brand-copper/20" />);
-            }
-            return acc;
-          }, [] as React.ReactNode[])}
-        </div>
+        {config.hero.stats && config.hero.stats.length > 0 && (
+          <div className="flex justify-center gap-8 mb-12 pb-8 border-b border-brand-copper/20 max-w-lg mx-auto opacity-80">
+            {config.hero.stats.map((stat, i) => (
+              <div key={i} className="text-center">
+                <span className="block font-serif text-3xl text-brand-copper font-bold">
+                  {stat.value}
+                </span>
+                <span className="text-[10px] uppercase tracking-widest text-slate-600">
+                  {stat.label}
+                </span>
+              </div>
+            )).reduce((acc, elem, i, arr) => {
+              acc.push(elem);
+              if (i < arr.length - 1) {
+                acc.push(<div key={`sep-${i}`} className="w-px bg-brand-copper/20" />);
+              }
+              return acc;
+            }, [] as React.ReactNode[])}
+          </div>
+        )}
 
         <button
           type="button"

@@ -170,8 +170,8 @@ const DEFAULT_HERO: SiteHero = {
 
 const DEFAULT_ABOUT: SiteAbout = {
   title: "Nuestra Filosofía",
-  text: "Cada evento es una historia única que merece ser contada con los sabores más exquisitos y la atención más cálida.",
-  highlight: "Tradición, calidad y pasión en cada bocado.",
+  text: "En El Legado, entendemos que tu evento no es solo una fecha; es la construcción de un recuerdo.",
+  highlight: "Nos especializamos en eventos de mediana envergadura, ofreciendo una experiencia gastronómica de alta gama con un trato cercano y profesional.",
 };
 
 const DEFAULT_FESTIN: SiteFestin = {

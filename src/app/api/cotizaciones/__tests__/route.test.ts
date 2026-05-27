@@ -14,6 +14,7 @@ const validBody = {
   total_unidades: 50,
   productos: [{ nombre: "Canapés", cantidad: 2 }],
   total: 50000,
+  fecha_entrega: "2026-06-15",
   cliente_nombre: "Juan Pérez",
   cliente_telefono: "54123456789",
   cliente_email: "juan@example.com",

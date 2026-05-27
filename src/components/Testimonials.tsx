@@ -10,6 +10,7 @@ export default function Testimonials() {
   const config = useSiteConfig();
   const [testimonials, setTestimonials] = useState<SiteTestimonial[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -20,15 +21,20 @@ export default function Testimonials() {
         return;
       }
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("testimonials")
           .select("*")
           .eq("active", true)
           .order("orden", { ascending: true });
-        if (mounted.current && data) setTestimonials(data as SiteTestimonial[]);
+        if (error) {
+          console.error("Error al cargar testimonios — RLS? tabla no existe?:", error);
+          if (mounted.current) setLoadError(true);
+        } else if (mounted.current && data) {
+          setTestimonials(data as SiteTestimonial[]);
+        }
       } catch (err) {
-        console.error("Error al cargar testimonios:", err);
-        if (mounted.current) setTestimonials([]);
+        console.error("Error al cargar testimonios (catch):", err);
+        if (mounted.current) setLoadError(true);
       } finally {
         if (mounted.current) setLoading(false);
       }
@@ -45,6 +51,19 @@ export default function Testimonials() {
               <div className="w-12 h-12 border-4 border-brand-copper/20 border-t-brand-copper rounded-full animate-spin" />
               <p className="text-slate-500 text-sm">Cargando testimonios...</p>
             </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <section className="py-32 bg-white border-t border-brand-copper/5">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 max-w-md mx-auto">
+            <p className="text-sm text-amber-700 font-medium">No se pudieron cargar los testimonios</p>
+            <p className="text-xs text-amber-500 mt-1">Intentá de nuevo más tarde.</p>
           </div>
         </div>
       </section>

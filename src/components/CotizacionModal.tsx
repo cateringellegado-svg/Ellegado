@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import type { CotizacionSeleccion } from "@/types";
 import { useToast } from "./Toast";
+import { fetchConfiguracionCompleta } from "@/lib/supabase";
 import { getWhatsAppUrl } from "@/lib/constants";
 import { useSiteConfig } from "@/lib/site-config";
 const WHATSAPP_MSG_PREFIX =
@@ -13,6 +14,9 @@ interface Props {
   onClose: () => void;
   cotizacion: CotizacionSeleccion;
   total: number;
+  anticipo?: number;
+  fechaEntrega?: string;
+  horarioEntrega?: string;
 }
 
 export default function CotizacionModal({
@@ -20,23 +24,50 @@ export default function CotizacionModal({
   onClose,
   cotizacion,
   total,
+  anticipo,
+  fechaEntrega,
+  horarioEntrega,
 }: Props) {
   const config = useSiteConfig();
   const { showToast } = useToast();
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [email, setEmail] = useState("");
+  const [aceptoTerminos, setAceptoTerminos] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+      const unid = Object.values(cotizacion).reduce((s, p) => s + (p.cantidad || 0), 0);
+      const dbConfig = await fetchConfiguracionCompleta();
+      const capTotal = dbConfig?.capacidad_diaria_total;
+      if (capTotal && unid > capTotal) {
+        showToast(`La cantidad solicitada (${unid} u.) supera la capacidad diaria disponible (${capTotal} u.)`, "warning");
+        return;
+      }
+      if (unid < 50) {
+        showToast("El pedido mínimo es de 50 unidades", "warning");
+        return;
+      }
+      if (unid % 10 !== 0) {
+        showToast("La cantidad total debe ser múltiplo de 10", "warning");
+        return;
+      }
+      if (!aceptoTerminos) {
+        showToast("Debés aceptar los términos de cancelación y ajuste por inflación", "warning");
+        return;
+      }
       setSubmitting(true);
 
       const productos = Object.values(cotizacion).filter(
         (p) => p.cantidad > 0 && p.precio > 0
       );
       const totalFormat = "$" + total.toLocaleString("es-AR");
+      const anticipoFormat = anticipo != null ? "$" + anticipo.toLocaleString("es-AR") : totalFormat;
+      const fechaTexto = fechaEntrega
+        ? `\n*Fecha de entrega:* ${fechaEntrega}${horarioEntrega ? ` a las ${horarioEntrega} hrs` : ""}`
+        : "";
 
       const productosTexto = productos
         .map(
@@ -46,7 +77,7 @@ export default function CotizacionModal({
         .join("\n");
 
       const mensajePersonal = `Mi nombre es ${nombre}. Quedo atento a su respuesta para coordinar los detalles.`;
-      const mensaje = `${WHATSAPP_MSG_PREFIX}\n\n*Productos solicitados:*\n${productosTexto}\n\n*Total estimado:* ${totalFormat}\n\n${mensajePersonal}`;
+      const mensaje = `${WHATSAPP_MSG_PREFIX}\n\n*Productos solicitados:*\n${productosTexto}\n${fechaTexto}\n\n*Total del Presupuesto:* ${totalFormat}\n*Anticipo (50%):* ${anticipoFormat}\n\n${mensajePersonal}\n\n_Acepto los términos de cancelación y la cláusula de ajuste por inflación en reservas mayores a 30 días._`;
 
       const waUrl = getWhatsAppUrl(config.contact.whatsapp, mensaje);
 
@@ -61,6 +92,7 @@ export default function CotizacionModal({
               cantidad: p.cantidad,
             })),
             total,
+            fecha_entrega: fechaEntrega || "",
             cliente_nombre: nombre,
             cliente_telefono: telefono,
             cliente_email: email || "",
@@ -88,7 +120,7 @@ export default function CotizacionModal({
       setSubmitting(false);
       onClose();
     },
-    [cotizacion, total, nombre, telefono, email, onClose, showToast]
+    [cotizacion, total, anticipo, nombre, telefono, email, aceptoTerminos, onClose, showToast]
   );
 
   useEffect(() => {
@@ -101,6 +133,16 @@ export default function CotizacionModal({
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
+
+  const totalUnits = Object.values(cotizacion).reduce((sum, p) => sum + (p.cantidad || 0), 0);
+  const quantityError = totalUnits > 0 && totalUnits < 50
+    ? "El pedido mínimo es de 50 unidades"
+    : "";
+  const quantityWarning = totalUnits > 0 && totalUnits % 10 !== 0
+    ? "La cantidad total debe ser múltiplo de 10"
+    : "";
+
+  const anticipoCalculado = anticipo ?? Math.round(total * 0.5);
 
   return (
     <div
@@ -155,6 +197,45 @@ export default function CotizacionModal({
             Completa tus datos para enviarte la propuesta formal por WhatsApp.
           </p>
         </div>
+
+        <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 mb-6">
+          <div className="text-center mb-3">
+            <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">
+              Resumen del Presupuesto
+            </p>
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-slate-600">Total del Presupuesto</span>
+              <span className="font-serif font-bold text-dark-elegant">
+                {"$" + total.toLocaleString("es-AR")}
+              </span>
+            </div>
+            <div className="h-px bg-amber-200/50" />
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-semibold text-amber-800">
+                Anticipo (50%) — Seña
+              </span>
+              <span className="font-serif text-lg font-bold text-amber-700">
+                {"$" + anticipoCalculado.toLocaleString("es-AR")}
+              </span>
+            </div>
+            <p className="text-[10px] text-amber-600 leading-relaxed text-center pt-1">
+              Este monto confirma tu reserva. El saldo se coordina previo al evento.
+            </p>
+          </div>
+        </div>
+
+        {(quantityError || quantityWarning) && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-center">
+            <p className="text-xs font-medium text-red-700">
+              {quantityError || quantityWarning}
+            </p>
+            <p className="text-[10px] text-red-500 mt-1">
+              Unidades en tu pedido: {totalUnits}
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="cotizacion-nombre" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
@@ -198,10 +279,23 @@ export default function CotizacionModal({
               className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper"
             />
           </div>
+          <div className="flex items-start gap-3 mt-4">
+            <input
+              id="acepto-terminos"
+              type="checkbox"
+              checked={aceptoTerminos}
+              onChange={(e) => setAceptoTerminos(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-brand-copper/30 text-brand-copper focus:ring-brand-copper cursor-pointer"
+            />
+            <label htmlFor="acepto-terminos" className="text-[10px] text-slate-500 leading-relaxed cursor-pointer select-none">
+              Acepto los términos de cancelación y la cláusula de ajuste por inflación en reservas mayores a 30 días
+            </label>
+          </div>
+
           <button
             type="submit"
-            disabled={submitting}
-            className="w-full bg-[#25D366] text-white font-semibold py-4 rounded-xl shadow-lg shadow-[#25D366]/30 hover:scale-[1.02] transition-all duration-300 uppercase tracking-widest text-sm flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-50"
+            disabled={submitting || !aceptoTerminos}
+            className="w-full bg-[#25D366] text-white font-semibold py-4 rounded-xl shadow-lg shadow-[#25D366]/30 hover:scale-[1.02] transition-all duration-300 uppercase tracking-widest text-sm flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg
               className="w-5 h-5"

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import CotizacionModal from "@/components/CotizacionModal";
 
 vi.mock("@/lib/site-config", () => ({
@@ -20,12 +20,16 @@ vi.mock("@/components/Toast", () => ({
   ToastProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+vi.mock("@/lib/supabase", () => ({
+  fetchConfiguracionCompleta: vi.fn().mockResolvedValue({ capacidad_diaria_total: null }),
+}));
+
 vi.mock("@/lib/constants", () => ({
   getWhatsAppUrl: vi.fn(() => "https://wa.me/54123456789?text=test"),
 }));
 
 const mockCotizacion = {
-  "1": { id: "1", nombre: "Canapés", cantidad: 10, precio: 5000, subtotal: 50000 },
+  "1": { id: "1", nombre: "Canapés", cantidad: 50, precio: 1000, subtotal: 50000 },
 };
 const mockOnClose = vi.fn();
 
@@ -76,6 +80,9 @@ describe("CotizacionModal", () => {
 
     fireEvent.change(screen.getByLabelText("Nombre y Apellido *"), { target: { value: "Juan Pérez" } });
     fireEvent.change(screen.getByLabelText("Teléfono *"), { target: { value: "54123456789" } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("checkbox"));
+    });
     fireEvent.click(screen.getByText("Enviar a WhatsApp"));
 
     await waitFor(() => {
@@ -101,6 +108,9 @@ describe("CotizacionModal", () => {
 
     fireEvent.change(screen.getByLabelText("Nombre y Apellido *"), { target: { value: "Juan Pérez" } });
     fireEvent.change(screen.getByLabelText("Teléfono *"), { target: { value: "54123456789" } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("checkbox"));
+    });
     fireEvent.click(screen.getByText("Enviar a WhatsApp"));
 
     await waitFor(() => {
@@ -117,6 +127,9 @@ describe("CotizacionModal", () => {
 
     fireEvent.change(screen.getByLabelText("Nombre y Apellido *"), { target: { value: "Juan Pérez" } });
     fireEvent.change(screen.getByLabelText("Teléfono *"), { target: { value: "54123456789" } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("checkbox"));
+    });
     fireEvent.click(screen.getByText("Enviar a WhatsApp"));
 
     await waitFor(() => {
