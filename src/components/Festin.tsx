@@ -6,6 +6,7 @@ import type { Producto, CotizacionSeleccion, Combo } from "@/types";
 import { fetchProductsByCategory, fetchCombos, fetchConfiguracion } from "@/lib/supabase";
 import ConsultantWizard from "./ConsultantWizard";
 import ComboSelector from "./ComboSelector";
+import { COMBO_MINIMUMS } from "@/lib/constants";
 import SalesSummary from "./SalesSummary";
 import type { WizardResult } from "./ConsultantWizard";
 import { useToast } from "./Toast";
@@ -175,7 +176,7 @@ export default function Festin() {
     () =>
       wizardGuestCount > 0
         ? combos.filter(
-            (c) => wizardGuestCount >= c.personas_min && wizardGuestCount <= c.personas_max
+            (c) => wizardGuestCount >= (COMBO_MINIMUMS[c.id] ?? c.personas_min) && wizardGuestCount <= c.personas_max
           )
         : combos,
     [combos, wizardGuestCount]
@@ -221,6 +222,11 @@ export default function Festin() {
 
   const seleccionarCombo = useCallback(
     (combo: Combo) => {
+      const minCap = COMBO_MINIMUMS[combo.id] ?? combo.personas_min;
+      if (wizardGuestCount < minCap) {
+        showToast(`Para este combo, el mínimo es de ${minCap} personas`, "warning");
+        return;
+      }
       const factor = factorAjuste;
       const items: CotizacionSeleccion = {};
       combo.items_json.forEach((item) => {
@@ -238,7 +244,7 @@ export default function Festin() {
       setCotizacion(items);
       showToast(`Combo "${combo.nombre}" seleccionado`, "success");
     },
-    [showToast, factorAjuste]
+    [showToast, factorAjuste, wizardGuestCount]
   );
 
   const quitarCombo = useCallback(() => {

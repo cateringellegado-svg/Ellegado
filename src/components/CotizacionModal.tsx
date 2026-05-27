@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import type { CotizacionSeleccion } from "@/types";
+import type { CotizacionSeleccion, Combo } from "@/types";
 import { useToast } from "./Toast";
 import { fetchConfiguracionCompleta } from "@/lib/supabase";
-import { MIN_PRODUCT_UNITS, COMBO_IDS } from "@/lib/constants";
+import { MIN_PRODUCT_UNITS, COMBO_MINIMUMS } from "@/lib/constants";
 import { getWhatsAppUrl } from "@/lib/constants";
 import { useSiteConfig } from "@/lib/site-config";
 const WHATSAPP_MSG_PREFIX =
@@ -18,6 +18,8 @@ interface Props {
   anticipo?: number;
   fechaEntrega?: string;
   horarioEntrega?: string;
+  modo?: "combo" | "personalizar";
+  selectedCombo?: Combo | null;
 }
 
 export default function CotizacionModal({
@@ -28,6 +30,8 @@ export default function CotizacionModal({
   anticipo,
   fechaEntrega,
   horarioEntrega,
+  modo,
+  selectedCombo,
 }: Props) {
   const config = useSiteConfig();
   const { showToast } = useToast();

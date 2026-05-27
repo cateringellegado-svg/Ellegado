@@ -271,6 +271,8 @@ export default function SalesSummary({
         anticipo={anticipo}
         fechaEntrega={fechaEntrega}
         horarioEntrega={horarioEntrega}
+        modo={modo}
+        selectedCombo={selectedCombo}
       />
     </>
   );

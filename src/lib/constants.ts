@@ -7,11 +7,11 @@ export const WHATSAPP_MSG = encodeURIComponent(
 export const MIN_PRODUCT_UNITS = 50;
 
 export const COMBO_MINIMUMS: Record<string, number> = {
-  combo_clasico: 15,
+  combo_clasico: 10,
   combo_dulce: 20,
-  combo_ejecutivo: 20,
-  combo_premium: 20,
-  combo_gran_fiesta: 40,
+  combo_ejecutivo: 30,
+  combo_premium: 40,
+  combo_gran_fiesta: 50,
 };
 
 export const COMBO_IDS = Object.keys(COMBO_MINIMUMS);

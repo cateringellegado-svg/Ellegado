@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import type { Combo } from "@/types";
+import { COMBO_MINIMUMS } from "@/lib/constants";
 import { Package, Star } from "lucide-react";
 
 function formatARS(value: number): string {
@@ -143,7 +144,7 @@ export default function ComboSelector({
               <div className="pt-4 border-t border-brand-copper/5">
                 <div className="flex justify-between items-center">
                   <span className="text-[10px] text-slate-500">
-                    {combo.personas_min}–{combo.personas_max} pers.
+                    {COMBO_MINIMUMS[combo.id] ?? combo.personas_min}–{combo.personas_max} pers.
                   </span>
                   <span className="font-serif text-lg text-brand-copper font-bold">
                     {formatARS(Math.round(combo.precio * factorAjuste))}
