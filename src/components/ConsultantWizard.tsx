@@ -137,8 +137,8 @@ export default function ConsultantWizard({ onComplete, onSkip }: Props) {
   const emoji = eventType ? EVENT_EMOJIS[eventType] : "";
   const count = parseInt(guestCount) || 0;
   const recommendedCombo = count > 0 ? getRecommendedCombo(count) : null;
-  const quantityError = count > 0 && count < 50 ? "Mínimo 50 invitados para realizar un pedido" : "";
-  const quantityWarning = count > 0 && count % 10 !== 0 ? "La cantidad debe ser múltiplo de 10" : "";
+  const quantityError = count > 0 && count < 10 ? "Mínimo 10 invitados para continuar" : "";
+  const quantityWarning = "";
 
   const dayName = fechaEntrega ? getDayName(fechaEntrega) : "";
   const isDomingo = dayName === "domingo";
@@ -290,7 +290,7 @@ export default function ConsultantWizard({ onComplete, onSkip }: Props) {
             <button
               type="button"
               onClick={handleGuestNext}
-              disabled={!guestCount || count < 50 || count % 10 !== 0}
+              disabled={!guestCount || count < 10}
               className="px-8 py-3 bg-brand-copper text-white text-sm font-semibold rounded-full shadow-lg hover:shadow-brand-copper/30 transition-all disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
             >
               Siguiente →

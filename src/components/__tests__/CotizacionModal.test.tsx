@@ -25,6 +25,8 @@ vi.mock("@/lib/supabase", () => ({
 }));
 
 vi.mock("@/lib/constants", () => ({
+  MIN_PRODUCT_UNITS: 50,
+  COMBO_IDS: ["combo_clasico", "combo_dulce", "combo_ejecutivo", "combo_premium", "combo_gran_fiesta"],
   getWhatsAppUrl: vi.fn(() => "https://wa.me/54123456789?text=test"),
 }));
 

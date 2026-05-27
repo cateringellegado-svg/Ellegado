@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import type { CotizacionSeleccion } from "@/types";
 import { useToast } from "./Toast";
 import { fetchConfiguracionCompleta } from "@/lib/supabase";
+import { MIN_PRODUCT_UNITS, COMBO_IDS } from "@/lib/constants";
 import { getWhatsAppUrl } from "@/lib/constants";
 import { useSiteConfig } from "@/lib/site-config";
 const WHATSAPP_MSG_PREFIX =
@@ -39,20 +40,24 @@ export default function CotizacionModal({
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const unid = Object.values(cotizacion).reduce((s, p) => s + (p.cantidad || 0), 0);
+      const items = Object.values(cotizacion);
+      const unid = items.reduce((s, p) => s + (p.cantidad || 0), 0);
+      const esCombo = items.some((p) => p.esCombo);
       const dbConfig = await fetchConfiguracionCompleta();
       const capTotal = dbConfig?.capacidad_diaria_total;
       if (capTotal && unid > capTotal) {
         showToast(`La cantidad solicitada (${unid} u.) supera la capacidad diaria disponible (${capTotal} u.)`, "warning");
         return;
       }
-      if (unid < 50) {
-        showToast("El pedido mínimo es de 50 unidades", "warning");
-        return;
-      }
-      if (unid % 10 !== 0) {
-        showToast("La cantidad total debe ser múltiplo de 10", "warning");
-        return;
+      if (!esCombo) {
+        if (unid < MIN_PRODUCT_UNITS) {
+          showToast(`El pedido mínimo es de ${MIN_PRODUCT_UNITS} unidades`, "warning");
+          return;
+        }
+        if (unid % 10 !== 0) {
+          showToast("La cantidad total debe ser múltiplo de 10", "warning");
+          return;
+        }
       }
       if (!aceptoTerminos) {
         showToast("Debés aceptar los términos de cancelación y ajuste por inflación", "warning");
