@@ -319,27 +319,6 @@ export default function Festin() {
     [cotizacion, showToast]
   );
 
-  const solicitarLote = useCallback(
-    (producto: Producto) => {
-      const precioBase = producto.precio;
-      if (!precioBase) return;
-      const precio = Math.round(precioBase * factorRef.current);
-      const min = Math.max(producto.minimo || 50, 50);
-      setCotizacion((prev) => ({
-        ...prev,
-        [producto.id]: {
-          id: producto.id,
-          nombre: producto.nombre,
-          cantidad: min,
-          precio,
-          subtotal: min * precio,
-        },
-      }));
-      showToast(`Lote de ${min} ${producto.nombre} solicitado`, "success");
-    },
-    [showToast]
-  );
-
   const renderProductCard = (producto: Producto, categoryIcon: React.ElementType) => {
     const noDisponible = producto.disponible === false;
     const qty = cotizacion[producto.id]?.cantidad || 0;
@@ -402,10 +381,15 @@ export default function Festin() {
           <div className="flex justify-between items-end mt-auto pt-4 border-t border-brand-copper/5">
             <div>
               <span className="text-[9px] text-slate-600 font-medium uppercase tracking-widest block mb-1">
-                Valor Unitario
+                Lote de 50 unidades
               </span>
               <span className="font-sans text-sm text-brand-copper font-bold">
-                {formatARS(producto.precio ? Math.round(producto.precio * factorRef.current) : 0)}
+                {producto.precio
+                  ? formatARS(Math.round(producto.precio * factorRef.current) * 50)
+                  : "—"}
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">
+                ({formatARS(producto.precio ? Math.round(producto.precio * factorRef.current) : 0)} c/u)
               </span>
             </div>
 
@@ -413,14 +397,6 @@ export default function Festin() {
               <span className="text-[10px] text-amber-600 font-medium uppercase tracking-wider bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
                 Próximamente
               </span>
-            ) : qty === 0 ? (
-              <button
-                type="button"
-                onClick={() => solicitarLote(producto)}
-                className="px-4 py-2 bg-brand-copper text-white text-xs font-semibold rounded-full shadow hover:shadow-brand-copper/30 hover:-translate-y-0.5 transition-all cursor-pointer uppercase tracking-wider"
-              >
-                Solicitar Lote de 50
-              </button>
             ) : (
               <div className="flex flex-col items-end gap-1">
                 <div className="flex items-center bg-cream border border-brand-copper/20 rounded-lg overflow-hidden">
@@ -434,12 +410,11 @@ export default function Festin() {
                   </button>
                   <input
                     type="number"
-                    value={qty || ""}
+                    value={qty > 0 ? qty : 50}
                     onChange={(e) => handleQuantityChange(producto, e.target.value)}
                     min={50}
                     step={10}
-                    className="w-12 text-center bg-transparent border-x border-brand-copper/10 py-1 text-sm font-medium text-dark-elegant focus:outline-none appearance-none"
-                    placeholder="0"
+                    className="w-14 text-center bg-transparent border-x border-brand-copper/10 py-1 text-sm font-medium text-dark-elegant focus:outline-none appearance-none"
                     aria-label={`Cantidad de ${producto.nombre}`}
                   />
                   <button

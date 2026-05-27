@@ -122,9 +122,9 @@ describe("Festin", () => {
   it("persists cotizacion to localStorage on change", async () => {
     render(<Festin />);
     await goToPersonalizar();
-    const solicitarButtons = screen.getAllByText("Solicitar Lote de 50");
-    if (solicitarButtons.length > 0) {
-      fireEvent.click(solicitarButtons[0]);
+    const addButtons = screen.getAllByRole("button", { name: /Aumentar cantidad de/ });
+    if (addButtons.length > 0) {
+      fireEvent.click(addButtons[0]);
       await waitFor(() => {
         expect(localStorageMock.setItem).toHaveBeenCalledWith(
           "legado_cotizacion",
