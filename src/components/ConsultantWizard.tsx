@@ -2,10 +2,11 @@
 
 import { useState, useCallback, useRef, useMemo } from "react";
 import { insertLead } from "@/lib/supabase";
-import { Presentation, Users, Package, Sparkles, ArrowLeft, ChefHat, Calendar, Clock } from "lucide-react";
+import { Package, Sparkles, ArrowLeft, Calendar, Clock } from "lucide-react";
 import { useToast } from "./Toast";
+import { EVENT_TYPES, EVENT_EMOJIS, TIME_SLOTS, SHABAT_NOTE, VIERNES_NOTE, DOMINGO_NOTE, getDayName } from "@/lib/data";
+import type { EventType } from "@/lib/data";
 
-export type EventType = "social" | "corporativo" | "familiar";
 export type WizardMode = "combo" | "personalizar";
 
 export interface WizardResult {
@@ -21,30 +22,6 @@ interface Props {
   onSkip: () => void;
 }
 
-const EVENT_TYPES: { key: EventType; label: string; icon: React.ElementType; desc: string; msg: string }[] = [
-  { key: "social", label: "Social", icon: ChefHat, desc: "Cumpleaños, aniversarios, reuniones", msg: "¡Perfecto para celebrar! Tenemos combos ideales para eventos sociales." },
-  { key: "corporativo", label: "Corporativo", icon: Presentation, desc: "Eventos de empresa, lanzamientos", msg: "Impecable para tu evento corporativo. Prepará algo profesional y elegante." },
-  { key: "familiar", label: "Familiar", icon: Users, desc: "Reuniones familiares, celebraciones íntimas", msg: "Qué lindo compartir en familia. Tenemos opciones que encantan a todas las edades." },
-];
-
-const EVENT_EMOJIS: Record<EventType, string> = {
-  social: "🎉",
-  corporativo: "💼",
-  familiar: "👨‍👩‍👧‍👦",
-};
-
-const TIME_SLOTS = [
-  "09:00", "10:00", "11:00", "12:00", "13:00",
-  "14:00", "15:00", "16:00", "17:00", "18:00",
-  "19:00", "20:00", "21:00", "22:00",
-];
-
-const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-
-const SHABAT_NOTE = "Para eventos el sábado, entregamos el viernes hasta las 20:00 hrs para asegurar la frescura artesanal";
-const VIERNES_NOTE = "Los viernes coordinamos la entrega hasta las 20:00 hrs para respetar el inicio del Shabat";
-const DOMINGO_NOTE = "Los domingos la entrega es a partir de las 13:00 hrs";
-
 const MAX_ADELANTO_DIAS = 45;
 
 function getMinDate(): string {
@@ -59,17 +36,12 @@ function getMaxDate(): string {
   return d.toISOString().slice(0, 10);
 }
 
-function getDayName(dateStr: string): string {
-  const d = new Date(dateStr + "T12:00:00");
-  return WEEKDAYS[d.getDay()];
-}
-
 function getRecommendedCombo(guestCount: number): string {
-  if (guestCount <= 25) return "Combo Clásico";
-  if (guestCount <= 30) return "Combo Dulce";
+  if (guestCount <= 15) return "Combo Clásico";
+  if (guestCount <= 25) return "Combo Dulce";
   if (guestCount <= 35) return "Combo Ejecutivo";
-  if (guestCount <= 60) return "Combo Gran Fiesta";
-  return "Combo Premium";
+  if (guestCount <= 45) return "Combo Premium";
+  return "Combo Gran Fiesta";
 }
 
 export default function ConsultantWizard({ onComplete, onSkip }: Props) {

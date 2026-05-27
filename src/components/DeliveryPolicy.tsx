@@ -1,17 +1,11 @@
 "use client";
 
 import { Clock, Calendar, ShieldCheck } from "lucide-react";
+import { getDayName } from "@/lib/data";
 
 interface Props {
   fechaEntrega: string;
   horarioEntrega: string;
-}
-
-const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-
-function getDayName(dateStr: string): string {
-  const d = new Date(dateStr + "T12:00:00");
-  return WEEKDAYS[d.getDay()];
 }
 
 export default function DeliveryPolicy({ fechaEntrega, horarioEntrega }: Props) {
