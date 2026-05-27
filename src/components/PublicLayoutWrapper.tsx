@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -17,7 +18,9 @@ export default function PublicLayoutWrapper({ children }: { children: React.Reac
 
   return (
     <>
-      <PaymentStatusHandler />
+      <Suspense fallback={null}>
+        <PaymentStatusHandler />
+      </Suspense>
       <Navbar />
       <main id="main-content">{children}</main>
       <Footer />
