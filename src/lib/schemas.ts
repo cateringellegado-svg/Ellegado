@@ -3,6 +3,7 @@ import { z } from "zod";
 const productoItemSchema = z.object({
   nombre: z.string().min(1, "Nombre del producto requerido"),
   cantidad: z.number().int().positive("Cantidad debe ser positiva"),
+  es_combo: z.boolean().optional(),
 });
 
 const cotizacionProductoItemSchema = z.object({

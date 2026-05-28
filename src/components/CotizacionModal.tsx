@@ -99,6 +99,7 @@ export default function CotizacionModal({
             productos: productos.map((p) => ({
               nombre: p.nombre,
               cantidad: p.cantidad,
+              es_combo: p.esCombo || false,
             })),
             total,
             fecha_entrega: fechaEntrega || "",
