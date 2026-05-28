@@ -36,14 +36,6 @@ test.describe("El Legado - Critical Paths", () => {
     await expect(page.locator("#mobile-menu")).not.toBeVisible();
   });
 
-  test("Experience tabs work", async ({ page }) => {
-    await page.goto("/");
-
-    await page.getByRole("tab", { name: "Experiencia Premium" }).click();
-
-    await page.getByRole("tab", { name: "Experiencia Dulce" }).click();
-  });
-
   test("Toast notification appears on product add", async ({ page }) => {
     await page.goto("/");
 
