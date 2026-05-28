@@ -58,6 +58,9 @@ async function goToStep4() {
   const today = new Date();
   const minDate = new Date(today);
   minDate.setDate(today.getDate() + 2);
+  while (minDate.getDay() === 6 || minDate.getDay() === 0) {
+    minDate.setDate(minDate.getDate() + 1);
+  }
   const dateStr = minDate.toISOString().split("T")[0];
   const dateInput = screen.getByTestId("fecha-input");
   fireEvent.change(dateInput, { target: { value: dateStr } });

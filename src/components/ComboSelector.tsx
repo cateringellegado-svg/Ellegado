@@ -10,11 +10,11 @@ function formatARS(value: number): string {
 }
 
 function getRecommendedComboId(guestCount: number): string {
-  if (guestCount <= 25) return "combo_clasico";
-  if (guestCount <= 30) return "combo_dulce";
+  if (guestCount <= 15) return "combo_esencia";
+  if (guestCount <= 25) return "combo_celebracion";
   if (guestCount <= 35) return "combo_ejecutivo";
-  if (guestCount <= 60) return "combo_gran_fiesta";
-  return "combo_premium";
+  if (guestCount <= 45) return "combo_magno";
+  return "combo_gran_fiesta";
 }
 
 interface Props {

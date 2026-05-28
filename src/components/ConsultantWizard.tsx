@@ -37,10 +37,10 @@ function getMaxDate(): string {
 }
 
 function getRecommendedCombo(guestCount: number): string {
-  if (guestCount <= 15) return "Combo Clásico";
-  if (guestCount <= 25) return "Combo Dulce";
+  if (guestCount <= 15) return "Combo Esencia";
+  if (guestCount <= 25) return "Combo Celebración";
   if (guestCount <= 35) return "Combo Ejecutivo";
-  if (guestCount <= 45) return "Combo Premium";
+  if (guestCount <= 45) return "Combo Magno";
   return "Combo Gran Fiesta";
 }
 
