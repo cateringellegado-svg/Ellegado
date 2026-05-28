@@ -144,11 +144,13 @@ export default function CotizacionModal({
 
   if (!isOpen) return null;
 
-  const totalUnits = Object.values(cotizacion).reduce((sum, p) => sum + (p.cantidad || 0), 0);
-  const quantityError = totalUnits > 0 && totalUnits < 50
+  const items = Object.values(cotizacion);
+  const totalUnits = items.reduce((sum, p) => sum + (p.cantidad || 0), 0);
+  const esCombo = items.some((p) => p.esCombo);
+  const quantityError = !esCombo && totalUnits > 0 && totalUnits < 50
     ? "El pedido mínimo es de 50 unidades"
     : "";
-  const quantityWarning = totalUnits > 0 && totalUnits % 10 !== 0
+  const quantityWarning = !esCombo && totalUnits > 0 && totalUnits % 10 !== 0
     ? "La cantidad total debe ser múltiplo de 10"
     : "";
 
@@ -164,7 +166,7 @@ export default function CotizacionModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl relative">
+      <div className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-dark-elegant transition-colors cursor-pointer"
