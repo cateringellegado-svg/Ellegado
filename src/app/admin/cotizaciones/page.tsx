@@ -120,6 +120,7 @@ export default function CotizacionesPage() {
 
   useEffect(() => {
     mountedRef.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
     load(filter, search, 1);
     loadLogs();
@@ -128,6 +129,7 @@ export default function CotizacionesPage() {
 
   useEffect(() => {
     mountedRef.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load(filter, search, page);
     return () => { mountedRef.current = false; };
   }, [page, filter, search, load]);

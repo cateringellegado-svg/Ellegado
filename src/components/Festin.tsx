@@ -6,7 +6,6 @@ import type { Producto, CotizacionSeleccion, Combo } from "@/types";
 import { fetchProductsByCategory, fetchCombos, fetchConfiguracion } from "@/lib/supabase";
 import ConsultantWizard from "./ConsultantWizard";
 import ComboSelector from "./ComboSelector";
-import { COMBO_MINIMUMS } from "@/lib/constants";
 import SalesSummary from "./SalesSummary";
 import type { WizardResult } from "./ConsultantWizard";
 import { useToast } from "./Toast";
@@ -96,7 +95,6 @@ export default function Festin() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [factorAjuste, setFactorAjuste] = useState(1);
-  const factorRef = useRef(1);
   const mounted = useRef(true);
   const [cotizacion, setCotizacion] = useState<CotizacionSeleccion>(() => {
     if (typeof window === "undefined") return {};
@@ -129,7 +127,7 @@ export default function Festin() {
         clearTimeout(safetyTimer);
         const factor = configData?.factor_ajuste ?? 1;
         setFactorAjuste(factor);
-        factorRef.current = factor;
+        setFactorAjuste(factor);
         setClasicos(clasicosData ?? FALLBACK_CLASICOS);
         setPremium(premiumData ?? []);
         setDulces(dulcesData ?? FALLBACK_DULCES);
@@ -174,12 +172,20 @@ export default function Festin() {
 
   const hasConflict = categories.has("clasica") && categories.has("premium");
 
-  const filteredCombos = useMemo(
+  function getComboProximity(combo: Combo, count: number): number {
+    if (count >= combo.personas_min && count <= combo.personas_max) return 0;
+    if (count < combo.personas_min) return combo.personas_min - count;
+    return count - combo.personas_max;
+  }
+
+  const sortedCombos = useMemo(
     () =>
       wizardGuestCount > 0
-        ? combos.filter(
-            (c) => wizardGuestCount >= (COMBO_MINIMUMS[c.id] ?? c.personas_min) && wizardGuestCount <= c.personas_max
-          )
+        ? [...combos].sort((a, b) => {
+            const distA = getComboProximity(a, wizardGuestCount);
+            const distB = getComboProximity(b, wizardGuestCount);
+            return distA - distB;
+          })
         : combos,
     [combos, wizardGuestCount]
   );
@@ -224,10 +230,18 @@ export default function Festin() {
 
   const seleccionarCombo = useCallback(
     (combo: Combo) => {
-      const minCap = COMBO_MINIMUMS[combo.id] ?? combo.personas_min;
-      if (wizardGuestCount < minCap) {
-        showToast(`Para este combo, el mínimo es de ${minCap} personas`, "warning");
-        return;
+      if (wizardGuestCount > 0) {
+        if (wizardGuestCount < combo.personas_min) {
+          showToast(
+            `${combo.nombre} es ideal para ${combo.personas_min}–${combo.personas_max} pers. Para ${wizardGuestCount} invitados las porciones serán más generosas de lo habitual.`,
+            "warning"
+          );
+        } else if (wizardGuestCount > combo.personas_max) {
+          showToast(
+            `${combo.nombre} rinde para ${combo.personas_min}–${combo.personas_max} pers. Para ${wizardGuestCount} invitados las cantidades pueden quedarte justas.`,
+            "warning"
+          );
+        }
       }
       const factor = factorAjuste;
       const items: CotizacionSeleccion = {};
@@ -264,7 +278,7 @@ export default function Festin() {
         cantidad = Math.round(cantidad / step) * step;
         if (cantidad < 50) cantidad = 50;
         if (cantidad < (producto.minimo || 50)) cantidad = producto.minimo || 50;
-        const precio = Math.round(producto.precio * factorRef.current);
+        const precio = Math.round(producto.precio * factorAjuste);
         setCotizacion((prev) => ({
           ...prev,
           [producto.id]: {
@@ -304,7 +318,7 @@ export default function Festin() {
         return;
       }
       if (producto.precio) {
-        const precio = Math.round(producto.precio * factorRef.current);
+        const precio = Math.round(producto.precio * factorAjuste);
         setCotizacion((prev) => ({
           ...prev,
           [producto.id]: {
@@ -387,11 +401,11 @@ export default function Festin() {
               </span>
               <span className="font-sans text-sm text-brand-copper font-bold">
                 {producto.precio
-                  ? formatARS(Math.round(producto.precio * factorRef.current) * 50)
+                  ? formatARS(Math.round(producto.precio * factorAjuste) * 50)
                   : "—"}
               </span>
               <span className="text-[10px] text-slate-400 block mt-0.5">
-                ({formatARS(producto.precio ? Math.round(producto.precio * factorRef.current) : 0)} c/u)
+                ({formatARS(producto.precio ? Math.round(producto.precio * factorAjuste) : 0)} c/u)
               </span>
             </div>
 
@@ -483,8 +497,7 @@ export default function Festin() {
         <>
           {modo === "combo" && !selectedCombo && (
             <ComboSelector
-              combos={combos}
-              filteredCombos={filteredCombos}
+              combos={sortedCombos}
               wizardGuestCount={wizardGuestCount}
               factorAjuste={factorAjuste}
               onSelect={seleccionarCombo}

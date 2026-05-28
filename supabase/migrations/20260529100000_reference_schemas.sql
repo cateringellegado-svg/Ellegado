@@ -1,0 +1,78 @@
+-- Reference schemas for tables created outside migrations
+-- These tables exist in the Supabase project but their CREATE TABLE statements
+-- are not in any migration file. This file documents them for reference.
+-- Run this only if you need to recreate these tables from scratch.
+
+-- ============================================================
+-- menu_items
+-- ============================================================
+-- CREATE TABLE menu_items (
+--   id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+--   nombre TEXT NOT NULL,
+--   descripcion TEXT,
+--   precio NUMERIC NOT NULL DEFAULT 0,
+--   categoria TEXT NOT NULL DEFAULT 'clasica',
+--   activo BOOLEAN NOT NULL DEFAULT true,
+--   orden INTEGER NOT NULL DEFAULT 0,
+--   disponible BOOLEAN NOT NULL DEFAULT true,
+--   imagen_url TEXT,
+--   unidad TEXT NOT NULL DEFAULT 'unidad',
+--   minimo INTEGER NOT NULL DEFAULT 50,
+--   incremento INTEGER NOT NULL DEFAULT 10,
+--   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+-- );
+
+-- ============================================================
+-- clientes
+-- ============================================================
+-- CREATE TABLE clientes (
+--   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--   nombre TEXT NOT NULL,
+--   email TEXT,
+--   telefono TEXT,
+--   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+--   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+-- );
+
+-- ============================================================
+-- eventos
+-- ============================================================
+-- CREATE TABLE eventos (
+--   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--   nombre TEXT NOT NULL,
+--   fecha DATE NOT NULL,
+--   tipo TEXT,
+--   cliente TEXT,
+--   estado TEXT NOT NULL DEFAULT 'pendiente',
+--   invitados INTEGER DEFAULT 0,
+--   menu TEXT,
+--   notas TEXT,
+--   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+--   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+-- );
+
+-- ============================================================
+-- cotizaciones
+-- ============================================================
+-- CREATE TABLE cotizaciones (
+--   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--   cliente_nombre TEXT,
+--   cliente_email TEXT,
+--   cliente_telefono TEXT,
+--   tipo_evento TEXT,
+--   num_invitados INTEGER DEFAULT 0,
+--   modo TEXT DEFAULT 'personalizar',
+--   combo_id TEXT,
+--   items_json JSONB DEFAULT '{}'::jsonb,
+--   total INTEGER DEFAULT 0,
+--   anticipo INTEGER DEFAULT 0,
+--   fecha_entrega DATE,
+--   horario_entrega TEXT,
+--   estado TEXT NOT NULL DEFAULT 'nueva',
+--   pago_metodo TEXT,
+--   pago_status TEXT,
+--   mp_preference_id TEXT,
+--   mp_payment_id TEXT,
+--   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+--   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+-- );

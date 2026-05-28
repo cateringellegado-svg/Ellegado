@@ -5,6 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 import { WHATSAPP_NUMBER } from "@/lib/constants";
 import { fetchAdminLogs } from "@/lib/supabase";
 
+interface ScheduleItem {
+  days: string;
+  hours: string;
+}
+
 interface ConfigForm {
   factor_ajuste: number;
   entorno: "produccion" | "prueba";
@@ -18,6 +23,7 @@ interface ConfigForm {
   whatsapp: string;
   min_invitados: number;
   max_invitados: number;
+  footer_schedule: ScheduleItem[];
 }
 
 const DEFAULT_CONFIG: ConfigForm = {
@@ -33,6 +39,10 @@ const DEFAULT_CONFIG: ConfigForm = {
   whatsapp: WHATSAPP_NUMBER,
   min_invitados: 20,
   max_invitados: 300,
+  footer_schedule: [
+    { days: "Lunes a Viernes", hours: "9:00 – 20:00" },
+    { days: "Sábados", hours: "10:00 – 18:00" },
+  ],
 };
 
 interface AdminLogEntry {
@@ -91,6 +101,15 @@ export default function ConfiguracionPage() {
             min_invitados: conf.min_invitados ?? DEFAULT_CONFIG.min_invitados,
             max_invitados: conf.max_invitados ?? DEFAULT_CONFIG.max_invitados,
           }));
+          // Load footer schedule from site_config "footer" key
+          try {
+            if (siteConfig.footer) {
+              const footerData = JSON.parse(siteConfig.footer);
+              if (footerData.schedule) {
+                setForm((p) => ({ ...p, footer_schedule: footerData.schedule }));
+              }
+            }
+          } catch { /* ignore footer parse errors */ }
         }
       } catch (e) {
         console.error("Error loading config:", e);
@@ -128,6 +147,12 @@ export default function ConfiguracionPage() {
         { onConflict: "key" }
       );
       if (siteError) { setMsg("Error sitio: " + siteError.message); return; }
+
+      const { error: footerError } = await supabase.from("site_config").upsert(
+        { key: "footer", value: JSON.stringify({ schedule: form.footer_schedule }) },
+        { onConflict: "key" }
+      );
+      if (footerError) { setMsg("Error horarios: " + footerError.message); return; }
 
       await supabase.from("admin_logs").insert({
         accion: "configuracion_actualizada",
@@ -332,6 +357,19 @@ export default function ConfiguracionPage() {
                 <input type="number" value={form.max_invitados} onChange={(e) => update("max_invitados", parseInt(e.target.value) || 300)} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" />
               </div>
             </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+            <h2 className="font-serif text-2xl text-dark-elegant mb-6">Horarios del Footer</h2>
+            <p className="text-xs text-slate-500 mb-4">Estos horarios se muestran en el pie de página del sitio público. También puedes editarlos en <a href="/admin/cms" className="text-brand-copper underline">CMS → Footer</a>.</p>
+            {form.footer_schedule.map((s, i) => (
+              <div key={i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
+                <input type="text" value={s.days} onChange={(e) => { const schedule = [...form.footer_schedule]; schedule[i] = { ...schedule[i], days: e.target.value }; setForm((p) => ({ ...p, footer_schedule: schedule })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Días" />
+                <input type="text" value={s.hours} onChange={(e) => { const schedule = [...form.footer_schedule]; schedule[i] = { ...schedule[i], hours: e.target.value }; setForm((p) => ({ ...p, footer_schedule: schedule })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Horarios" />
+                <button onClick={() => setForm((p) => ({ ...p, footer_schedule: p.footer_schedule.filter((_, j) => j !== i) }))} className="text-red-400 hover:text-red-600 cursor-pointer">×</button>
+              </div>
+            ))}
+            <button onClick={() => setForm((p) => ({ ...p, footer_schedule: [...p.footer_schedule, { days: "", hours: "" }] }))} className="text-sm text-brand-copper hover:text-brand-copper-light cursor-pointer">+ Agregar horario</button>
           </div>
         </div>
       )}

@@ -9,17 +9,8 @@ function formatARS(value: number): string {
   return "$" + value.toLocaleString("es-AR");
 }
 
-function getRecommendedComboId(guestCount: number): string {
-  if (guestCount <= 15) return "combo_esencia";
-  if (guestCount <= 25) return "combo_celebracion";
-  if (guestCount <= 35) return "combo_ejecutivo";
-  if (guestCount <= 45) return "combo_magno";
-  return "combo_gran_fiesta";
-}
-
 interface Props {
   combos: Combo[];
-  filteredCombos: Combo[];
   wizardGuestCount: number;
   factorAjuste: number;
   onSelect: (combo: Combo) => void;
@@ -29,7 +20,6 @@ interface Props {
 
 export default function ComboSelector({
   combos,
-  filteredCombos,
   wizardGuestCount,
   factorAjuste,
   onSelect,
@@ -37,11 +27,9 @@ export default function ComboSelector({
   onPersonalizar,
 }: Props) {
   const recommendedId = useMemo(
-    () => (wizardGuestCount > 0 ? getRecommendedComboId(wizardGuestCount) : null),
-    [wizardGuestCount]
+    () => (wizardGuestCount > 0 && combos.length > 0 ? combos[0].id : null),
+    [wizardGuestCount, combos]
   );
-
-  const displayCombos = filteredCombos.length > 0 ? filteredCombos : combos;
 
   return (
     <div className="mb-16">
@@ -76,22 +64,8 @@ export default function ComboSelector({
         </p>
       </div>
 
-      {filteredCombos.length === 0 && wizardGuestCount > 0 && (
-        <p className="text-center text-slate-400 text-sm mb-6">
-          No encontramos combos exactos para {wizardGuestCount} invitados.
-          <br />
-          <button
-            type="button"
-            onClick={onPersonalizar}
-            className="text-brand-copper underline cursor-pointer"
-          >
-            Personalizá tu menú
-          </button>
-        </p>
-      )}
-
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayCombos.map((combo) => {
+        {combos.map((combo) => {
           const isRecommended = combo.id === recommendedId;
           return (
             <button

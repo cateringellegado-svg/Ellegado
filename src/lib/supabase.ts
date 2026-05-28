@@ -121,10 +121,36 @@ export async function fetchAllCombosAdmin() {
 
 export async function updateComboAdmin(
   id: string,
-  values: { nombre?: string; descripcion?: string; precio?: number; activo?: boolean; orden?: number }
+  values: {
+    nombre?: string;
+    descripcion?: string;
+    precio?: number;
+    activo?: boolean;
+    orden?: number;
+    items_json?: import("@/types").ComboItem[];
+    personas_min?: number;
+    personas_max?: number;
+    capacidad_diaria?: number;
+  }
 ) {
   const supabase = getClient();
   const { error } = await supabase.from("combos").update(values).eq("id", id);
+  return { error };
+}
+
+export async function createComboAdmin(values: {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  items_json: import("@/types").ComboItem[];
+  precio: number;
+  personas_min: number;
+  personas_max: number;
+  activo: boolean;
+  orden: number;
+}) {
+  const supabase = getClient();
+  const { error } = await supabase.from("combos").insert(values);
   return { error };
 }
 
