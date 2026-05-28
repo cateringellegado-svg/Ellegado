@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error("Supabase insert error:", error);
       return NextResponse.json(
-        { error: "Error al guardar la cotización" },
+        { error: error.message || "Error al guardar la cotización" },
         { status: 500 }
       );
     }
