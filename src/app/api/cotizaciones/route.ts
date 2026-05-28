@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       {
         tipo_evento: "Catering",
         num_invitados: parsed.data.total_unidades,
-        servicios: JSON.stringify(parsed.data.productos),
+        servicios: parsed.data.productos,
         presupuesto: parsed.data.total,
         fecha_entrega: parsed.data.fecha_entrega,
         cliente_nombre: parsed.data.cliente_nombre,
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error("Supabase insert error:", error);
       return NextResponse.json(
-        { error: error.message || "Error al guardar la cotización" },
+        { error: "Error al guardar la cotización" },
         { status: 500 }
       );
     }
