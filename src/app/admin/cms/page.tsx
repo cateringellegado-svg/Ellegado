@@ -5,9 +5,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { WHATSAPP_NUMBER } from "@/lib/constants";
 import { uploadSiteImage, deleteSiteImage } from "@/lib/storage";
-import { fetchAllCombosAdmin, updateComboAdmin, createComboAdmin, deleteComboAdmin } from "@/lib/supabase";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import type { Combo, ComboItem } from "@/types";
 
 interface CMSConfig {
   colors: Record<string, string>;
@@ -70,14 +68,22 @@ const IMAGE_FIELDS = [
 ];
 
 const ICON_OPTIONS = [
-  { value: "chef", label: "Chef" },
-  { value: "sparkles", label: "Sparkles" },
-  { value: "heart", label: "Heart" },
-  { value: "star", label: "Star" },
-  { value: "bowl", label: "Bowl" },
-  { value: "smoothie", label: "Smoothie" },
-  { value: "grill", label: "Grill" },
-  { value: "cheese", label: "Cheese" },
+  { value: "Utensils", label: "Utensilios" },
+  { value: "ChefHat", label: "Chef" },
+  { value: "Star", label: "Estrella" },
+  { value: "Heart", label: "Corazón" },
+  { value: "Sparkles", label: "Destellos" },
+  { value: "Leaf", label: "Hoja" },
+  { value: "Flame", label: "Llama" },
+  { value: "Wine", label: "Vino" },
+  { value: "Coffee", label: "Café" },
+  { value: "Cake", label: "Torta" },
+  { value: "Crown", label: "Corona" },
+  { value: "Gift", label: "Regalo" },
+  { value: "Music", label: "Música" },
+  { value: "Sun", label: "Sol" },
+  { value: "Calendar", label: "Calendario" },
+  { value: "Users", label: "Usuarios" },
 ];
 
 const tryParse = (val: string, fallback: unknown) => {
@@ -98,17 +104,6 @@ export default function CMSPage() {
   const [activeTab, setActiveTab] = useState("general");
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [activeSection, setActiveSection] = useState("colors");
-  const [combos, setCombos] = useState<Combo[]>([]);
-  const [comboSaving, setComboSaving] = useState<string | null>(null);
-  const [comboMsg, setComboMsg] = useState("");
-  const [showNewCombo, setShowNewCombo] = useState(false);
-  const [newCombo, setNewCombo] = useState<Partial<Combo>>({});
-  const [newComboItems, setNewComboItems] = useState<ComboItem[]>([]);
-  const [confirmDeleteCombo, setConfirmDeleteCombo] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchAllCombosAdmin().then((d) => { if (d) setCombos(d); });
-  }, []);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -225,7 +220,6 @@ export default function CMSPage() {
     { id: "social", label: "Redes Sociales" },
     { id: "contact", label: "Contacto" },
     { id: "sections", label: "Secciones" },
-    { id: "combos", label: "Combos" },
     { id: "legal", label: "Legal" },
   ];
 
@@ -400,7 +394,7 @@ export default function CMSPage() {
               <div className="mt-6">
                 <h3 className="font-serif text-lg text-dark-elegant mb-4">Estadísticas del Hero</h3>
                 {(config.hero.stats as { value: string; label: string }[] || []).map((stat, i) => (
-                  <div key={stat.label + '-' + i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
+                  <div key={i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
                     <input type="text" value={stat.value} onChange={(e) => { const stats = [...config.hero.stats as { value: string; label: string }[]]; stats[i] = { ...stats[i], value: e.target.value }; setConfig((p) => ({ ...p, hero: { ...p.hero, stats } })); }} className="w-24 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm text-center" placeholder="Valor" />
                     <input type="text" value={stat.label} onChange={(e) => { const stats = [...config.hero.stats as { value: string; label: string }[]]; stats[i] = { ...stats[i], label: e.target.value }; setConfig((p) => ({ ...p, hero: { ...p.hero, stats } })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Label" />
                     <button onClick={() => { const stats = (config.hero.stats as { value: string; label: string }[] || []).filter((_, j) => j !== i); setConfig((p) => ({ ...p, hero: { ...p.hero, stats } })); }} className="text-red-400 hover:text-red-600 cursor-pointer" aria-label="Eliminar estadística">×</button>
@@ -460,7 +454,7 @@ export default function CMSPage() {
               </div>
               <div className="space-y-4">
                 {(config.features.items as { icon: string; title: string; text: string }[] || []).map((item, i) => (
-                  <div key={item.title + '-' + i} className="p-4 bg-cream rounded-xl border border-brand-copper/10">
+                  <div key={i} className="p-4 bg-cream rounded-xl border border-brand-copper/10">
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-xs font-semibold text-slate-500 uppercase">Feature #{i + 1}</span>
                       <button onClick={() => { const items = (config.features.items as { icon: string; title: string; text: string }[]).filter((_, j) => j !== i); setConfig((p) => ({ ...p, features: { ...p.features, items } })); }} className="text-red-400 hover:text-red-600 text-sm cursor-pointer">Eliminar</button>
@@ -508,7 +502,7 @@ export default function CMSPage() {
               </div>
               <div className="space-y-4">
                 {(config.comingSoon.items as { title: string; description: string; icon: string }[] || []).map((item, i) => (
-                  <div key={item.title + '-' + i} className="p-4 bg-cream rounded-xl border border-brand-copper/10">
+                  <div key={i} className="p-4 bg-cream rounded-xl border border-brand-copper/10">
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-xs font-semibold text-slate-500 uppercase">Servicio #{i + 1}</span>
                       <button onClick={() => { const items = (config.comingSoon.items as { title: string; description: string; icon: string }[]).filter((_, j) => j !== i); setConfig((p) => ({ ...p, comingSoon: { ...p.comingSoon, items } })); }} className="text-red-400 hover:text-red-600 text-sm cursor-pointer">Eliminar</button>
@@ -536,7 +530,7 @@ export default function CMSPage() {
               </div>
               <h3 className="font-serif text-lg text-dark-elegant mb-4">Links de Navegación</h3>
               {(config.navbar.links as { label: string; href: string }[] || []).map((link, i) => (
-                <div key={link.label + '-' + i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
+                <div key={i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
                   <input type="text" value={link.label} onChange={(e) => { const links = [...config.navbar.links as { label: string; href: string }[]]; links[i] = { ...links[i], label: e.target.value }; setConfig((p) => ({ ...p, navbar: { ...p.navbar, links } })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Label" />
                   <input type="text" value={link.href} onChange={(e) => { const links = [...config.navbar.links as { label: string; href: string }[]]; links[i] = { ...links[i], href: e.target.value }; setConfig((p) => ({ ...p, navbar: { ...p.navbar, links } })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm font-mono text-xs" placeholder="#seccion" />
                   <button onClick={() => { const links = (config.navbar.links as { label: string; href: string }[]).filter((_, j) => j !== i); setConfig((p) => ({ ...p, navbar: { ...p.navbar, links } })); }} className="text-red-400 hover:text-red-600 cursor-pointer">×</button>
@@ -573,7 +567,7 @@ export default function CMSPage() {
               </div>
               <h3 className="font-serif text-lg text-dark-elegant mb-4">Horarios</h3>
               {(config.footer.schedule as { days: string; hours: string }[] || []).map((s, i) => (
-                <div key={s.days + '-' + i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
+                <div key={i} className="flex items-center gap-4 mb-3 p-3 bg-cream rounded-lg">
                   <input type="text" value={s.days} onChange={(e) => { const schedule = [...config.footer.schedule as { days: string; hours: string }[]]; schedule[i] = { ...schedule[i], days: e.target.value }; setConfig((p) => ({ ...p, footer: { ...p.footer, schedule } })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Días" />
                   <input type="text" value={s.hours} onChange={(e) => { const schedule = [...config.footer.schedule as { days: string; hours: string }[]]; schedule[i] = { ...schedule[i], hours: e.target.value }; setConfig((p) => ({ ...p, footer: { ...p.footer, schedule } })); }} className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Horarios" />
                   <button onClick={() => { const schedule = (config.footer.schedule as { days: string; hours: string }[]).filter((_, j) => j !== i); setConfig((p) => ({ ...p, footer: { ...p.footer, schedule } })); }} className="text-red-400 hover:text-red-600 cursor-pointer">×</button>
@@ -610,230 +604,6 @@ export default function CMSPage() {
                   <input type="tel" value={config.contact.whatsapp || ""} onChange={(e) => setConfig((p) => ({ ...p, contact: { ...p.contact, whatsapp: e.target.value.replace(/\D/g, "") } }))} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" placeholder={WHATSAPP_NUMBER} />
                 </div>
               </div>
-            </div>
-          )}
-
-          {activeSection === "combos" && (
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-serif text-2xl text-dark-elegant">Gestión de Combos</h2>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => { setShowNewCombo(!showNewCombo); setNewCombo({}); setNewComboItems([]); }}
-                    className="text-sm bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer flex items-center gap-1"
-                  >
-                    + Nuevo Combo
-                  </button>
-                  <button
-                    onClick={async () => {
-                      const d = await fetchAllCombosAdmin();
-                      if (d) setCombos(d);
-                      setComboMsg("Combos actualizados");
-                      setTimeout(() => setComboMsg(""), 2000);
-                    }}
-                    className="text-sm text-brand-copper hover:text-brand-copper-light cursor-pointer flex items-center gap-1"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                    Recargar
-                  </button>
-                </div>
-              </div>
-              {comboMsg && <div className="mb-4 px-4 py-2 bg-green-50 text-green-600 text-sm rounded-lg border border-green-200">{comboMsg}</div>}
-
-              {showNewCombo && (
-                <div className="mb-6 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-                  <h3 className="font-serif text-lg text-dark-elegant mb-4">Nuevo Combo</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">ID único</label>
-                      <input type="text" value={newCombo.id || ""} onChange={(e) => setNewCombo((p) => ({ ...p, id: e.target.value }))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm font-mono" placeholder="ej: combo_nuevo" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Nombre</label>
-                      <input type="text" value={newCombo.nombre || ""} onChange={(e) => setNewCombo((p) => ({ ...p, nombre: e.target.value }))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Precio ($)</label>
-                      <input type="number" min="0" value={newCombo.precio || ""} onChange={(e) => setNewCombo((p) => ({ ...p, precio: parseInt(e.target.value) || 0 }))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                    </div>
-                    <div className="md:col-span-3">
-                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Descripción</label>
-                      <input type="text" value={newCombo.descripcion || ""} onChange={(e) => setNewCombo((p) => ({ ...p, descripcion: e.target.value }))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Personas mín</label>
-                      <input type="number" min="1" value={newCombo.personas_min || ""} onChange={(e) => setNewCombo((p) => ({ ...p, personas_min: parseInt(e.target.value) || 1 }))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Personas máx</label>
-                      <input type="number" min="1" value={newCombo.personas_max || ""} onChange={(e) => setNewCombo((p) => ({ ...p, personas_max: parseInt(e.target.value) || 100 }))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Orden</label>
-                      <input type="number" min="0" value={newCombo.orden ?? ""} onChange={(e) => setNewCombo((p) => ({ ...p, orden: parseInt(e.target.value) || 0 }))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Productos del Combo</label>
-                    {newComboItems.map((item, i) => (
-                      <div key={i} className="flex items-center gap-2 mb-2 p-2 bg-white rounded-lg border border-brand-copper/10">
-                        <input type="text" value={item.id} onChange={(e) => { const items = [...newComboItems]; items[i] = { ...items[i], id: e.target.value }; setNewComboItems(items); }} className="w-28 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-xs font-mono" placeholder="ID producto" />
-                        <input type="text" value={item.nombre} onChange={(e) => { const items = [...newComboItems]; items[i] = { ...items[i], nombre: e.target.value }; setNewComboItems(items); }} className="flex-1 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-xs" placeholder="Nombre" />
-                        <input type="number" min="0" value={item.cantidad} onChange={(e) => { const items = [...newComboItems]; items[i] = { ...items[i], cantidad: parseInt(e.target.value) || 0 }; setNewComboItems(items); }} className="w-16 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-xs text-center" placeholder="Cant" />
-                        <input type="number" min="0" value={item.precio} onChange={(e) => { const items = [...newComboItems]; items[i] = { ...items[i], precio: parseInt(e.target.value) || 0 }; setNewComboItems(items); }} className="w-20 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-xs text-center" placeholder="Precio u." />
-                        <button onClick={() => setNewComboItems((prev) => prev.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600 text-sm cursor-pointer">×</button>
-                      </div>
-                    ))}
-                    <button onClick={() => setNewComboItems((prev) => [...prev, { id: "", nombre: "", cantidad: 0, precio: 0 }])} className="text-sm text-brand-copper hover:text-brand-copper-light cursor-pointer">+ Agregar producto</button>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      if (!newCombo.id || !newCombo.nombre) { setComboMsg("Error: ID y nombre son obligatorios"); return; }
-                      const { error } = await createComboAdmin({
-                        id: newCombo.id,
-                        nombre: newCombo.nombre || "",
-                        descripcion: newCombo.descripcion || "",
-                        items_json: newComboItems,
-                        precio: newCombo.precio || 0,
-                        personas_min: newCombo.personas_min || 1,
-                        personas_max: newCombo.personas_max || 100,
-                        activo: true,
-                        orden: newCombo.orden || 0,
-                      });
-                      if (error) setComboMsg("Error: " + error.message);
-                      else {
-                        setComboMsg("Combo creado exitosamente");
-                        setShowNewCombo(false);
-                        setNewCombo({});
-                        setNewComboItems([]);
-                        const d = await fetchAllCombosAdmin();
-                        if (d) setCombos(d);
-                      }
-                      setTimeout(() => setComboMsg(""), 3000);
-                    }}
-                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 transition-colors cursor-pointer"
-                  >
-                    Crear Combo
-                  </button>
-                </div>
-              )}
-
-              {combos.length > 0 ? (
-                <div className="space-y-4">
-                  {combos.map((combo) => (
-                    <div key={combo.id} className="p-4 bg-cream rounded-xl border border-brand-copper/10">
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
-                        <div>
-                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Nombre</label>
-                          <input type="text" value={combo.nombre} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, nombre: e.target.value } : c))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Descripción</label>
-                          <input type="text" value={combo.descripcion} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, descripcion: e.target.value } : c))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Precio ($)</label>
-                          <input type="number" min="0" value={combo.precio} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, precio: parseInt(e.target.value) || 0 } : c))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                        </div>
-                        <div className="flex items-end gap-2">
-                          <label className="flex items-center gap-2 px-3 py-2 bg-white border border-brand-copper/20 rounded-lg cursor-pointer">
-                            <input type="checkbox" checked={combo.activo ?? true} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, activo: e.target.checked } : c))} className="w-4 h-4 text-brand-copper accent-brand-copper" />
-                            <span className="text-xs text-slate-600">Activo</span>
-                          </label>
-                          <button
-                              onClick={async () => {
-                              setComboSaving(combo.id);
-                              const { error } = await updateComboAdmin(combo.id, {
-                                nombre: combo.nombre,
-                                descripcion: combo.descripcion,
-                                precio: combo.precio,
-                                activo: combo.activo,
-                                orden: combo.orden,
-                                personas_min: combo.personas_min,
-                                personas_max: combo.personas_max,
-                                capacidad_diaria: combo.capacidad_diaria,
-                                items_json: combo.items_json,
-                              });
-                              setComboSaving(null);
-                              if (error) setComboMsg("Error: " + error.message);
-                              else setComboMsg("Combo actualizado");
-                              setTimeout(() => setComboMsg(""), 2000);
-                            }}
-                            disabled={comboSaving === combo.id}
-                            className="px-4 py-2 bg-brand-copper text-white rounded-lg text-xs font-medium hover:bg-brand-copper-light transition-colors disabled:opacity-50 cursor-pointer"
-                          >
-                            {comboSaving === combo.id ? "..." : "Guardar"}
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteCombo(combo.id)}
-                            className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors cursor-pointer"
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
-                        <div>
-                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Personas mín</label>
-                          <input type="number" min="1" value={combo.personas_min} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, personas_min: parseInt(e.target.value) || 1 } : c))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Personas máx</label>
-                          <input type="number" min="1" value={combo.personas_max} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, personas_max: parseInt(e.target.value) || 100 } : c))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Orden</label>
-                          <input type="number" min="0" value={combo.orden ?? 0} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, orden: parseInt(e.target.value) || 0 } : c))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Capacidad diaria (0 = ilimitado)</label>
-                          <input type="number" min="0" value={combo.capacidad_diaria ?? 0} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, capacidad_diaria: parseInt(e.target.value) || 0 } : c))} className="w-full bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" />
-                        </div>
-                      </div>
-                      <div className="border-t border-brand-copper/10 pt-3 mt-3">
-                        <details className="group">
-                          <summary className="text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer hover:text-brand-copper transition-colors [&::-webkit-details-marker]:hidden list-none flex items-center gap-2">
-                            <svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                            Productos ({combo.items_json?.length || 0})
-                          </summary>
-                          <div className="mt-2 space-y-2">
-                            {combo.items_json?.map((item, i) => (
-                              <div key={item.id + '-' + i} className="flex items-center gap-2 p-2 bg-white rounded-lg border border-brand-copper/10">
-                                <input type="text" value={item.id} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: c.items_json?.map((it, j) => j === i ? { ...it, id: e.target.value } : it) } : c))} className="w-20 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-[10px] font-mono" placeholder="ID" />
-                                <input type="text" value={item.nombre} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: c.items_json?.map((it, j) => j === i ? { ...it, nombre: e.target.value } : it) } : c))} className="flex-1 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-xs" placeholder="Nombre" />
-                                <input type="number" min="0" value={item.cantidad} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: c.items_json?.map((it, j) => j === i ? { ...it, cantidad: parseInt(e.target.value) || 0 } : it) } : c))} className="w-16 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-xs text-center" placeholder="Cant" />
-                                <input type="number" min="0" value={item.precio} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: c.items_json?.map((it, j) => j === i ? { ...it, precio: parseInt(e.target.value) || 0 } : it) } : c))} className="w-20 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-xs text-center" placeholder="$" />
-                                <button onClick={() => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: c.items_json?.filter((_, j) => j !== i) } : c))} className="text-red-400 hover:text-red-600 text-sm cursor-pointer">×</button>
-                              </div>
-                            ))}
-                            <button onClick={() => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: [...(c.items_json || []), { id: "", nombre: "", cantidad: 0, precio: 0 }] } : c))} className="text-sm text-brand-copper hover:text-brand-copper-light cursor-pointer">+ Agregar producto</button>
-                          </div>
-                        </details>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12 text-slate-400 text-sm">No hay combos registrados.</div>
-              )}
-
-              <ConfirmDialog
-                open={confirmDeleteCombo !== null}
-                title="Eliminar Combo"
-                message="¿Estás seguro de eliminar este combo? Esta acción no se puede deshacer."
-                onConfirm={async () => {
-                  if (!confirmDeleteCombo) return;
-                  const { error } = await deleteComboAdmin(confirmDeleteCombo);
-                  if (error) setComboMsg("Error: " + error.message);
-                  else {
-                    setComboMsg("Combo eliminado");
-                    setCombos((prev) => prev.filter((c) => c.id !== confirmDeleteCombo));
-                  }
-                  setConfirmDeleteCombo(null);
-                  setTimeout(() => setComboMsg(""), 2000);
-                }}
-                onCancel={() => setConfirmDeleteCombo(null)}
-              />
             </div>
           )}
 
