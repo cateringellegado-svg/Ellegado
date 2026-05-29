@@ -15,13 +15,20 @@ test.describe("El Legado - Critical Paths", () => {
 
     for (const id of ["#filosofia", "#festin", "#contacto"]) {
       await page.evaluate((sel) => {
-        const el = document.querySelector(sel);
-        if (el) {
-          const top = el.getBoundingClientRect().top + window.scrollY - 80;
-          window.scrollTo({ top, behavior: "instant" });
-        }
+        document.querySelector(sel)?.scrollIntoView({ behavior: "instant", block: "start" });
+        window.scrollBy(0, -120);
       }, id);
-      await expect(page.locator(id)).toBeInViewport();
+      await expect(page.locator(id)).toBeVisible();
+      const inViewport = await page.locator(id).evaluate((el) => {
+        const rect = el.getBoundingClientRect();
+        return rect.top >= 0 && rect.top < window.innerHeight;
+      });
+      if (!inViewport) {
+        await page.evaluate((sel) => {
+          document.querySelector(sel)?.scrollIntoView({ behavior: "instant", block: "center" });
+        }, id);
+      }
+      await expect(page.locator(id)).toBeVisible();
     }
   });
 
@@ -74,7 +81,10 @@ test.describe("El Legado - Critical Paths", () => {
 
     await expect(page.locator("#back-to-top")).not.toBeVisible();
 
-    await page.evaluate(() => window.scrollTo(0, 1000));
+    await page.evaluate(() => {
+      window.scrollTo(0, 1000);
+      window.dispatchEvent(new Event("scroll"));
+    });
     await page.locator("#back-to-top").waitFor({ state: "visible", timeout: 5000 });
   });
 

@@ -57,7 +57,7 @@ const DEFAULT_CMS: CMSConfig = {
   features: { title: "¿Por Qué Elegirnos?", items: [{ icon: "chef", title: "Cocina Artesanal", text: "Cada bocado es preparado con ingredientes seleccionados." }, { icon: "sparkles", title: "Presentación Impecable", text: "Cada plato como una obra maestra visual." }, { icon: "heart", title: "Atención Personalizada", text: "Escuchamos tus ideas." }, { icon: "star", title: "Calidad Premium", text: "Estándares que superan expectativas." }] },
   cta: { title: "¿Listo para tu evento perfecto?", text: "Contactanos hoy y empecemos a planificar juntos.", buttonText: "Cotizá tu Evento" },
   comingSoon: { title: "Próximamente", items: [{ title: "Bowls Saludables", description: "Bowls nutritivos", icon: "bowl" }, { title: "Barra de Smoothies", description: "Estación interactiva", icon: "smoothie" }, { title: "Noche de Parrilla", description: "Experiencia de parrilla", icon: "grill" }, { title: "Cheese & Wine", description: "Selección de quesos", icon: "cheese" }] },
-  navbar: { logoUrl: "/logo.webp", links: [{ label: "Inicio", href: "#hero" }, { label: "Nosotros", href: "#about" }, { label: "Festín", href: "#festin" }, { label: "Galería", href: "#gallery" }, { label: "Contacto", href: "#contact" }] },
+  navbar: { logoUrl: "/logo.webp", links: [{ label: "Inicio", href: "#inicio" }, { label: "Nosotros", href: "#filosofia" }, { label: "Festín", href: "#festin" }, { label: "Galería", href: "#galeria" }, { label: "Contacto", href: "#contacto" }] },
   politicas_contratacion: "",
   politicas_privacidad: "",
   terminos_condiciones: "",

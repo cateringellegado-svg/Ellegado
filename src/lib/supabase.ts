@@ -247,3 +247,71 @@ export async function deleteCotizacion(id: string) {
   const { error } = await supabase.from("cotizaciones").delete().eq("id", id);
   return { error };
 }
+
+export interface TestimonialRow {
+  id: string;
+  name: string;
+  text: string;
+  event: string;
+  rating: number;
+  menu: string;
+  active: boolean;
+  orden: number;
+  created_at: string;
+}
+
+export async function fetchTestimonialsAdmin() {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from("testimonials")
+    .select("*")
+    .order("orden", { ascending: true });
+  if (error) throw error;
+  return (data || []) as TestimonialRow[];
+}
+
+export async function createTestimonialAdmin(values: {
+  name: string;
+  text: string;
+  event: string;
+  rating: number;
+  menu: string;
+  active: boolean;
+  orden: number;
+}) {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from("testimonials")
+    .insert(values)
+    .select();
+  if (error) throw error;
+  return (data?.[0] || null) as TestimonialRow | null;
+}
+
+export async function updateTestimonialAdmin(
+  id: string,
+  values: Partial<{
+    name: string;
+    text: string;
+    event: string;
+    rating: number;
+    menu: string;
+    active: boolean;
+    orden: number;
+  }>
+) {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from("testimonials")
+    .update(values)
+    .eq("id", id)
+    .select();
+  if (error) throw error;
+  return (data?.[0] || null) as TestimonialRow | null;
+}
+
+export async function deleteTestimonialAdmin(id: string) {
+  const supabase = getClient();
+  const { error } = await supabase.from("testimonials").delete().eq("id", id);
+  return { error };
+}

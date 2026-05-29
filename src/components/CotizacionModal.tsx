@@ -50,7 +50,6 @@ export default function CotizacionModal({
   const [cotizacionId, setCotizacionId] = useState<string | null>(null);
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [creatingPreference, setCreatingPreference] = useState(false);
-  const [preferenceError, setPreferenceError] = useState(false);
 
   useEffect(() => {
     if (MP_PUBLIC_KEY && !mpInitialized) {
@@ -113,7 +112,6 @@ export default function CotizacionModal({
         return;
       }
       setSubmitting(true);
-      setPreferenceError(false);
 
       const productos = Object.values(cotizacion).filter(
         (p) => p.cantidad > 0 && p.precio > 0
@@ -164,6 +162,7 @@ export default function CotizacionModal({
       }
 
       // Paso 2: crear preferencia de Mercado Pago con el ID real de la cotización
+      let mpFailed = false;
       if (MP_PUBLIC_KEY && cotId) {
         setCreatingPreference(true);
         try {
@@ -188,17 +187,22 @@ export default function CotizacionModal({
             setCreatingPreference(false);
             return;
           } else {
-            setPreferenceError(true);
+            mpFailed = true;
           }
         } catch {
-          setPreferenceError(true);
+          mpFailed = true;
         }
         setCreatingPreference(false);
       }
 
-      // Fallback: abrir WhatsApp y cerrar
+      // Fallback: la cotización se guardó pero no se pudo crear el pago online
       openWhatsApp();
-      showToast("Cotización enviada correctamente", "success");
+      showToast(
+        mpFailed
+          ? "Cotización guardada. Redirigiendo a WhatsApp para finalizar..."
+          : "Cotización enviada correctamente",
+        mpFailed ? "warning" : "success"
+      );
       setSubmitting(false);
       onClose();
     },
@@ -209,7 +213,6 @@ export default function CotizacionModal({
     if (!isOpen) return;
     setStep("form");
     setPreferenceId(null);
-    setPreferenceError(false);
     setCotizacionId(null);
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
