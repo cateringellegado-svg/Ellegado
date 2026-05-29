@@ -380,9 +380,11 @@ export default function CotizacionModal({
                 </label>
                 <input
                   id="cotizacion-nombre"
+                  name="nombre"
                   type="text"
                   required
                   autoFocus
+                  autoComplete="name"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper"
@@ -394,8 +396,10 @@ export default function CotizacionModal({
                 </label>
                 <input
                   id="cotizacion-telefono"
+                  name="telefono"
                   type="tel"
                   required
+                  autoComplete="tel"
                   value={telefono}
                   onChange={(e) => setTelefono(e.target.value)}
                   placeholder="+54 11 1234 5678"
@@ -409,7 +413,9 @@ export default function CotizacionModal({
                 </label>
                 <input
                   id="cotizacion-email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Opcional"

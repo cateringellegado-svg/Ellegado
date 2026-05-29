@@ -223,10 +223,16 @@ export default function ConsultantWizard({ onComplete, onSkip }: Props) {
             </p>
           </div>
           <div className="max-w-xs mx-auto">
+            <label htmlFor="invitados" className="sr-only">
+              Cantidad de invitados
+            </label>
             <input
+              id="invitados"
+              name="invitados"
               type="number"
               inputMode="numeric"
               min={1}
+              autoComplete="off"
               placeholder="Ej: 50"
               value={guestCount}
               onChange={(e) => setGuestCount(e.target.value)}
@@ -295,12 +301,15 @@ export default function ConsultantWizard({ onComplete, onSkip }: Props) {
 
           <div className="max-w-sm mx-auto space-y-6">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <label htmlFor="fecha-evento" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-brand-copper" strokeWidth={1.5} />
                 Fecha del evento
               </label>
               <input
+                id="fecha-evento"
+                name="fecha-evento"
                 type="date"
+                autoComplete="bday"
                 value={fechaEntrega}
                 min={minDate}
                 max={maxDate}
@@ -344,15 +353,21 @@ export default function ConsultantWizard({ onComplete, onSkip }: Props) {
 
             {fechaEntrega && (
               <div>
-                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <h3 id="label-horario" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-brand-copper" strokeWidth={1.5} />
                   Horario estimado
-                </label>
-                <div className="grid grid-cols-4 gap-2">
+                </h3>
+                <div
+                  role="radiogroup"
+                  aria-labelledby="label-horario"
+                  className="grid grid-cols-4 gap-2"
+                >
                   {availableTimes.map((time) => (
                     <button
                       key={time}
                       type="button"
+                      role="radio"
+                      aria-checked={horarioEntrega === time}
                       onClick={() => setHorarioEntrega(time)}
                       className={`py-2 px-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
                         horarioEntrega === time

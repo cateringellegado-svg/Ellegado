@@ -69,8 +69,10 @@ export default function AdminLogin() {
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 font-sans text-sm focus:outline-none focus:border-brand-copper transition-colors"
@@ -87,8 +89,10 @@ export default function AdminLogin() {
               </label>
               <input
                 id="password"
+                name="password"
                 type="password"
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 font-sans text-sm focus:outline-none focus:border-brand-copper transition-colors"

@@ -65,7 +65,7 @@ async function goToStep4() {
   const dateInput = screen.getByTestId("fecha-input");
   fireEvent.change(dateInput, { target: { value: dateStr } });
   await waitFor(() => {
-    expect(screen.getByRole("button", { name: "10:00" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "10:00" })).toBeInTheDocument();
   });
   fireEvent.click(screen.getByText("10:00"));
   fireEvent.click(screen.getByText("Siguiente →"));
