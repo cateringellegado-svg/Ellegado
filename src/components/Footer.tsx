@@ -67,10 +67,9 @@ export default function Footer() {
 
         <div className="text-right flex flex-col items-end space-y-2">
           <p className="font-bold text-brand-copper mb-2 uppercase tracking-widest text-xs">Legales</p>
-          <Link href="/aviso-legal" className="hover:text-brand-copper transition-colors">Aviso Legal</Link>
-          <Link href="/privacidad" className="hover:text-brand-copper transition-colors">Política de Privacidad</Link>
-          <Link href="/terminos" className="hover:text-brand-copper transition-colors">Términos y Condiciones</Link>
           <Link href="/politicas-contratacion" className="hover:text-brand-copper transition-colors">Políticas de Contratación</Link>
+          <Link href="/politicas-privacidad" className="hover:text-brand-copper transition-colors">Política de Privacidad</Link>
+          <Link href="/terminos-y-condiciones" className="hover:text-brand-copper transition-colors">Términos y Condiciones</Link>
         </div>
       </div>
       <div className="mt-16 pt-8 border-t border-brand-copper/5 text-[10px] text-slate-400 uppercase tracking-[0.2em]">

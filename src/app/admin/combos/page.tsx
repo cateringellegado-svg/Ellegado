@@ -15,7 +15,7 @@ const emptyForm = {
   activo: true,
   orden: 0,
   capacidad_diaria: 0,
-  items_json: "" as string,
+  items: [] as string[],
 };
 
 function formatARS(v: number) {
@@ -70,7 +70,7 @@ export default function CombosPage() {
       activo: c.activo ?? true,
       orden: c.orden ?? 0,
       capacidad_diaria: c.capacidad_diaria ?? 0,
-      items_json: JSON.stringify(c.items_json, null, 2),
+      items: (c.items_json || []).map((i) => i.nombre),
     });
     setShowModal(true);
     setMsg("");
@@ -79,17 +79,16 @@ export default function CombosPage() {
   const handleSave = async () => {
     if (!supabase) return;
     if (!form.nombre.trim()) { setMsg("El nombre es obligatorio"); return; }
-
-    let items: ComboItem[];
-    try {
-      items = JSON.parse(form.items_json || "[]");
-      if (!Array.isArray(items)) throw new Error();
-    } catch {
-      setMsg("Los ítems deben ser un JSON válido (arreglo de objetos)");
-      return;
-    }
-
     if (form.precio <= 0) { setMsg("El precio debe ser mayor a 0"); return; }
+
+    const items: ComboItem[] = form.items
+      .filter((n) => n.trim())
+      .map((nombre, idx) => ({
+        id: String(idx + 1),
+        nombre: nombre.trim(),
+        cantidad: 1,
+        precio: 0,
+      }));
 
     setSaving(true);
     const payload = {
@@ -229,11 +228,43 @@ export default function CombosPage() {
                 <input type="number" min="0" value={form.capacidad_diaria} onChange={(e) => setForm({ ...form, capacidad_diaria: parseInt(e.target.value) || 0 })} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-2.5 text-sm" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Ítems (JSON)
-                  <span className="text-slate-400 font-normal lowercase ml-1">— [{`{"id":"...","nombre":"...","cantidad":1,"precio":0}`}]</span>
-                </label>
-                <textarea rows={4} value={form.items_json} onChange={(e) => setForm({ ...form, items_json: e.target.value })} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-2.5 text-sm font-mono resize-none" placeholder='[{"id":"1","nombre":"Item","cantidad":1,"precio":0}]' />
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Productos del Combo</label>
+                <div className="space-y-2">
+                  {form.items.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={item}
+                        onChange={(e) => {
+                          const next = [...form.items];
+                          next[idx] = e.target.value;
+                          setForm({ ...form, items: next });
+                        }}
+                        className="flex-1 bg-cream border border-brand-copper/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand-copper"
+                        placeholder="Nombre del producto"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = form.items.filter((_, i) => i !== idx);
+                          setForm({ ...form, items: next });
+                        }}
+                        className="text-red-400 hover:text-red-600 p-2 cursor-pointer shrink-0"
+                        aria-label={`Eliminar ${item || "producto"}`}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, items: [...form.items, ""] })}
+                    className="flex items-center gap-2 text-brand-copper hover:text-brand-copper-light text-sm font-medium cursor-pointer"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                    Agregar Producto
+                  </button>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="combo-activo" checked={form.activo} onChange={(e) => setForm({ ...form, activo: e.target.checked })} className="w-4 h-4 text-brand-copper rounded" />
