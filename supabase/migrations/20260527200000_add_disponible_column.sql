@@ -5,9 +5,6 @@
 
 ALTER TABLE menu_items ADD COLUMN IF NOT EXISTS disponible BOOLEAN DEFAULT true;
 
--- Migrate existing data: pendiente = true means not available
-UPDATE menu_items SET disponible = NOT COALESCE(pendiente, false) WHERE disponible IS NULL;
-
 -- Update public RLS policy to allow viewing items regardless of disponible
 -- (disponible=false items should still show as "Próximamente")
 DROP POLICY IF EXISTS "Public can view active menu items" ON menu_items;

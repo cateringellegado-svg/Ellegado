@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { WHATSAPP_NUMBER } from "@/lib/constants";
 import { uploadSiteImage, deleteSiteImage } from "@/lib/storage";
-import { fetchAllCombosAdmin, updateComboAdmin, createComboAdmin } from "@/lib/supabase";
+import { fetchAllCombosAdmin, updateComboAdmin, createComboAdmin, deleteComboAdmin } from "@/lib/supabase";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import type { Combo, ComboItem } from "@/types";
 
 interface CMSConfig {
@@ -101,6 +102,7 @@ export default function CMSPage() {
   const [showNewCombo, setShowNewCombo] = useState(false);
   const [newCombo, setNewCombo] = useState<Partial<Combo>>({});
   const [newComboItems, setNewComboItems] = useState<ComboItem[]>([]);
+  const [confirmDeleteCombo, setConfirmDeleteCombo] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAllCombosAdmin().then((d) => { if (d) setCombos(d); });
@@ -736,7 +738,7 @@ export default function CMSPage() {
                             <span className="text-xs text-slate-600">Activo</span>
                           </label>
                           <button
-                            onClick={async () => {
+                              onClick={async () => {
                               setComboSaving(combo.id);
                               const { error } = await updateComboAdmin(combo.id, {
                                 nombre: combo.nombre,
@@ -747,6 +749,7 @@ export default function CMSPage() {
                                 personas_min: combo.personas_min,
                                 personas_max: combo.personas_max,
                                 capacidad_diaria: combo.capacidad_diaria,
+                                items_json: combo.items_json,
                               });
                               setComboSaving(null);
                               if (error) setComboMsg("Error: " + error.message);
@@ -757,6 +760,12 @@ export default function CMSPage() {
                             className="px-4 py-2 bg-brand-copper text-white rounded-lg text-xs font-medium hover:bg-brand-copper-light transition-colors disabled:opacity-50 cursor-pointer"
                           >
                             {comboSaving === combo.id ? "..." : "Guardar"}
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteCombo(combo.id)}
+                            className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors cursor-pointer"
+                          >
+                            Eliminar
                           </button>
                         </div>
                       </div>
@@ -781,18 +790,20 @@ export default function CMSPage() {
                       <div className="border-t border-brand-copper/10 pt-3 mt-3">
                         <details className="group">
                           <summary className="text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer hover:text-brand-copper transition-colors [&::-webkit-details-marker]:hidden list-none flex items-center gap-2">
-                            <svg className={`w-3 h-3 transition-transform group-open:rotate-90`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                            <svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                             Productos ({combo.items_json?.length || 0})
                           </summary>
-                          <div className="mt-2 space-y-1">
+                          <div className="mt-2 space-y-2">
                             {combo.items_json?.map((item, i) => (
-                              <div key={item.id + '-' + i} className="flex items-center gap-2 text-xs text-slate-600 p-1.5 bg-white rounded-lg border border-brand-copper/5">
-                                <span className="font-mono text-[10px] text-slate-400 w-24 truncate">{item.id}</span>
-                                <span className="flex-1">{item.nombre}</span>
-                                <span className="text-slate-500">{item.cantidad} u.</span>
-                                <span className="text-slate-500">${item.precio.toLocaleString("es-AR")} c/u</span>
+                              <div key={item.id + '-' + i} className="flex items-center gap-2 p-2 bg-white rounded-lg border border-brand-copper/10">
+                                <input type="text" value={item.id} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: c.items_json?.map((it, j) => j === i ? { ...it, id: e.target.value } : it) } : c))} className="w-20 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-[10px] font-mono" placeholder="ID" />
+                                <input type="text" value={item.nombre} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: c.items_json?.map((it, j) => j === i ? { ...it, nombre: e.target.value } : it) } : c))} className="flex-1 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-xs" placeholder="Nombre" />
+                                <input type="number" min="0" value={item.cantidad} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: c.items_json?.map((it, j) => j === i ? { ...it, cantidad: parseInt(e.target.value) || 0 } : it) } : c))} className="w-16 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-xs text-center" placeholder="Cant" />
+                                <input type="number" min="0" value={item.precio} onChange={(e) => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: c.items_json?.map((it, j) => j === i ? { ...it, precio: parseInt(e.target.value) || 0 } : it) } : c))} className="w-20 bg-cream border border-brand-copper/20 rounded px-2 py-1 text-xs text-center" placeholder="$" />
+                                <button onClick={() => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: c.items_json?.filter((_, j) => j !== i) } : c))} className="text-red-400 hover:text-red-600 text-sm cursor-pointer">×</button>
                               </div>
                             ))}
+                            <button onClick={() => setCombos((prev) => prev.map((c) => c.id === combo.id ? { ...c, items_json: [...(c.items_json || []), { id: "", nombre: "", cantidad: 0, precio: 0 }] } : c))} className="text-sm text-brand-copper hover:text-brand-copper-light cursor-pointer">+ Agregar producto</button>
                           </div>
                         </details>
                       </div>
@@ -802,6 +813,24 @@ export default function CMSPage() {
               ) : (
                 <div className="text-center py-12 text-slate-400 text-sm">No hay combos registrados.</div>
               )}
+
+              <ConfirmDialog
+                open={confirmDeleteCombo !== null}
+                title="Eliminar Combo"
+                message="¿Estás seguro de eliminar este combo? Esta acción no se puede deshacer."
+                onConfirm={async () => {
+                  if (!confirmDeleteCombo) return;
+                  const { error } = await deleteComboAdmin(confirmDeleteCombo);
+                  if (error) setComboMsg("Error: " + error.message);
+                  else {
+                    setComboMsg("Combo eliminado");
+                    setCombos((prev) => prev.filter((c) => c.id !== confirmDeleteCombo));
+                  }
+                  setConfirmDeleteCombo(null);
+                  setTimeout(() => setComboMsg(""), 2000);
+                }}
+                onCancel={() => setConfirmDeleteCombo(null)}
+              />
             </div>
           )}
 

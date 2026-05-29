@@ -138,6 +138,12 @@ export async function updateComboAdmin(
   return { error };
 }
 
+export async function deleteComboAdmin(id: string) {
+  const supabase = getClient();
+  const { error } = await supabase.from("combos").delete().eq("id", id);
+  return { error };
+}
+
 export async function createComboAdmin(values: {
   id: string;
   nombre: string;
@@ -186,5 +192,58 @@ export async function marcarReservaManual(cotizacionId: string) {
     .from("cotizaciones")
     .update({ pago_metodo: "manual", pago_status: "reserved", reserva_manual: true, estado: "confirmada" })
     .eq("id", cotizacionId);
+  return { error };
+}
+
+// ============================================================
+// Clientes CRUD
+// ============================================================
+export async function createCliente(values: {
+  nombre: string;
+  email?: string | null;
+  telefono?: string | null;
+  direccion?: string | null;
+  tipo_documento?: string;
+  numero_documento?: string | null;
+  condicion_iva?: string;
+  moneda_preferida?: string;
+  notas?: string | null;
+}) {
+  const supabase = getClient();
+  const { data, error } = await supabase.from("clientes").insert([values]).select().single();
+  return { data, error };
+}
+
+export async function updateCliente(
+  id: string,
+  values: {
+    nombre?: string;
+    email?: string | null;
+    telefono?: string | null;
+    direccion?: string | null;
+    tipo_documento?: string;
+    numero_documento?: string | null;
+    condicion_iva?: string;
+    moneda_preferida?: string;
+    notas?: string | null;
+  }
+) {
+  const supabase = getClient();
+  const { error } = await supabase.from("clientes").update(values).eq("id", id);
+  return { error };
+}
+
+export async function deleteCliente(id: string) {
+  const supabase = getClient();
+  const { error } = await supabase.from("clientes").delete().eq("id", id);
+  return { error };
+}
+
+// ============================================================
+// Cotizaciones CRUD
+// ============================================================
+export async function deleteCotizacion(id: string) {
+  const supabase = getClient();
+  const { error } = await supabase.from("cotizaciones").delete().eq("id", id);
   return { error };
 }

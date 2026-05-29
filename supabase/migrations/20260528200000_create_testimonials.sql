@@ -9,22 +9,26 @@ CREATE TABLE IF NOT EXISTS testimonials (
 
 ALTER TABLE testimonials ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public can read testimonials" ON testimonials;
 CREATE POLICY "Public can read testimonials"
   ON testimonials
   FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Admin can insert testimonials" ON testimonials;
 CREATE POLICY "Admin can insert testimonials"
   ON testimonials
   FOR INSERT
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Admin can update testimonials" ON testimonials;
 CREATE POLICY "Admin can update testimonials"
   ON testimonials
   FOR UPDATE
   USING (true)
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Admin can delete testimonials" ON testimonials;
 CREATE POLICY "Admin can delete testimonials"
   ON testimonials
   FOR DELETE

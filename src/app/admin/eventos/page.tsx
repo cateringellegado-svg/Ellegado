@@ -10,6 +10,8 @@ interface Evento {
   fecha: string;
   tipo: string;
   cliente: string;
+  cliente_id?: string | null;
+  clientes?: { nombre: string } | null;
   estado: string;
   invitados: number;
   menu: string;
@@ -53,7 +55,7 @@ export default function EventosPage() {
   const load = useCallback(async () => {
     if (!supabase) { if (mountedRef.current) setLoading(false); return; }
     try {
-      const { data: result } = await supabase.from("eventos").select("*").order("fecha", { ascending: false, nullsFirst: false });
+      const { data: result } = await supabase.from("eventos").select("*, clientes(nombre)").order("fecha", { ascending: false, nullsFirst: false });
       setData(result || []);
     } catch (e) {
       console.error("Error loading eventos:", e);
@@ -205,7 +207,7 @@ export default function EventosPage() {
                       <p className="font-medium text-dark-elegant text-sm">{e.nombre || "Sin nombre"}</p>
                       <p className="text-[10px] text-slate-400">{formatDate(e.fecha)}</p>
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-700">{e.cliente || "-"}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{e.clientes?.nombre || e.cliente || "-"}</td>
                     <td className="px-4 py-3 text-sm text-slate-700">{e.tipo || "-"}</td>
                     <td className="px-4 py-3 text-sm text-slate-700 hidden md:table-cell">{e.invitados || "-"}</td>
                     <td className="px-4 py-3">

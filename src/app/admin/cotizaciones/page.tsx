@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Pagination from "@/components/Pagination";
-import { marcarReservaManual, fetchAdminLogs, insertAdminLog } from "@/lib/supabase";
+import { marcarReservaManual, fetchAdminLogs, insertAdminLog, deleteCotizacion } from "@/lib/supabase";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 interface Cotizacion {
   id: string;
@@ -75,6 +76,7 @@ export default function CotizacionesPage() {
   const [logs, setLogs] = useState<AdminLogEntry[]>([]);
   const [showLogs, setShowLogs] = useState(false);
   const [msg, setMsg] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const loadKeyRef = useRef("");
   const mountedRef = useRef(true);
@@ -315,6 +317,13 @@ export default function CotizacionesPage() {
                         Reservar
                       </button>
                     )}
+                    <button
+                      onClick={() => setConfirmDelete(c.id)}
+                      className="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition-colors cursor-pointer"
+                      title="Eliminar cotización"
+                    >
+                      Eliminar
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -326,6 +335,19 @@ export default function CotizacionesPage() {
         <Pagination page={page} pageSize={PAGE_SIZE} total={total} onPageChange={handlePageChange} />
       </div>
       )}
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        title="Eliminar Cotización"
+        message="¿Estás seguro de eliminar esta cotización? Esta acción no se puede deshacer."
+        onConfirm={async () => {
+          if (!confirmDelete) return;
+          await deleteCotizacion(confirmDelete);
+          setConfirmDelete(null);
+          load(filter, search, page);
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
 
       {selected && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" role="dialog" aria-modal="true" aria-label="Detalle Cotización" onClick={() => setSelected(null)}>

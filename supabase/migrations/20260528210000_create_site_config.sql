@@ -8,10 +8,12 @@ CREATE TABLE IF NOT EXISTS site_config (
 
 ALTER TABLE site_config ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public can read site_config" ON site_config;
 CREATE POLICY "Public can read site_config"
   ON site_config FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Authenticated can manage site_config" ON site_config;
 CREATE POLICY "Authenticated can manage site_config"
   ON site_config FOR ALL
   USING (auth.role() = 'authenticated')
@@ -25,6 +27,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_site_config_updated_at ON site_config;
 CREATE TRIGGER update_site_config_updated_at
   BEFORE UPDATE ON site_config
   FOR EACH ROW
