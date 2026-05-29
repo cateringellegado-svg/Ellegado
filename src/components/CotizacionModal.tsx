@@ -50,6 +50,8 @@ export default function CotizacionModal({
   const [cotizacionId, setCotizacionId] = useState<string | null>(null);
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [creatingPreference, setCreatingPreference] = useState(false);
+  const [whatsappBlocked, setWhatsappBlocked] = useState(false);
+  const [showEscape, setShowEscape] = useState(false);
 
   useEffect(() => {
     if (MP_PUBLIC_KEY && !mpInitialized) {
@@ -78,12 +80,21 @@ export default function CotizacionModal({
     const mensajePersonal = `Mi nombre es ${nombre}. Quedo atento a su respuesta para coordinar los detalles.`;
     const mensaje = `${WHATSAPP_MSG_PREFIX}\n\n*Productos solicitados:*\n${productosTexto}\n${fechaTexto}\n\n*Total del Presupuesto:* ${totalFormat}\n*Anticipo (50%):* ${anticipoFormat}\n\n${mensajePersonal}\n\n_Acepto los términos de cancelación y la cláusula de ajuste por inflación en reservas mayores a 30 días._`;
 
-    window.open(
-      getWhatsAppUrl(config.contact.whatsapp, mensaje),
-      "_blank",
-      "noopener,noreferrer"
-    );
-  }, [cotizacion, total, anticipo, fechaEntrega, horarioEntrega, nombre, config]);
+    try {
+      const win = window.open(
+        getWhatsAppUrl(config.contact.whatsapp, mensaje),
+        "_blank",
+        "noopener,noreferrer"
+      );
+      if (!win) {
+        setWhatsappBlocked(true);
+        showToast("El navegador bloqueó la ventana. Hacé clic en el botón manual para ir a WhatsApp.", "warning");
+      }
+    } catch {
+      setWhatsappBlocked(true);
+      showToast("El navegador bloqueó la ventana. Hacé clic en el botón manual para ir a WhatsApp.", "warning");
+    }
+  }, [cotizacion, total, anticipo, fechaEntrega, horarioEntrega, nombre, config, showToast]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -214,12 +225,22 @@ export default function CotizacionModal({
     setStep("form");
     setPreferenceId(null);
     setCotizacionId(null);
+    setWhatsappBlocked(false);
+    setShowEscape(false);
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (step === "payment") {
+      setShowEscape(false);
+      const timer = setTimeout(() => setShowEscape(true), 15000);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   if (!isOpen) return null;
 
@@ -311,6 +332,28 @@ export default function CotizacionModal({
             <p className="text-[10px] text-slate-400 mt-4">
               También podés coordinar el pago por WhatsApp.
             </p>
+
+            {whatsappBlocked && (
+              <a
+                href={getWhatsAppUrl(config.contact.whatsapp, encodeURIComponent(
+                  `${WHATSAPP_MSG_PREFIX}\n\n*Productos:*\n${Object.values(cotizacion).filter(p => p.cantidad > 0 && p.precio > 0).map(p => `• ${p.nombre}: ${p.cantidad} u.`).join("\n")}\n\n*Total:* $${total.toLocaleString("es-AR")}\n\n*Anticipo (50%):* $${(anticipo ?? Math.round(total * 0.5)).toLocaleString("es-AR")}\n\nMi nombre es ${nombre}.`
+                ))}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-block w-full bg-[#25D366] text-white font-semibold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm text-center"
+              >
+                Haz clic aquí para ir a WhatsApp
+              </a>
+            )}
+
+            {showEscape && (
+              <button
+                onClick={onClose}
+                className="mt-3 w-full text-sm text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer"
+              >
+                Cerrar / Verificar Manualmente — tu cotización fue guardada y te contactaremos
+              </button>
+            )}
           </div>
         ) : (
           <>

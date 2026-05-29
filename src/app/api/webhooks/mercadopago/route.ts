@@ -190,6 +190,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ──────────────────────────────────────────────────────────
+    // Log de cualquier estado de pago no contemplado
+    // ──────────────────────────────────────────────────────────
+    if (payment.status !== "approved" && payment.status !== "refunded" && payment.status !== "cancelled" && payment.status !== "charged_back") {
+      console.warn("Webhook: estado de pago no manejado:", payment.status, "ID:", mpPaymentId);
+      await supabase.from("admin_logs").insert({
+        accion: "pago_mp_no_manejado",
+        detalle: `Pago MP con estado no manejado: ${payment.status}. ID: ${mpPaymentId}, Monto: ${payment.transaction_amount}, External ref: ${externalRef || "N/A"}`,
+        referencia_id: externalRef || null,
+      });
+    }
+
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (err) {
     console.error("Webhook error:", err);

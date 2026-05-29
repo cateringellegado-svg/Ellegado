@@ -21,7 +21,10 @@ async function getConfig(): Promise<ConfigData | null> {
         .limit(1)
         .single();
       return data as ConfigData | null;
-    } catch {}
+    } catch (e) {
+      console.error("Error fetching MP config:", e);
+      throw e;
+    }
   }
   return null;
 }

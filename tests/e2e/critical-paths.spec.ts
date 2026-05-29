@@ -13,7 +13,7 @@ test.describe("El Legado - Critical Paths", () => {
   test("Navigation scrolls to sections", async ({ page }) => {
     await page.goto("/");
 
-    for (const id of ["#filosofia", "#festin", "#contacto"]) {
+    for (const id of ["#momentos-eternos", "#combos", "#contacto"]) {
       await page.evaluate((sel) => {
         document.querySelector(sel)?.scrollIntoView({ behavior: "instant", block: "start" });
         window.scrollBy(0, -120);
@@ -46,7 +46,7 @@ test.describe("El Legado - Critical Paths", () => {
   test("Toast notification appears on product add", async ({ page }) => {
     await page.goto("/");
 
-    const plusButtons = page.locator("#festin button[aria-label*='Aumentar']");
+    const plusButtons = page.locator("#combos button[aria-label*='Aumentar']");
     const count = await plusButtons.count();
     if (count > 0) {
       await plusButtons.first().click();
