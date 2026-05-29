@@ -46,7 +46,7 @@ const DEFAULT_CMS: CMSConfig = {
       { value: "100%", label: "Dedicación" },
     ],
   },
-  about: { title: "Nuestra Filosofía", text: "Cada evento es una historia única que merece ser contada con los sabores más exquisitos y la atención más cálida.", highlight: "Tradición, calidad y pasión en cada bocado." },
+  about: { title: "Nuestra Filosofía", text: "En El Legado, entendemos que tu evento no es solo una fecha; es la construcción de un recuerdo.", highlight: "Nos especializamos en eventos de mediana envergadura, ofreciendo una experiencia gastronómica de alta gama con un trato cercano y profesional." },
   festin: { title: "El Festín", subtitle: "Elegí los bocados que harán de tu evento una experiencia inolvidable", ctaText: "Cotizá tu evento" },
   footer: { text: "Haz Eterno Cada Momento", copyright: "© 2026 El Legado. Todos los derechos reservados.", address: "Buenos Aires, Argentina", phone: "+54 11 7675-3854", mapUrl: "https://maps.google.com", schedule: [{ days: "Lunes a Viernes", hours: "9:00 – 20:00" }, { days: "Sábados", hours: "10:00 – 18:00" }] },
   social: { instagram: "https://instagram.com/ellegado.catering", facebook: "https://facebook.com/ellegado.catering", tiktok: "" },
