@@ -19,7 +19,7 @@ export default function Philosophy() {
 
   return (
     <section
-      id="momentos-eternos"
+      id="filosofia"
       className="py-32 bg-white border-y border-brand-copper/5 relative"
     >
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">

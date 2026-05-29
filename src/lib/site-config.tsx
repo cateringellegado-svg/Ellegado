@@ -260,9 +260,10 @@ const DEFAULT_NAVBAR: SiteNavbar = {
   logoUrl: "/logo.webp",
   links: [
     { label: "Inicio", href: "#inicio" },
-    { label: "Servicios", href: "#servicios" },
-    { label: "Combos", href: "#combos" },
-    { label: "Momentos Eternos", href: "#momentos-eternos" },
+    { label: "Elegirnos", href: "#elegirnos" },
+    { label: "Filosofía", href: "#filosofia" },
+    { label: "Festín", href: "#festin" },
+    { label: "Galería", href: "#galeria" },
     { label: "Contacto", href: "#contacto" },
   ],
 };

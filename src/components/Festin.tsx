@@ -463,7 +463,7 @@ export default function Festin() {
   const isPremiumTab = activeTab === "premium";
 
   return (
-    <section id="combos" className="py-32 px-6 max-w-7xl mx-auto">
+    <section id="festin" className="py-32 px-6 max-w-7xl mx-auto">
       <div className="text-center mb-16">
         <span className="text-brand-copper font-medium tracking-[0.4em] uppercase text-xs mb-4 block">
           Propuesta Gastronómica
