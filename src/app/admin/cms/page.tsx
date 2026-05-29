@@ -141,33 +141,40 @@ export default function CMSPage() {
         { key, value: JSON.stringify(value) },
         { onConflict: "key" }
       );
-      if (error) setMsg("Error: " + error.message);
-      else setMsg(`"${key}" guardado`);
+      if (error) {
+        const msg = error.message?.includes("Failed to fetch") ? "Error de red - verifica tu conexión" : error.message;
+        setMsg("Error: " + msg);
+      } else {
+        setMsg(`"${key}" guardado`);
+      }
     } catch (e) {
-      console.error("Error saving CMS config:", e);
-      setMsg("Error al guardar configuración");
+      const msg = e instanceof TypeError ? "Error de red - verifica tu conexión" : "Error inesperado al guardar";
+      setMsg("Error: " + msg);
     } finally {
       setSaving(false);
     }
   };
 
   const saveAll = async () => {
+    if (!supabase) return;
     setSaving(true);
     setMsg("");
-    try {
-      const keys: (keyof CMSConfig)[] = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar", "politicas_contratacion", "politicas_privacidad", "terminos_condiciones"];
-      const errors: string[] = [];
-      for (const key of keys) {
-        const { error } = await supabase?.from("site_config").upsert({ key, value: JSON.stringify(config[key]) }, { onConflict: "key" }) ?? {};
-        if (error) errors.push(`${key}: ${error.message}`);
+    const keys: (keyof CMSConfig)[] = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar", "politicas_contratacion", "politicas_privacidad", "terminos_condiciones"];
+    const errors: string[] = [];
+    for (const key of keys) {
+      try {
+        const { error } = await supabase.from("site_config").upsert({ key, value: JSON.stringify(config[key]) }, { onConflict: "key" });
+        if (error) {
+          const msg = error.message?.includes("Failed to fetch") ? "Error de red - verifica tu conexión" : error.message;
+          errors.push(`${key}: ${msg}`);
+        }
+      } catch (e) {
+        const msg = e instanceof TypeError ? "Error de red - verifica tu conexión" : "Error inesperado";
+        errors.push(`${key}: ${msg}`);
       }
-      setMsg(errors.length ? "Error en: " + errors.join(", ") : "Configuración guardada correctamente");
-    } catch (e) {
-      console.error("Error saving all CMS config:", e);
-      setMsg("Error al guardar toda la configuración");
-    } finally {
-      setSaving(false);
     }
+    setMsg(errors.length ? "Error en: " + errors.join(", ") : "Configuración guardada correctamente");
+    setSaving(false);
   };
 
   const handleImageUpload = async (key: string, file: File) => {
