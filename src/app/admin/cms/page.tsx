@@ -24,6 +24,7 @@ interface CMSConfig {
   cta: Record<string, string>;
   comingSoon: Record<string, string | { title: string; description: string; icon: string }[]>;
   navbar: Record<string, string | { label: string; href: string }[]>;
+  politicas_contratacion: string;
 }
 
 const DEFAULT_CMS: CMSConfig = {
@@ -57,6 +58,7 @@ const DEFAULT_CMS: CMSConfig = {
   cta: { title: "¿Listo para tu evento perfecto?", text: "Contactanos hoy y empecemos a planificar juntos.", buttonText: "Cotizá tu Evento" },
   comingSoon: { title: "Próximamente", items: [{ title: "Bowls Saludables", description: "Bowls nutritivos", icon: "bowl" }, { title: "Barra de Smoothies", description: "Estación interactiva", icon: "smoothie" }, { title: "Noche de Parrilla", description: "Experiencia de parrilla", icon: "grill" }, { title: "Cheese & Wine", description: "Selección de quesos", icon: "cheese" }] },
   navbar: { logoUrl: "/logo.webp", links: [{ label: "Inicio", href: "#hero" }, { label: "Nosotros", href: "#about" }, { label: "Festín", href: "#festin" }, { label: "Galería", href: "#gallery" }, { label: "Contacto", href: "#contact" }] },
+  politicas_contratacion: "",
 };
 
 const IMAGE_FIELDS = [
@@ -118,7 +120,7 @@ export default function CMSPage() {
         if (!data) return;
         const map: Record<string, string> = {};
         data.forEach((c: { key: string; value: string }) => { map[c.key] = c.value; });
-        const keys = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar"] as const;
+        const keys = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar", "politicas_contratacion"] as const;
         keys.forEach((k) => {
           if (map[k]) setConfig((p) => ({ ...p, [k]: tryParse(map[k], p[k]) }));
         });
@@ -154,7 +156,7 @@ export default function CMSPage() {
     setSaving(true);
     setMsg("");
     try {
-      const keys: (keyof CMSConfig)[] = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar"];
+      const keys: (keyof CMSConfig)[] = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar", "politicas_contratacion"];
       const errors: string[] = [];
       for (const key of keys) {
         const { error } = await supabase?.from("site_config").upsert({ key, value: JSON.stringify(config[key]) }, { onConflict: "key" }) ?? {};
@@ -224,6 +226,7 @@ export default function CMSPage() {
     { id: "contact", label: "Contacto" },
     { id: "sections", label: "Secciones" },
     { id: "combos", label: "Combos" },
+    { id: "legal", label: "Legal" },
   ];
 
   return (
@@ -831,6 +834,25 @@ export default function CMSPage() {
                 }}
                 onCancel={() => setConfirmDeleteCombo(null)}
               />
+            </div>
+          )}
+
+          {activeSection === "legal" && (
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+              <h2 className="font-serif text-2xl text-dark-elegant mb-6">Políticas de Contratación</h2>
+              <p className="text-xs text-slate-500 mb-4">Edita el contenido HTML de las políticas de contratación. Se muestra en la página /politicas-contratacion y en el modal de cotización.</p>
+              <textarea
+                rows={20}
+                value={config.politicas_contratacion || ""}
+                onChange={(e) => setConfig((p) => ({ ...p, politicas_contratacion: e.target.value }))}
+                className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm font-mono resize-y"
+              />
+              <div className="mt-4 flex gap-3">
+                <button onClick={() => save("politicas_contratacion", config.politicas_contratacion)} disabled={saving} className="px-4 py-2 bg-brand-copper text-white rounded-lg text-xs font-medium hover:bg-brand-copper-light transition-colors cursor-pointer disabled:opacity-50">
+                  {saving ? "Guardando..." : "Guardar"}
+                </button>
+                <span className="text-[10px] text-slate-400 self-center">Soporta HTML básico (h2, p, ul, li, strong)</span>
+              </div>
             </div>
           )}
 

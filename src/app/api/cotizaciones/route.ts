@@ -63,19 +63,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase.from("cotizaciones").insert([
-      {
-        tipo_evento: "Catering",
-        num_invitados: parsed.data.total_unidades,
-        servicios: parsed.data.productos,
-        presupuesto: parsed.data.total,
-        fecha_entrega: parsed.data.fecha_entrega,
-        cliente_nombre: parsed.data.cliente_nombre,
-        cliente_email: parsed.data.cliente_email || null,
-        cliente_telefono: parsed.data.cliente_telefono,
-        estado: "nueva",
-      },
-    ]);
+    const { data, error } = await supabase
+      .from("cotizaciones")
+      .insert([
+        {
+          tipo_evento: "Catering",
+          num_invitados: parsed.data.total_unidades,
+          servicios: parsed.data.productos,
+          presupuesto: parsed.data.total,
+          fecha_entrega: parsed.data.fecha_entrega,
+          cliente_nombre: parsed.data.cliente_nombre,
+          cliente_email: parsed.data.cliente_email || null,
+          cliente_telefono: parsed.data.cliente_telefono,
+          estado: "nueva",
+        },
+      ])
+      .select("id");
 
     if (error) {
       console.error("Supabase insert error:", error);

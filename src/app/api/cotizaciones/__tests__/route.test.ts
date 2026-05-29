@@ -5,7 +5,9 @@ import { POST } from "../route";
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => ({
     from: vi.fn(() => ({
-      insert: vi.fn().mockResolvedValue({ data: { id: "123" }, error: null }),
+      insert: vi.fn(() => ({
+        select: vi.fn().mockResolvedValue({ data: [{ id: "123" }], error: null }),
+      })),
     })),
   })),
 }));

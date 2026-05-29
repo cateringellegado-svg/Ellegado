@@ -9,10 +9,6 @@ function getSupabaseAdmin() {
   return createClient(url, key);
 }
 
-function getWhatsappPhone(): string {
-  return process.env.WHATSAPP_PHONE || "541176753854";
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -33,7 +29,7 @@ export async function POST(request: NextRequest) {
       if (!xSignature || !xRequestId) {
          return NextResponse.json({ error: "Missing signature headers" }, { status: 401 });
       }
-      
+
       const parts = xSignature.split(',');
       const ts = parts.find(p => p.startsWith('ts='))?.replace('ts=', '');
       const v1 = parts.find(p => p.startsWith('v1='))?.replace('v1=', '');
@@ -82,32 +78,65 @@ export async function POST(request: NextRequest) {
     }
 
     const payment = await paymentRes.json();
+    const mpPaymentId = String(resourceId);
+    const externalRef = payment.external_reference || "";
 
+    // ──────────────────────────────────────────────────────────
+    // IDEMPOTENCIA: verificar si este mp_payment_id ya fue
+    // procesado exitosamente. Si ya existe → 200 silencioso.
+    // ──────────────────────────────────────────────────────────
+    if (externalRef && payment.status === "approved") {
+      const { data: existing } = await supabase
+        .from("cotizaciones")
+        .select("mp_payment_id, pago_status")
+        .eq("id", externalRef)
+        .maybeSingle();
+
+      if (existing?.mp_payment_id === mpPaymentId && existing?.pago_status === "paid") {
+        console.log("Webhook duplicado ignorado (payment ya procesado):", mpPaymentId);
+        return NextResponse.json({ received: true, ignored: true });
+      }
+    }
+
+    // ──────────────────────────────────────────────────────────
+    // Manejo según estado del pago
+    // ──────────────────────────────────────────────────────────
     if (payment.status === "approved") {
-      const externalRef = payment.external_reference || "";
-      const payerEmail = payment.payer?.email || "";
       const payerPhone = payment.payer?.phone?.number || "";
 
       if (externalRef) {
+        // Actualizar cotización con el mp_payment_id y estado "paid"
         const { error: updateError } = await supabase
           .from("cotizaciones")
           .update({
             pago_metodo: "mp",
             pago_status: "paid",
             estado: "confirmada",
+            mp_payment_id: mpPaymentId,
           })
           .eq("id", externalRef);
 
         if (updateError) {
+          // Si el índice único rechazó el update (mp_payment_id duplicado),
+          // significa que otro webhook ya lo procesó → abortar silenciosamente
+          if (updateError.code === "23505") {
+            console.log("Unique constraint evitó duplicado de mp_payment_id:", mpPaymentId);
+            return NextResponse.json({ received: true, ignored: true });
+          }
           console.error("Error updating cotizacion:", updateError);
         }
 
         await supabase.from("admin_logs").insert({
           accion: "pago_mp_aprobado",
-          detalle: `Pago MP aprobado. ID: ${resourceId}, Monto: ${payment.transaction_amount}`,
+          detalle: `Pago MP aprobado. ID: ${mpPaymentId}, Monto: ${payment.transaction_amount}`,
           referencia_id: externalRef,
         });
 
+        // ──────────────────────────────────────────────────────
+        // WhatsApp: SOLO se envía si el pago no había sido
+        // procesado antes (ya verificado arriba). Garantiza que
+        // la notificación se dispara UNA SOLA VEZ.
+        // ──────────────────────────────────────────────────────
         const { data: cotizacion } = await supabase
           .from("cotizaciones")
           .select("cliente_nombre, cliente_telefono")
@@ -121,7 +150,7 @@ export async function POST(request: NextRequest) {
           const whatsappNumber = telefono.startsWith("54") ? telefono : `54${telefono}`;
 
           const mensaje = encodeURIComponent(
-            `¡Confirmación de Seña recibida, ${nombreCliente}! 🎉\n\nEl equipo de El Legado ya está organizando tu evento. Te contactaremos 48hs antes para ultimar los detalles.\n\n¡Gracias por confiar en nosotros!`
+            `Confirmacion de Senia recibida, ${nombreCliente}!\n\nEl equipo de El Legado ya esta organizando tu evento. Te contactaremos 48hs antes para ultimar los detalles.\n\nGracias por confiar en nosotros!`
           );
 
           const waUrl = `https://wa.me/${whatsappNumber}?text=${mensaje}`;
@@ -136,8 +165,29 @@ export async function POST(request: NextRequest) {
 
       await supabase.from("admin_logs").insert({
         accion: "webhook_recibido",
-        detalle: `Webhook MP: payment ${resourceId} approved. External ref: ${externalRef || "N/A"}`,
+        detalle: `Webhook MP: payment ${mpPaymentId} approved. External ref: ${externalRef || "N/A"}`,
       });
+    }
+
+    // ──────────────────────────────────────────────────────────
+    // Manejo de reembolsos y cancelaciones (nuevo)
+    // ──────────────────────────────────────────────────────────
+    if (payment.status === "refunded" || payment.status === "cancelled" || payment.status === "charged_back") {
+      if (externalRef) {
+        await supabase
+          .from("cotizaciones")
+          .update({
+            pago_status: payment.status === "refunded" ? "refunded" : "cancelled",
+            estado: payment.status === "refunded" ? "reembolsada" : "cancelada",
+          })
+          .eq("id", externalRef);
+
+        await supabase.from("admin_logs").insert({
+          accion: `pago_mp_${payment.status}`,
+          detalle: `Pago MP ${payment.status}. ID: ${mpPaymentId}, Monto: ${payment.transaction_amount}`,
+          referencia_id: externalRef,
+        });
+      }
     }
 
     return NextResponse.json({ received: true }, { status: 200 });

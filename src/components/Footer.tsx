@@ -70,6 +70,7 @@ export default function Footer() {
           <Link href="/aviso-legal" className="hover:text-brand-copper transition-colors">Aviso Legal</Link>
           <Link href="/privacidad" className="hover:text-brand-copper transition-colors">Política de Privacidad</Link>
           <Link href="/terminos" className="hover:text-brand-copper transition-colors">Términos y Condiciones</Link>
+          <Link href="/politicas-contratacion" className="hover:text-brand-copper transition-colors">Políticas de Contratación</Link>
         </div>
       </div>
       <div className="mt-16 pt-8 border-t border-brand-copper/5 text-[10px] text-slate-400 uppercase tracking-[0.2em]">

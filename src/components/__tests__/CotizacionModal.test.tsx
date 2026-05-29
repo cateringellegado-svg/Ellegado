@@ -24,6 +24,18 @@ vi.mock("@/lib/supabase", () => ({
   fetchConfiguracionCompleta: vi.fn().mockResolvedValue({ capacidad_diaria_total: null }),
 }));
 
+vi.mock("@/lib/supabase/client", () => ({
+  createClient: () => ({
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: { value: "<section>test</section>" }, error: null }),
+        }),
+      }),
+    }),
+  }),
+}));
+
 vi.mock("@/lib/constants", () => ({
   MIN_PRODUCT_UNITS: 50,
   COMBO_IDS: ["combo_esencia", "combo_celebracion", "combo_ejecutivo", "combo_magno", "combo_gran_fiesta"],
@@ -73,7 +85,10 @@ describe("CotizacionModal", () => {
   });
 
   it("submits the form and calls fetch", async () => {
-    global.fetch = vi.fn().mockResolvedValueOnce({ ok: true });
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: [{ id: "test-cot-id" }] }),
+    });
     global.open = vi.fn();
 
     render(

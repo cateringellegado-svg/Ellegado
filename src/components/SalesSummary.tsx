@@ -1,25 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { CotizacionSeleccion, Combo } from "@/types";
-import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 import CotizacionModal from "./CotizacionModal";
 import { useToast } from "./Toast";
-import { ShoppingCart, CreditCard, MessageCircle } from "lucide-react";
+import { ShoppingCart, MessageCircle } from "lucide-react";
 import DeliveryPolicy from "./DeliveryPolicy";
 
 function formatARS(value: number): string {
   return "$" + value.toLocaleString("es-AR");
-}
-
-const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY || "";
-let mpInitialized = false;
-
-function ensureMercadoPago() {
-  if (MP_PUBLIC_KEY && !mpInitialized) {
-    mpInitialized = true;
-    initMercadoPago(MP_PUBLIC_KEY, { locale: "es-AR" });
-  }
 }
 
 interface Props {
@@ -51,9 +40,6 @@ export default function SalesSummary({
 }: Props) {
   const { showToast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
-  const [preferenceId, setPreferenceId] = useState<string | null>(null);
-  const [creatingPref, setCreatingPref] = useState(false);
-  const [mpError, setMpError] = useState(false);
   const [rateLimit, setRateLimit] = useState<number[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -62,8 +48,6 @@ export default function SalesSummary({
       return [];
     }
   });
-
-  useEffect(() => { ensureMercadoPago(); }, []);
 
   const handleCotizarClick = useCallback(() => {
     if (selectedProducts.length === 0) {
@@ -81,34 +65,6 @@ export default function SalesSummary({
     localStorage.setItem("legado_rate_limit", JSON.stringify(recent));
     setModalOpen(true);
   }, [selectedProducts, rateLimit, showToast]);
-
-  const handleMpPayment = useCallback(async () => {
-    if (!MP_PUBLIC_KEY) {
-      showToast("Mercado Pago no está configurado. Usá WhatsApp.", "warning");
-      return;
-    }
-    setCreatingPref(true);
-    setMpError(false);
-    try {
-      const res = await fetch("/api/create-preference", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: modo === "combo" && selectedCombo ? selectedCombo.nombre : "Catering Personalizado",
-          quantity: 1,
-          price: anticipo,
-        }),
-      });
-      if (!res.ok) throw new Error("Error al crear preferencia");
-      const data = await res.json();
-      setPreferenceId(data.id);
-    } catch {
-      setMpError(true);
-      showToast("Error al conectar con Mercado Pago. Intentá con WhatsApp.", "error");
-    } finally {
-      setCreatingPref(false);
-    }
-  }, [anticipo, modo, selectedCombo, showToast]);
 
   const hasProducts = selectedProducts.length > 0;
 
@@ -204,34 +160,7 @@ export default function SalesSummary({
                 </p>
               </div>
 
-              {MP_PUBLIC_KEY && !mpError && (
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={handleMpPayment}
-                    disabled={creatingPref || hasConflict}
-                    className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-[#009EE3] text-white text-sm font-semibold rounded-full shadow-lg hover:shadow-[#009EE3]/40 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    {creatingPref ? "Conectando con Mercado Pago..." : `Pagar ${formatARS(anticipo)} con Mercado Pago`}
-                  </button>
-
-                  {preferenceId && (
-                    <div className="mt-2">
-                      <Wallet
-                        initialization={{ preferenceId }}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {mpError && (
-                <p className="text-xs text-red-500 text-center">
-                  Error con Mercado Pago. Usá WhatsApp para cotizar.
-                </p>
-              )}
-            </>
+            </> 
           )}
 
           <button
