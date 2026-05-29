@@ -50,9 +50,9 @@ test.describe("El Legado - Critical Paths", () => {
   test("Footer legal links exist", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.locator('a[href="/aviso-legal"]')).toBeVisible();
-    await expect(page.locator('a[href="/privacidad"]')).toBeVisible();
-    await expect(page.locator('a[href="/terminos"]')).toBeVisible();
+    await expect(page.locator('a[href="/politicas-contratacion"]')).toBeVisible();
+    await expect(page.locator('a[href="/politicas-privacidad"]')).toBeVisible();
+    await expect(page.locator('a[href="/terminos-y-condiciones"]')).toBeVisible();
   });
 
   test("Skip to content link exists", async ({ page }) => {
@@ -79,7 +79,7 @@ test.describe("El Legado - Critical Paths", () => {
   });
 
   test("Legal pages load", async ({ page }) => {
-    const pages = ["/privacidad", "/aviso-legal", "/terminos"];
+    const pages = ["/politicas-contratacion", "/politicas-privacidad", "/terminos-y-condiciones"];
 
     for (const p of pages) {
       await page.goto(p);
