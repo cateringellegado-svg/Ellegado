@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { WHATSAPP_NUMBER } from "@/lib/constants";
 import { uploadSiteImage, deleteSiteImage } from "@/lib/storage";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import IconPicker from "@/components/admin/IconPicker";
 
 interface CMSConfig {
   colors: Record<string, string>;
@@ -69,25 +70,6 @@ const IMAGE_FIELDS = [
   { key: "about", label: "Filosofía" },
   { key: "festin", label: "Festín (Banner)" },
   { key: "favicon", label: "Favicon" },
-];
-
-const ICON_OPTIONS = [
-  { value: "Utensils", label: "Utensilios" },
-  { value: "ChefHat", label: "Chef" },
-  { value: "Star", label: "Estrella" },
-  { value: "Heart", label: "Corazón" },
-  { value: "Sparkles", label: "Destellos" },
-  { value: "Leaf", label: "Hoja" },
-  { value: "Flame", label: "Llama" },
-  { value: "Wine", label: "Vino" },
-  { value: "Coffee", label: "Café" },
-  { value: "Cake", label: "Torta" },
-  { value: "Crown", label: "Corona" },
-  { value: "Gift", label: "Regalo" },
-  { value: "Music", label: "Música" },
-  { value: "Sun", label: "Sol" },
-  { value: "Calendar", label: "Calendario" },
-  { value: "Users", label: "Usuarios" },
 ];
 
 const tryParse = (val: string, fallback: unknown) => {
@@ -471,9 +453,7 @@ export default function CMSPage() {
                       <button onClick={() => { const items = (config.features.items as { icon: string; title: string; text: string }[]).filter((_, j) => j !== i); setConfig((p) => ({ ...p, features: { ...p.features, items } })); }} className="text-red-400 hover:text-red-600 text-sm cursor-pointer">Eliminar</button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <select value={item.icon} onChange={(e) => { const items = [...config.features.items as { icon: string; title: string; text: string }[]]; items[i] = { ...items[i], icon: e.target.value }; setConfig((p) => ({ ...p, features: { ...p.features, items } })); }} className="bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm">
-                        {ICON_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                      </select>
+                      <IconPicker value={item.icon} onChange={(name) => { const items = [...config.features.items as { icon: string; title: string; text: string }[]]; items[i] = { ...items[i], icon: name }; setConfig((p) => ({ ...p, features: { ...p.features, items } })); }} />
                       <input type="text" value={item.title} onChange={(e) => { const items = [...config.features.items as { icon: string; title: string; text: string }[]]; items[i] = { ...items[i], title: sanitize(e.target.value) }; setConfig((p) => ({ ...p, features: { ...p.features, items } })); }} className="bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Título" />
                       <input type="text" value={item.text} onChange={(e) => { const items = [...config.features.items as { icon: string; title: string; text: string }[]]; items[i] = { ...items[i], text: sanitize(e.target.value) }; setConfig((p) => ({ ...p, features: { ...p.features, items } })); }} className="bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Descripción" />
                     </div>
@@ -519,9 +499,7 @@ export default function CMSPage() {
                       <button onClick={() => { const items = (config.comingSoon.items as { title: string; description: string; icon: string }[]).filter((_, j) => j !== i); setConfig((p) => ({ ...p, comingSoon: { ...p.comingSoon, items } })); }} className="text-red-400 hover:text-red-600 text-sm cursor-pointer">Eliminar</button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <select value={item.icon} onChange={(e) => { const items = [...config.comingSoon.items as { title: string; description: string; icon: string }[]]; items[i] = { ...items[i], icon: e.target.value }; setConfig((p) => ({ ...p, comingSoon: { ...p.comingSoon, items } })); }} className="bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm">
-                        {ICON_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                      </select>
+                      <IconPicker value={item.icon} onChange={(name) => { const items = [...config.comingSoon.items as { title: string; description: string; icon: string }[]]; items[i] = { ...items[i], icon: name }; setConfig((p) => ({ ...p, comingSoon: { ...p.comingSoon, items } })); }} />
                       <input type="text" value={item.title} onChange={(e) => { const items = [...config.comingSoon.items as { title: string; description: string; icon: string }[]]; items[i] = { ...items[i], title: sanitize(e.target.value) }; setConfig((p) => ({ ...p, comingSoon: { ...p.comingSoon, items } })); }} className="bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Título" />
                       <input type="text" value={item.description} onChange={(e) => { const items = [...config.comingSoon.items as { title: string; description: string; icon: string }[]]; items[i] = { ...items[i], description: sanitize(e.target.value) }; setConfig((p) => ({ ...p, comingSoon: { ...p.comingSoon, items } })); }} className="bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Descripción" />
                     </div>
