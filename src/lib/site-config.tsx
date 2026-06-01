@@ -149,7 +149,7 @@ export interface SiteConfig {
 }
 
 const DEFAULT_COLORS: SiteColors = {
-  primary: "#AF7A54",
+  primary: "#8B5E3C",
   primaryLight: "#D9A78B",
   background: "#FAF9F6",
   text: "#1A1A1A",
@@ -162,7 +162,7 @@ const DEFAULT_HERO: SiteHero = {
   tagline: "Servicio de catering premium para eventos inolvidables, con la cercanía que tú te mereces.",
   ctaText: "Cotizá tu evento",
   stats: [
-    { value: "100+", label: "Eventos" },
+    { value: "200+", label: "Eventos" },
     { value: "5", label: "Años Exp." },
     { value: "100%", label: "Dedicación" },
   ],
@@ -220,7 +220,7 @@ const DEFAULT_IMAGES: SiteImages = {
   festin: "/gourmet_canapes.webp",
   logo: "/logo.webp",
   favicon: "/favicon.webp",
-  gallery: ["/hero_catering.webp", "/event_vibe.webp", "/gourmet_canapes.webp", "/hero_catering.webp", "/event_vibe.webp", "/gourmet_canapes.webp"],
+  gallery: ["/hero_catering.webp", "/event_vibe.webp", "/gourmet_canapes.webp"],
 };
 
 const DEFAULT_SEO: SiteSEO = {
@@ -256,7 +256,7 @@ const DEFAULT_COMING_SOON: SiteComingSoon = {
   ],
 };
 
-const DEFAULT_NAVBAR: SiteNavbar = {
+export const DEFAULT_NAVBAR: SiteNavbar = {
   logoUrl: "/logo.webp",
   links: [
     { label: "Inicio", href: "#inicio" },

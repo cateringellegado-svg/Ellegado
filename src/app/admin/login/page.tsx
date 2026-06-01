@@ -9,7 +9,10 @@ export default function AdminLogin() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const queryError = searchParams.get("error");
+  const [error, setError] = useState(
+    queryError === "no_admin" ? "Acceso denegado — no tienes permisos de administrador" : ""
+  );
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +31,14 @@ export default function AdminLogin() {
         await supabase.auth.setSession(data.session);
       }
 
-      await supabase.auth.getSession();
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser?.user_metadata?.role !== "admin") {
+        await supabase.auth.signOut();
+        setError("Acceso denegado — no tienes permisos de administrador");
+        setLoading(false);
+        return;
+      }
+
       const redirectTo = searchParams.get("redirect") || "/admin/financiero";
       router.push(redirectTo);
     } catch (err: unknown) {

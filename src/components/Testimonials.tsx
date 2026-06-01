@@ -2,12 +2,10 @@
 
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useSiteConfig } from "@/lib/site-config";
 import type { SiteTestimonial } from "@/lib/site-config";
 
 export default function Testimonials() {
   const supabase = createClient();
-  const config = useSiteConfig();
   const [testimonials, setTestimonials] = useState<SiteTestimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -15,6 +13,12 @@ export default function Testimonials() {
 
   useEffect(() => {
     mounted.current = true;
+    const safetyTimer = setTimeout(() => {
+      if (mounted.current) {
+        setLoading(false);
+        setLoadError(true);
+      }
+    }, 10000);
     (async () => {
       if (!supabase) {
         if (mounted.current) setLoading(false);
@@ -26,20 +30,28 @@ export default function Testimonials() {
           .select("*")
           .eq("active", true)
           .order("orden", { ascending: true });
+        if (!mounted.current) return;
+        clearTimeout(safetyTimer);
         if (error) {
           console.error("Error al cargar testimonios — RLS? tabla no existe?:", error);
-          if (mounted.current) setLoadError(true);
-        } else if (mounted.current && data) {
+          setLoadError(true);
+        } else if (data) {
           setTestimonials(data as SiteTestimonial[]);
         }
       } catch (err) {
         console.error("Error al cargar testimonios (catch):", err);
-        if (mounted.current) setLoadError(true);
+        if (mounted.current) {
+          clearTimeout(safetyTimer);
+          setLoadError(true);
+        }
       } finally {
         if (mounted.current) setLoading(false);
       }
     })();
-    return () => { mounted.current = false; };
+    return () => {
+      mounted.current = false;
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   if (loading) {

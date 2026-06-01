@@ -37,11 +37,11 @@ function getMaxDate(): string {
 }
 
 function getRecommendedCombo(guestCount: number): string {
-  if (guestCount <= 17) return "Combo Esencia";
-  if (guestCount <= 27) return "Combo Celebración";
-  if (guestCount <= 37) return "Combo Ejecutivo";
-  if (guestCount <= 47) return "Combo Magno";
-  return "Combo Gran Fiesta";
+  if (guestCount <= 15) return "Combo Esencia";
+  if (guestCount <= 25) return "Combo Celebración";
+  if (guestCount <= 35) return "Combo Ejecutivo";
+  if (guestCount <= 45) return "Combo Magno";
+  return "Combo Gran Fiesta"; // Para 50+
 }
 
 export default function ConsultantWizard({ onComplete, onSkip }: Props) {

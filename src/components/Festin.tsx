@@ -10,6 +10,7 @@ import SalesSummary from "./SalesSummary";
 import type { WizardResult } from "./ConsultantWizard";
 import { useToast } from "./Toast";
 import { useSiteConfig } from "@/lib/site-config";
+import { formatARS, calcAnticipo } from "@/lib/formatters";
 import { ChefHat, Star, CakeSlice } from "lucide-react";
 
 const FALLBACK_CLASICOS: Producto[] = [
@@ -57,11 +58,6 @@ const CATEGORY_ICONS: Record<TabKey, React.ElementType> = {
   dulce: CakeSlice,
 };
 
-function formatARS(value: number | null | undefined): string {
-  if (value == null) return "Por definir";
-  return "$" + value.toLocaleString("es-AR");
-}
-
 function getProductCategory(
   id: string,
   clasicos: Producto[],
@@ -72,10 +68,6 @@ function getProductCategory(
   if (premium.find((p) => p.id === id)) return "premium";
   if (dulces.find((p) => p.id === id)) return "dulce";
   return null;
-}
-
-function calcAnticipo(total: number): number {
-  return Math.round(total * 0.5);
 }
 
 export default function Festin() {
@@ -112,7 +104,7 @@ export default function Festin() {
         setLoading(false);
         setLoadError(true);
       }
-    }, 15000);
+    }, 10000);
     async function loadData() {
       setLoading(true);
       try {
@@ -126,7 +118,6 @@ export default function Festin() {
         if (!mounted.current) return;
         clearTimeout(safetyTimer);
         const factor = configData?.factor_ajuste ?? 1;
-        setFactorAjuste(factor);
         setFactorAjuste(factor);
         setClasicos(clasicosData ?? FALLBACK_CLASICOS);
         setPremium(premiumData ?? []);
@@ -273,11 +264,11 @@ export default function Festin() {
     (producto: Producto, value: string) => {
       let cantidad = parseInt(value) || 0;
       if (cantidad > 0 && producto.precio) {
-        if (cantidad < (producto.minimo || 50) || cantidad < 50) cantidad = Math.max(producto.minimo || 50, 50);
+        const min = producto.minimo || 50;
         const step = producto.incremento || 10;
+        if (cantidad < min) cantidad = min;
         cantidad = Math.round(cantidad / step) * step;
-        if (cantidad < 50) cantidad = 50;
-        if (cantidad < (producto.minimo || 50)) cantidad = producto.minimo || 50;
+        if (cantidad < min) cantidad = min;
         const precio = Math.round(producto.precio * factorAjuste);
         setCotizacion((prev) => ({
           ...prev,
@@ -302,7 +293,7 @@ export default function Festin() {
   const adjustQuantity = useCallback(
     (producto: Producto, delta: number) => {
       const current = cotizacion[producto.id]?.cantidad || 0;
-      const min = Math.max(producto.minimo || 50, 50);
+      const min = producto.minimo || 50;
       const step = producto.incremento || 10;
       let newVal: number;
       if (current === 0 && delta > 0) {
@@ -426,10 +417,10 @@ export default function Festin() {
                   </button>
                   <input
                     type="number"
-                    value={qty > 0 ? qty : 50}
+                    value={qty > 0 ? qty : (producto.minimo || 50)}
                     onChange={(e) => handleQuantityChange(producto, e.target.value)}
-                    min={50}
-                    step={10}
+                    min={producto.minimo || 50}
+                    step={producto.incremento || 10}
                     className="w-14 text-center bg-transparent border-x border-brand-copper/10 py-1 text-sm font-medium text-dark-elegant focus:outline-none appearance-none"
                     aria-label={`Cantidad de ${producto.nombre}`}
                   />
@@ -443,7 +434,7 @@ export default function Festin() {
                   </button>
                 </div>
                 <span className="text-[9px] text-slate-600 italic">
-                  Mín: 50 / +10
+                  Mín: {producto.minimo || 50} / +{producto.incremento || 10}
                 </span>
               </div>
             )}

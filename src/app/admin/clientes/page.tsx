@@ -77,6 +77,7 @@ export default function ClientesPage() {
 
   useEffect(() => {
     mountedRef.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load(search, page);
     return () => { mountedRef.current = false; };
   }, [page, search, load]);

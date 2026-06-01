@@ -76,6 +76,7 @@ export default function PagosPage() {
 
   useEffect(() => {
     mountedRef.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
     return () => { mountedRef.current = false; };
   }, [load]);

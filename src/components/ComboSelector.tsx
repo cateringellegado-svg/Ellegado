@@ -4,10 +4,7 @@ import { useMemo } from "react";
 import type { Combo } from "@/types";
 import { COMBO_MINIMUMS } from "@/lib/constants";
 import { Package, Star } from "lucide-react";
-
-function formatARS(value: number): string {
-  return "$" + value.toLocaleString("es-AR");
-}
+import { formatARS } from "@/lib/formatters";
 
 interface Props {
   combos: Combo[];
@@ -26,13 +23,40 @@ export default function ComboSelector({
   onBack,
   onPersonalizar,
 }: Props) {
-  const recommendedId = useMemo(
-    () => (wizardGuestCount > 0 && combos.length > 0 ? combos[0].id : null),
-    [wizardGuestCount, combos]
-  );
+  const { recommendedId, gapMessage } = useMemo(() => {
+    if (wizardGuestCount <= 0 || combos.length === 0) {
+      return { recommendedId: null, gapMessage: null };
+    }
+    const inRange = combos.some(
+      (c) => wizardGuestCount >= c.personas_min && wizardGuestCount <= c.personas_max
+    );
+    if (inRange) {
+      const match = combos.find(
+        (c) => wizardGuestCount >= c.personas_min && wizardGuestCount <= c.personas_max
+      );
+      return { recommendedId: match?.id ?? null, gapMessage: null };
+    }
+    const next = combos
+      .filter((c) => c.personas_min > wizardGuestCount)
+      .sort((a, b) => a.personas_min - b.personas_min)[0];
+    return {
+      recommendedId: next?.id ?? null,
+      gapMessage: next
+        ? `¡Excelente evento de ${wizardGuestCount} invitados! Te recomendamos nuestro ${next.nombre} para que tus invitados disfruten con mayor comodidad.`
+        : null,
+    };
+  }, [wizardGuestCount, combos]);
 
   return (
     <div className="mb-16">
+      {gapMessage && (
+        <div className="bg-gradient-to-r from-amber-50 to-brand-copper/5 border border-amber-200 rounded-2xl p-4 mb-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <p className="text-sm text-dark-elegant font-medium leading-relaxed">
+            {gapMessage}
+          </p>
+        </div>
+      )}
+
       <div className="flex items-center justify-center gap-4 mb-10">
         <button
           type="button"

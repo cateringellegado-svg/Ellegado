@@ -7,7 +7,10 @@ import { useSiteConfig } from "@/lib/site-config";
 export default function Navbar() {
   const config = useSiteConfig();
   const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.scrollY > 50;
+  });
   const links = config.navbar.links;
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -76,7 +79,7 @@ export default function Navbar() {
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/90 backdrop-blur-xl border-b border-brand-copper/10 shadow-sm"
+          ? "bg-white border-b border-brand-copper/10 shadow-md"
           : "bg-transparent"
       }`}
     >

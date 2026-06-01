@@ -6,10 +6,7 @@ import CotizacionModal from "./CotizacionModal";
 import { useToast } from "./Toast";
 import { ShoppingCart, MessageCircle } from "lucide-react";
 import DeliveryPolicy from "./DeliveryPolicy";
-
-function formatARS(value: number): string {
-  return "$" + value.toLocaleString("es-AR");
-}
+import { formatARS } from "@/lib/formatters";
 
 interface Props {
   cotizacion: CotizacionSeleccion;

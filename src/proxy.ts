@@ -34,9 +34,10 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (!user || user.user_metadata?.role !== "admin") {
     const loginUrl = new URL("/admin/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
+    if (user) loginUrl.searchParams.set("error", "no_admin");
     return NextResponse.redirect(loginUrl);
   }
 

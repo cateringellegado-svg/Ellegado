@@ -20,6 +20,9 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ellegado.vercel.app"),
+  alternates: {
+    canonical: "/",
+  },
   icons: { icon: "/favicon.webp" },
   title: "EL LEGADO - Catering y Eventos | Haz Eterno Cada Momento",
   description: "Servicio de catering premium para eventos inolvidables. Elegancia, cercanía y alta gastronomía en cada detalle. Cotizá tu evento hoy.",

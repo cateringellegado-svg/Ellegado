@@ -8,6 +8,7 @@ import { fetchConfiguracionCompleta } from "@/lib/supabase";
 import { MIN_PRODUCT_UNITS, COMBO_MINIMUMS } from "@/lib/constants";
 import { getWhatsAppUrl } from "@/lib/constants";
 import { useSiteConfig } from "@/lib/site-config";
+import { calcAnticipo } from "@/lib/formatters";
 import PoliticasContratacionText from "./legal/PoliticasContratacionText";
 
 const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY || "";
@@ -183,7 +184,7 @@ export default function CotizacionModal({
             body: JSON.stringify({
               title: modo === "combo" && selectedCombo ? selectedCombo.nombre : "Catering Personalizado",
               quantity: 1,
-              price: anticipo ?? Math.round(total * 0.5),
+              price: anticipo ?? calcAnticipo(total),
               externalReference: cotId,
               cotizacionId: cotId,
             }),
@@ -222,6 +223,7 @@ export default function CotizacionModal({
 
   useEffect(() => {
     if (!isOpen) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStep("form");
     setPreferenceId(null);
     setCotizacionId(null);
@@ -236,6 +238,7 @@ export default function CotizacionModal({
 
   useEffect(() => {
     if (step === "payment") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowEscape(false);
       const timer = setTimeout(() => setShowEscape(true), 15000);
       return () => clearTimeout(timer);
@@ -254,7 +257,7 @@ export default function CotizacionModal({
     ? "La cantidad total debe ser múltiplo de 10"
     : "";
 
-  const anticipoCalculado = anticipo ?? Math.round(total * 0.5);
+  const anticipoCalculado = anticipo ?? calcAnticipo(total);
 
   return (
     <div
@@ -336,7 +339,7 @@ export default function CotizacionModal({
             {whatsappBlocked && (
               <a
                 href={getWhatsAppUrl(config.contact.whatsapp, encodeURIComponent(
-                  `${WHATSAPP_MSG_PREFIX}\n\n*Productos:*\n${Object.values(cotizacion).filter(p => p.cantidad > 0 && p.precio > 0).map(p => `• ${p.nombre}: ${p.cantidad} u.`).join("\n")}\n\n*Total:* $${total.toLocaleString("es-AR")}\n\n*Anticipo (50%):* $${(anticipo ?? Math.round(total * 0.5)).toLocaleString("es-AR")}\n\nMi nombre es ${nombre}.`
+                  `${WHATSAPP_MSG_PREFIX}\n\n*Productos:*\n${Object.values(cotizacion).filter(p => p.cantidad > 0 && p.precio > 0).map(p => `• ${p.nombre}: ${p.cantidad} u.`).join("\n")}\n\n*Total:* $${total.toLocaleString("es-AR")}\n\n*Anticipo (50%):* $${(anticipo ?? calcAnticipo(total)).toLocaleString("es-AR")}\n\nMi nombre es ${nombre}.`
                 ))}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -487,16 +490,14 @@ export default function CotizacionModal({
                 />
                 <label htmlFor="acepto-terminos" className="text-[10px] text-slate-500 leading-relaxed cursor-pointer select-none">
                   Acepto las{" "}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      const details = (e.target as HTMLElement).closest("form")?.querySelector("details");
-                      if (details) details.open = !details.open;
-                    }}
+                  <a
+                    href="/politicas-contratacion"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="underline hover:text-brand-copper transition-colors"
                   >
                     políticas de contratación
-                  </button>{" "}
+                  </a>{" "}
                   (cancelación y ajuste por inflación en reservas &gt; 30 días)
                 </label>
               </div>
