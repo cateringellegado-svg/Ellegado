@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Pagination from "@/components/Pagination";
-import { marcarReservaManual, fetchAdminLogs, insertAdminLog, deleteCotizacion } from "@/lib/supabase";
+import { marcarReservaManual, fetchAdminLogs, insertAdminLog, deleteCotizacion, archiveCotizacion } from "@/lib/supabase";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
 interface Cotizacion {
@@ -21,6 +21,7 @@ interface Cotizacion {
   pago_status?: string;
   reserva_manual?: boolean;
   fecha_entrega?: string;
+  archived?: boolean;
 }
 
 interface AdminLogEntry {
@@ -70,6 +71,7 @@ export default function CotizacionesPage() {
   const [data, setData] = useState<Cotizacion[]>([]);
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
   const [selected, setSelected] = useState<Cotizacion | null>(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -82,9 +84,9 @@ export default function CotizacionesPage() {
   const mountedRef = useRef(true);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async (estadoFilter: string, searchTerm: string, pageNum: number) => {
+  const load = useCallback(async (estadoFilter: string, searchTerm: string, pageNum: number, incluirArchivadas: boolean) => {
     if (!supabase) { if (mountedRef.current) setLoading(false); return; }
-    const key = `${estadoFilter}|${searchTerm}|${pageNum}`;
+    const key = `${estadoFilter}|${searchTerm}|${pageNum}|${incluirArchivadas}`;
     if (loadKeyRef.current === key) return;
     loadKeyRef.current = key;
     const from = (pageNum - 1) * PAGE_SIZE;
@@ -95,6 +97,7 @@ export default function CotizacionesPage() {
         .from("cotizaciones")
         .select("*", { count: "exact", head: true });
       if (estadoFilter) countQuery = countQuery.eq("estado", estadoFilter);
+      if (!incluirArchivadas) countQuery = countQuery.eq("archived", false);
       if (searchTerm) countQuery = countQuery.or(`cliente_nombre.ilike.%${searchTerm}%,cliente_email.ilike.%${searchTerm}%`);
 
       let dataQuery = supabase
@@ -103,6 +106,7 @@ export default function CotizacionesPage() {
         .order("created_at", { ascending: false })
         .range(from, to);
       if (estadoFilter) dataQuery = dataQuery.eq("estado", estadoFilter);
+      if (!incluirArchivadas) dataQuery = dataQuery.eq("archived", false);
       if (searchTerm) dataQuery = dataQuery.or(`cliente_nombre.ilike.%${searchTerm}%,cliente_email.ilike.%${searchTerm}%`);
 
       const [{ count }, { data: result }] = await Promise.all([countQuery, dataQuery]);
@@ -124,17 +128,17 @@ export default function CotizacionesPage() {
     mountedRef.current = true;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
-    load(filter, search, 1);
+    load(filter, search, 1, showArchived);
     loadLogs();
     return () => { mountedRef.current = false; };
-  }, [filter, search, load, loadLogs]);
+  }, [filter, search, showArchived, load, loadLogs]);
 
   useEffect(() => {
     mountedRef.current = true;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    load(filter, search, page);
+    load(filter, search, page, showArchived);
     return () => { mountedRef.current = false; };
-  }, [page, filter, search, load]);
+  }, [page, filter, search, showArchived, load]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -142,7 +146,7 @@ export default function CotizacionesPage() {
 
   const updateEstado = async (id: string, estado: string) => {
     await supabase?.from("cotizaciones").update({ estado }).eq("id", id);
-    load(filter, search, page);
+    load(filter, search, page, showArchived);
   };
 
   const handleMarcarReserva = async (id: string, clienteNombre: string | null) => {
@@ -154,8 +158,19 @@ export default function CotizacionesPage() {
     }
     await insertAdminLog("reserva_manual", `Reserva manual: ${clienteNombre || "Sin nombre"}`, id);
     setMsg("Reserva marcada como manual correctamente");
-    load(filter, search, page);
+    load(filter, search, page, showArchived);
     loadLogs();
+    setTimeout(() => setMsg(""), 3000);
+  };
+
+  const handleArchive = async (id: string, archived: boolean) => {
+    const { error } = await archiveCotizacion(id, archived);
+    if (error) {
+      setMsg("Error al " + (archived ? "archivar" : "restaurar") + ": " + error.message);
+      return;
+    }
+    setMsg(archived ? "Cotización archivada" : "Cotización restaurada");
+    load(filter, search, page, showArchived);
     setTimeout(() => setMsg(""), 3000);
   };
 
@@ -217,6 +232,15 @@ export default function CotizacionesPage() {
             <option value="">Todos los estados</option>
             {ESTADOS.map((e) => <option key={e} value={e}>{e.charAt(0).toUpperCase() + e.slice(1)}</option>)}
           </select>
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+              showArchived ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-white border border-brand-copper/20 text-slate-600 hover:bg-cream"
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+            {showArchived ? "Archivadas" : "Activas"}
+          </button>
         </div>
       </div>
 
@@ -317,6 +341,23 @@ export default function CotizacionesPage() {
                         Reservar
                       </button>
                     )}
+                    {c.archived ? (
+                      <button
+                        onClick={() => handleArchive(c.id, false)}
+                        className="text-xs px-2 py-1 rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors cursor-pointer"
+                        title="Restaurar cotización"
+                      >
+                        Restaurar
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleArchive(c.id, true)}
+                        className="text-xs px-2 py-1 rounded bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors cursor-pointer"
+                        title="Archivar cotización"
+                      >
+                        Archivar
+                      </button>
+                    )}
                     <button
                       onClick={() => setConfirmDelete(c.id)}
                       className="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition-colors cursor-pointer"
@@ -344,7 +385,7 @@ export default function CotizacionesPage() {
           if (!confirmDelete) return;
           await deleteCotizacion(confirmDelete);
           setConfirmDelete(null);
-          load(filter, search, page);
+          load(filter, search, page, showArchived);
         }}
         onCancel={() => setConfirmDelete(null)}
       />

@@ -248,6 +248,12 @@ export async function deleteCotizacion(id: string) {
   return { error };
 }
 
+export async function archiveCotizacion(id: string, archived: boolean) {
+  const supabase = getClient();
+  const { error } = await supabase.from("cotizaciones").update({ archived }).eq("id", id);
+  return { error };
+}
+
 export interface TestimonialRow {
   id: string;
   name: string;
