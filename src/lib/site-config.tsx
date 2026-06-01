@@ -19,6 +19,13 @@ export interface SiteHero {
   stats: { value: string; label: string }[];
 }
 
+export interface SiteHeroFeature {
+  icon: string;
+  text: string;
+  color: string;
+  style: "outline" | "solid";
+}
+
 export interface SiteAbout {
   title: string;
   text: string;
@@ -144,6 +151,7 @@ export interface SiteConfig {
   seo: SiteSEO;
   features: SiteFeatures;
   cta: SiteCTA;
+  heroFeatures: { items: SiteHeroFeature[] };
   comingSoon: SiteComingSoon;
   navbar: SiteNavbar;
 }
@@ -268,6 +276,14 @@ export const DEFAULT_NAVBAR: SiteNavbar = {
   ],
 };
 
+const DEFAULT_HERO_FEATURES: { items: SiteHeroFeature[] } = {
+  items: [
+    { icon: "shield_check", text: "Pago Seguro", color: "#16a34a", style: "outline" },
+    { icon: "clock", text: "Respuesta en 24h", color: "#AF7A54", style: "outline" },
+    { icon: "star", text: "+200 Eventos", color: "#d97706", style: "solid" },
+  ],
+};
+
 export const DEFAULT_SITE_CONFIG: SiteConfig = {
   colors: DEFAULT_COLORS,
   hero: DEFAULT_HERO,
@@ -281,6 +297,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   seo: DEFAULT_SEO,
   features: DEFAULT_FEATURES,
   cta: DEFAULT_CTA,
+  heroFeatures: DEFAULT_HERO_FEATURES,
   comingSoon: DEFAULT_COMING_SOON,
   navbar: DEFAULT_NAVBAR,
 };
@@ -315,6 +332,7 @@ export async function fetchSiteConfigFromDB(): Promise<SiteConfig> {
     seo: tryParse(map.seo, DEFAULT_SEO) as SiteSEO,
     features: tryParse(map.features, DEFAULT_FEATURES) as SiteFeatures,
     cta: tryParse(map.cta, DEFAULT_CTA) as SiteCTA,
+    heroFeatures: tryParse(map.heroFeatures, DEFAULT_HERO_FEATURES) as { items: SiteHeroFeature[] },
     comingSoon: tryParse(map.comingSoon, DEFAULT_COMING_SOON) as SiteComingSoon,
     navbar: tryParse(map.navbar, DEFAULT_NAVBAR) as SiteNavbar,
   };

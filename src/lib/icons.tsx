@@ -5,7 +5,7 @@ import {
   PartyPopper, Salad, Pizza, Sandwich, Cookie, Milk, Apple,
   Grape, Citrus, CupSoda, Croissant, IceCream, Candy, CandyCane,
   Cherry, Flower, Palette, Camera, Tv, Book, Dumbbell, Globe,
-  Smile, ThumbsUp, Bell, Shield, Truck, Clock, MapPin, Phone,
+  Smile, ThumbsUp, Bell,   Shield, ShieldCheck, Truck, Clock, MapPin, Phone,
 } from "lucide-react";
 
 const ICON_LIBRARY: Record<string, { icon: LucideIcon; label: string }> = {
@@ -54,6 +54,7 @@ const ICON_LIBRARY: Record<string, { icon: LucideIcon; label: string }> = {
   thumbs: { icon: ThumbsUp, label: "Pulgar" },
   bell: { icon: Bell, label: "Campana" },
   shield: { icon: Shield, label: "Escudo" },
+  shield_check: { icon: ShieldCheck, label: "Escudo Verificado" },
   truck: { icon: Truck, label: "Camión" },
   clock: { icon: Clock, label: "Reloj" },
   pin: { icon: MapPin, label: "Ubicación" },
@@ -77,3 +78,9 @@ export function getAllIcons(): { name: string; icon: LucideIcon; label: string }
 }
 
 export type { LucideIcon };
+
+export function iconProps(style: "outline" | "solid"): { strokeWidth: number; fill: string } {
+  return style === "solid"
+    ? { strokeWidth: 0.5, fill: "currentColor" }
+    : { strokeWidth: 1.5, fill: "none" };
+}

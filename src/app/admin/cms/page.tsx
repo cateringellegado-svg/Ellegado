@@ -27,6 +27,7 @@ interface CMSConfig {
   politicas_contratacion: string;
   politicas_privacidad: string;
   terminos_condiciones: string;
+  heroFeatures: { items: { icon: string; text: string; color: string; style: "outline" | "solid" }[] };
 }
 
 export const DEFAULT_CMS: CMSConfig = {
@@ -58,6 +59,7 @@ export const DEFAULT_CMS: CMSConfig = {
   seo: { metaTitle: "EL LEGADO - Catering y Eventos | Haz Eterno Cada Momento", metaDescription: "Servicio de catering premium para eventos inolvidables.", keywords: ["catering", "eventos", "premium"], ogImage: "/hero_catering.webp" },
   features: { title: "¿Por Qué Elegirnos?", items: [{ icon: "chef", title: "Cocina Artesanal", text: "Cada bocado es preparado con ingredientes seleccionados." }, { icon: "sparkles", title: "Presentación Impecable", text: "Cada plato como una obra maestra visual." }, { icon: "heart", title: "Atención Personalizada", text: "Escuchamos tus ideas." }, { icon: "star", title: "Calidad Premium", text: "Estándares que superan expectativas." }] },
   cta: { title: "¿Listo para tu evento perfecto?", text: "Contactanos hoy y empecemos a planificar juntos.", buttonText: "Cotizá tu Evento" },
+  heroFeatures: { items: [{ icon: "shield_check", text: "Pago Seguro", color: "#16a34a", style: "outline" }, { icon: "clock", text: "Respuesta en 24h", color: "#AF7A54", style: "outline" }, { icon: "star", text: "+200 Eventos", color: "#d97706", style: "solid" }] },
   comingSoon: { title: "Próximamente", items: [{ title: "Bowls Saludables", description: "Bowls nutritivos", icon: "bowl" }, { title: "Barra de Smoothies", description: "Estación interactiva", icon: "smoothie" }, { title: "Noche de Parrilla", description: "Experiencia de parrilla", icon: "grill" }, { title: "Cheese & Wine", description: "Selección de quesos", icon: "cheese" }] },
   navbar: { logoUrl: "/logo.webp", links: [{ label: "Inicio", href: "#inicio" }, { label: "Nosotros", href: "#filosofia" }, { label: "Festín", href: "#festin" }, { label: "Galería", href: "#galeria" }, { label: "Contacto", href: "#contacto" }] },
   politicas_contratacion: '<section><h2 class="font-serif text-2xl text-brand-copper mb-3 font-medium">1. Reserva y Seña</h2><p>Para confirmar cualquier servicio, se debe abonar una seña del <strong>50% del presupuesto total</strong>. El <strong>50% restante</strong> se abona previo a la entrega del servicio, coordinado con el equipo de El Legado.</p><p class="mt-2">Sin la seña correspondiente, no se considera la fecha como reservada y El Legado podrá disponer de la misma para otros eventos.</p></section><section><h2 class="font-serif text-2xl text-brand-copper mb-3 font-medium">2. Cancelaciones</h2><p>Las cancelaciones están sujetas a las siguientes condiciones:</p><ul class="list-disc pl-5 mt-2 space-y-1"><li><strong>Hasta 15 días antes del evento:</strong> se reintegra el 100% de la seña.</li><li><strong>Entre 7 y 14 días antes:</strong> se reintegra el 50% de la seña. El 50% restante se retiene como gastos administrativos y de planificación.</li><li><strong>Menos de 7 días antes:</strong> no se realiza reintegro. La seña se retiene en su totalidad.</li><li><strong>Cancelación por parte de El Legado:</strong> en caso de fuerza mayor o imposibilidad de prestar el servicio, se reintegra el 100% de los montos abonados.</li></ul></section><section><h2 class="font-serif text-2xl text-brand-copper mb-3 font-medium">3. Ajuste por Inflación</h2><p>Para reservas con <strong>anticipación mayor a 30 días</strong> entre la fecha de seña y la fecha del evento, el saldo pendiente se ajustará según la variación del <strong>Índice de Precios al Consumidor (IPC)</strong> publicado por el INDEC u organismo oficial que lo reemplace.</p><p class="mt-2">El ajuste se aplica únicamente sobre el saldo restante (50% del presupuesto original) y se calcula desde la fecha de la seña hasta la fecha del evento. El cliente será notificado del nuevo valor con al menos 7 días de anticipación.</p><p class="mt-2">Esta cláusula aplica exclusivamente en contextos inflacionarios donde la variación acumulada del IPC supere el 5% mensual.</p></section><section><h2 class="font-serif text-2xl text-brand-copper mb-3 font-medium">4. Modificaciones del Pedido</h2><ul class="list-disc pl-5 space-y-1"><li><strong>Incremento de cantidades:</strong> se puede modificar hasta 7 días antes del evento, sujeto a disponibilidad. El nuevo valor se suma al presupuesto original.</li><li><strong>Reducción de cantidades:</strong> se acepta hasta 7 días antes. No se realizan descuentos sobre reducciones, dado que los insumos ya fueron planificados.</li><li><strong>Cambio de productos:</strong> se puede realizar hasta 7 días antes sin costo adicional.</li></ul></section><section><h2 class="font-serif text-2xl text-brand-copper mb-3 font-medium">5. Entrega y Responsabilidad</h2><p>El Legado se compromete a entregar los productos acordados en la fecha, horario y lugar pactados. El cliente debe garantizar el acceso al lugar de entrega en el horario acordado. Cualquier demora imputable al cliente no será responsabilidad de El Legado.</p></section>',
@@ -102,7 +104,7 @@ export default function CMSPage() {
         if (!data) return;
         const map: Record<string, string> = {};
         data.forEach((c: { key: string; value: string }) => { map[c.key] = c.value; });
-        const keys = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar", "politicas_contratacion", "politicas_privacidad", "terminos_condiciones"] as const;
+        const keys = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "heroFeatures", "comingSoon", "navbar", "politicas_contratacion", "politicas_privacidad", "terminos_condiciones"] as const;
         keys.forEach((k) => {
           if (map[k]) setConfig((p) => ({ ...p, [k]: tryParse(map[k], p[k]) }));
         });
@@ -142,7 +144,7 @@ export default function CMSPage() {
     if (!supabase) return;
     setSaving(true);
     setMsg("");
-    const keys: (keyof CMSConfig)[] = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "comingSoon", "navbar", "politicas_contratacion", "politicas_privacidad", "terminos_condiciones"];
+    const keys: (keyof CMSConfig)[] = ["colors", "hero", "about", "festin", "footer", "social", "contact", "sections", "images", "seo", "features", "cta", "heroFeatures", "comingSoon", "navbar", "politicas_contratacion", "politicas_privacidad", "terminos_condiciones"];
     const errors: string[] = [];
     for (const key of keys) {
       try {
@@ -395,6 +397,37 @@ export default function CMSPage() {
                   </div>
                 ))}
                 <button onClick={() => { const stats = [...config.hero.stats as { value: string; label: string }[] || [], { value: "", label: "" }]; setConfig((p) => ({ ...p, hero: { ...p.hero, stats } })); }} className="text-sm text-brand-copper hover:text-brand-copper-light cursor-pointer">+ Agregar estadística</button>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="font-serif text-lg text-dark-elegant mb-4">Badges de Confianza</h3>
+                <p className="text-xs text-slate-500 mb-4">Se muestran debajo del botón de CTA (Pago Seguro, Respuesta en 24h, etc.)</p>
+                {(config.heroFeatures?.items || []).map((item, i) => (
+                  <div key={i} className="p-4 bg-cream rounded-xl border border-brand-copper/10 mb-3">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-xs font-semibold text-slate-500 uppercase">Badge #{i + 1}</span>
+                      <button onClick={() => { const items = (config.heroFeatures?.items || []).filter((_, j) => j !== i); setConfig((p) => ({ ...p, heroFeatures: { items } })); }} className="text-red-400 hover:text-red-600 text-sm cursor-pointer">Eliminar</button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <IconPicker value={item.icon} onChange={(name) => { const items = [...(config.heroFeatures?.items || [])]; items[i] = { ...items[i], icon: name }; setConfig((p) => ({ ...p, heroFeatures: { items } })); }} />
+                      <input type="text" value={item.text} onChange={(e) => { const items = [...(config.heroFeatures?.items || [])]; items[i] = { ...items[i], text: e.target.value }; setConfig((p) => ({ ...p, heroFeatures: { items } })); }} className="bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm" placeholder="Texto" />
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={item.color} onChange={(e) => { const items = [...(config.heroFeatures?.items || [])]; items[i] = { ...items[i], color: e.target.value }; setConfig((p) => ({ ...p, heroFeatures: { items } })); }} className="w-10 h-10 rounded-lg border-2 border-brand-copper/20 cursor-pointer shrink-0" />
+                        <input type="text" value={item.color} readOnly className="flex-1 bg-white border border-brand-copper/20 rounded-lg px-3 py-2 text-sm font-mono" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-500">Estilo:</span>
+                        <button
+                          onClick={() => { const items = [...(config.heroFeatures?.items || [])]; items[i] = { ...items[i], style: item.style === "outline" ? "solid" : "outline" }; setConfig((p) => ({ ...p, heroFeatures: { items } })); }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${item.style === "solid" ? "bg-brand-copper text-white" : "bg-white border border-brand-copper/20 text-slate-600"}`}
+                        >
+                          {item.style === "solid" ? "Sólido" : "Contorno"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <button onClick={() => { const items = [...(config.heroFeatures?.items || []), { icon: "shield", text: "", color: "#AF7A54", style: "outline" as const }]; setConfig((p) => ({ ...p, heroFeatures: { items } })); }} className="text-sm text-brand-copper hover:text-brand-copper-light cursor-pointer">+ Agregar badge</button>
               </div>
             </div>
           )}
