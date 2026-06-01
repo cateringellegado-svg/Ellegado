@@ -338,6 +338,56 @@ export default function CotizacionModal({
             </p>
           </div>
 
+          {/* Método de Pago — siempre visible cuando total > 0 */}
+          {total > 0 && (
+            <div className="border border-brand-copper/10 rounded-xl p-4 mb-4">
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-3 text-center">
+                Método de Pago
+              </p>
+
+              {/* Opción A: Mercado Pago */}
+              {mpAvailable ? (
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1 font-medium">Opción A — Mercado Pago</p>
+                  {preferenceId ? (
+                    <div className="mb-2">
+                      <Wallet key={preferenceId} initialization={initialization} onError={handleWalletError} />
+                    </div>
+                  ) : creatingPreference ? (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center animate-pulse">
+                      <p className="text-xs font-semibold text-blue-700">Mercado Pago</p>
+                      <p className="text-[10px] text-blue-600 mt-0.5">Generando enlace de pago...</p>
+                    </div>
+                  ) : !submitted ? (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                      <p className="text-xs font-semibold text-blue-700">Mercado Pago</p>
+                      <p className="text-[10px] text-blue-600 mt-0.5">Disponible después de confirmar tus datos</p>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                  <p className="text-xs text-slate-500">Pago coordinar por WhatsApp</p>
+                </div>
+              )}
+
+              {/* Opción B: WhatsApp — siempre visible */}
+              <div className="my-3">
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1 font-medium">Opción B — WhatsApp</p>
+                <button
+                  onClick={openWhatsApp}
+                  className="w-full bg-[#25D366] text-white font-semibold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm text-center"
+                >
+                  Reservar por WhatsApp
+                </button>
+              </div>
+
+              <p className="text-[10px] text-slate-400 text-center mt-2">
+                También podés coordinar el pago por WhatsApp.
+              </p>
+            </div>
+          )}
+
           {(quantityError || quantityWarning) && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-center">
               <p className="text-xs font-medium text-red-700">{quantityError || quantityWarning}</p>
@@ -380,41 +430,22 @@ export default function CotizacionModal({
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.438 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z" />
                 </svg>
-                {submitting ? "Enviando..." : "Confirmar Datos y Pagar"}
+                {submitting ? "Enviando..." : "Enviar a WhatsApp"}
               </button>
             </form>
           )}
 
-          {submitted && (
-            <div className="space-y-4">
-              {creatingPreference && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center animate-pulse">
-                  <p className="text-xs font-semibold text-blue-700">Generando enlace de pago...</p>
-                  <p className="text-[10px] text-blue-600 mt-0.5">Cargando Mercado Pago...</p>
-                </div>
-              )}
-
-              {preferenceId && (
-                <div className="border border-brand-copper/10 rounded-xl p-4">
-                  <Wallet key={preferenceId} initialization={initialization} onError={handleWalletError} />
-                </div>
-              )}
-
-              <div className="text-center">
-                <button
-                  onClick={openWhatsApp}
-                  className="w-full bg-[#25D366] text-white font-semibold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm text-center"
-                >
-                  Reservar por WhatsApp
-                </button>
-              </div>
-
-              {preferenceId && showEscape && (
-                <button onClick={onClose} className="mt-3 w-full text-sm text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer">
-                  Cerrar / Verificar Manualmente — tu cotización fue guardada y te contactaremos
-                </button>
-              )}
+          {/* Post-submit: botón manual WhatsApp + escape */}
+          {submitted && !preferenceId && (
+            <div className="text-center">
+              <button onClick={onClose} className="w-full text-xs text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer">Cerrar</button>
             </div>
+          )}
+
+          {submitted && preferenceId && showEscape && (
+            <button onClick={onClose} className="mt-3 w-full text-sm text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer">
+              Cerrar / Verificar Manualmente — tu cotización fue guardada y te contactaremos
+            </button>
           )}
         </>
       </div>
