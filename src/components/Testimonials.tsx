@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, startTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { SiteTestimonial } from "@/lib/site-config";
 import useEmblaCarousel from "embla-carousel-react";
@@ -28,7 +28,10 @@ export default function Testimonials() {
 
   useEffect(() => {
     if (!emblaApi) return;
-    onSelect();
+    startTransition(() => {
+      setPrevBtnVisible(emblaApi.canScrollPrev());
+      setNextBtnVisible(emblaApi.canScrollNext());
+    });
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
     return () => {

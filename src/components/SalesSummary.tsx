@@ -18,8 +18,10 @@ interface Props {
   selectedProducts: { id: string; cantidad: number; precio: number; subtotal: number; nombre: string }[];
   fechaEntrega: string;
   horarioEntrega: string;
+  entorno: string;
   onBack: () => void;
   onQuitarCombo: () => void;
+  onRemoveItem: (productId: string) => void;
 }
 
 export default function SalesSummary({
@@ -32,8 +34,10 @@ export default function SalesSummary({
   selectedProducts,
   fechaEntrega,
   horarioEntrega,
+  entorno,
   onBack,
   onQuitarCombo,
+  onRemoveItem,
 }: Props) {
   const { showToast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
@@ -107,8 +111,18 @@ export default function SalesSummary({
             selectedProducts.map((p) => (
               <div
                 key={p.id}
-                className="flex items-center gap-3 py-2 border-b border-brand-copper/5"
+                className="flex items-center gap-3 py-2 border-b border-brand-copper/5 group"
               >
+                <button
+                  type="button"
+                  onClick={() => onRemoveItem(p.id)}
+                  className="flex-shrink-0 w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                  aria-label={`Eliminar ${p.nombre}`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
                 <div className="flex-1 min-w-0">
                   <span className="text-sm text-dark-elegant block truncate">
                     {p.nombre}
@@ -199,6 +213,7 @@ export default function SalesSummary({
         horarioEntrega={horarioEntrega}
         modo={modo}
         selectedCombo={selectedCombo}
+        entorno={entorno}
       />
     </>
   );

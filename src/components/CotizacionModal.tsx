@@ -11,7 +11,8 @@ import { useSiteConfig } from "@/lib/site-config";
 import { calcAnticipo } from "@/lib/formatters";
 import PoliticasContratacionText from "./legal/PoliticasContratacionText";
 
-const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY || "";
+const MP_PUBLIC_KEY_PROD = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY || "";
+const MP_PUBLIC_KEY_TEST = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY_TEST || "";
 let mpInitialized = false;
 
 const WHATSAPP_MSG_PREFIX =
@@ -27,6 +28,7 @@ interface Props {
   horarioEntrega?: string;
   modo?: "combo" | "personalizar";
   selectedCombo?: Combo | null;
+  entorno?: string;
 }
 
 export default function CotizacionModal({
@@ -39,6 +41,7 @@ export default function CotizacionModal({
   horarioEntrega,
   modo,
   selectedCombo,
+  entorno = "produccion",
 }: Props) {
   const config = useSiteConfig();
   const { showToast } = useToast();
@@ -54,12 +57,15 @@ export default function CotizacionModal({
   const [whatsappBlocked, setWhatsappBlocked] = useState(false);
   const [showEscape, setShowEscape] = useState(false);
 
+  const mpPublicKey = entorno === "prueba" ? MP_PUBLIC_KEY_TEST : MP_PUBLIC_KEY_PROD;
+  const mpAvailable = !!mpPublicKey;
+
   useEffect(() => {
-    if (MP_PUBLIC_KEY && !mpInitialized) {
+    if (mpPublicKey && !mpInitialized) {
       mpInitialized = true;
-      initMercadoPago(MP_PUBLIC_KEY, { locale: "es-AR" });
+      initMercadoPago(mpPublicKey, { locale: "es-AR" });
     }
-  }, []);
+  }, [mpPublicKey]);
 
   const openWhatsApp = useCallback(() => {
     const productos = Object.values(cotizacion).filter(
@@ -175,7 +181,7 @@ export default function CotizacionModal({
 
       // Paso 2: crear preferencia de Mercado Pago con el ID real de la cotización
       let mpFailed = false;
-      if (MP_PUBLIC_KEY && cotId) {
+      if (mpAvailable && cotId) {
         setCreatingPreference(true);
         try {
           const prefRes = await fetch("/api/create-preference", {
@@ -328,9 +334,20 @@ export default function CotizacionModal({
               </p>
             </div>
 
-            <div className="mb-4">
-              <Wallet initialization={{ preferenceId }} />
-            </div>
+            {mpAvailable ? (
+              <div className="mb-4">
+                <Wallet initialization={{ preferenceId }} />
+              </div>
+            ) : (
+              <div className="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                <p className="text-xs text-blue-700 font-medium">
+                  Pago online no disponible para el entorno actual
+                </p>
+                <p className="text-[10px] text-blue-600 mt-1">
+                  Coordiná el pago directamente por WhatsApp con nuestro equipo.
+                </p>
+              </div>
+            )}
 
             <p className="text-[10px] text-slate-400 mt-4">
               También podés coordinar el pago por WhatsApp.

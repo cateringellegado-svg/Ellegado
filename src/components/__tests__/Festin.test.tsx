@@ -125,7 +125,7 @@ describe("Festin", () => {
   it("persists cotizacion to localStorage on change", async () => {
     render(<Festin />);
     await goToPersonalizar();
-    const addButtons = screen.getAllByRole("button", { name: /Aumentar cantidad de/ });
+    const addButtons = screen.getAllByRole("button", { name: /Agregar/ });
     if (addButtons.length > 0) {
       fireEvent.click(addButtons[0]);
       await waitFor(() => {

@@ -87,6 +87,7 @@ export default function Festin() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [factorAjuste, setFactorAjuste] = useState(1);
+  const [entorno, setEntorno] = useState<string>("produccion");
   const mounted = useRef(true);
   const [cotizacion, setCotizacion] = useState<CotizacionSeleccion>(() => {
     if (typeof window === "undefined") return {};
@@ -119,6 +120,7 @@ export default function Festin() {
         clearTimeout(safetyTimer);
         const factor = configData?.factor_ajuste ?? 1;
         setFactorAjuste(factor);
+        setEntorno(configData?.entorno ?? "produccion");
         setClasicos(clasicosData ?? FALLBACK_CLASICOS);
         setPremium(premiumData ?? []);
         setDulces(dulcesData ?? FALLBACK_DULCES);
@@ -254,6 +256,14 @@ export default function Festin() {
     [showToast, factorAjuste, wizardGuestCount]
   );
 
+  const removeItem = useCallback((productId: string) => {
+    setCotizacion((prev) => {
+      const { [productId]: _, ...rest } = prev;
+      return rest;
+    });
+    showToast("Producto eliminado", "info");
+  }, [showToast]);
+
   const quitarCombo = useCallback(() => {
     setSelectedCombo(null);
     setCotizacion({});
@@ -342,8 +352,13 @@ export default function Festin() {
           activeTab === "premium"
             ? "bg-slate-800/50 backdrop-blur-sm border-brand-copper/20 hover:border-brand-copper/40"
             : "bg-white border-brand-copper/20 hover:border-brand-copper/40"
-        }`}
+        } ${qty > 0 ? "ring-2 ring-brand-copper/30" : ""}`}
       >
+        {qty > 0 && (
+          <span className="absolute top-3 left-3 text-[10px] bg-brand-copper text-white px-2.5 py-0.5 rounded-full font-semibold z-10">
+            {qty} u. seleccionadas
+          </span>
+        )}
         {noDisponible && (
           <span className="absolute top-3 right-3 text-[10px] bg-amber-100/80 text-amber-700 px-3 py-1 rounded-full font-medium tracking-wider uppercase border border-amber-200 backdrop-blur-sm z-10">
             Próximamente
@@ -407,19 +422,22 @@ export default function Festin() {
             ) : (
               <div className="flex flex-col items-end gap-1">
                 <div className="flex items-center bg-cream border border-brand-copper/20 rounded-lg overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => adjustQuantity(producto, -1)}
-                    className="px-2 py-1 text-brand-copper hover:bg-brand-copper/10 transition-colors cursor-pointer"
-                    aria-label={`Reducir cantidad de ${producto.nombre}`}
-                  >
-                    −
-                  </button>
+                  {qty > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => adjustQuantity(producto, -1)}
+                      className="px-2 py-1 text-brand-copper hover:bg-brand-copper/10 transition-colors cursor-pointer"
+                      aria-label={`Reducir cantidad de ${producto.nombre}`}
+                    >
+                      −
+                    </button>
+                  )}
                   <input
                     type="number"
-                    value={qty > 0 ? qty : (producto.minimo || 50)}
+                    value={qty}
                     onChange={(e) => handleQuantityChange(producto, e.target.value)}
-                    min={producto.minimo || 50}
+                    placeholder="0"
+                    min={0}
                     step={producto.incremento || 10}
                     className="w-14 text-center bg-transparent border-x border-brand-copper/10 py-1 text-sm font-medium text-dark-elegant focus:outline-none appearance-none"
                     aria-label={`Cantidad de ${producto.nombre}`}
@@ -427,15 +445,21 @@ export default function Festin() {
                   <button
                     type="button"
                     onClick={() => adjustQuantity(producto, 1)}
-                    className="px-2 py-1 text-brand-copper hover:bg-brand-copper/10 transition-colors cursor-pointer"
-                    aria-label={`Aumentar cantidad de ${producto.nombre}`}
+                    className={`px-2 py-1 transition-colors cursor-pointer ${
+                      qty === 0
+                        ? "text-white bg-brand-copper hover:bg-brand-copper/90 font-semibold text-xs px-3"
+                        : "text-brand-copper hover:bg-brand-copper/10"
+                    }`}
+                    aria-label={`Agregar ${producto.nombre}`}
                   >
-                    +
+                    {qty === 0 ? "Agregar" : "+"}
                   </button>
                 </div>
-                <span className="text-[9px] text-slate-600 italic">
-                  Mín: {producto.minimo || 50} / +{producto.incremento || 10}
-                </span>
+                {qty > 0 && (
+                  <span className="text-[9px] text-slate-600 italic">
+                    Mín: {producto.minimo || 50} / +{producto.incremento || 10}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -525,8 +549,10 @@ export default function Festin() {
                 selectedProducts={selectedProducts}
                 fechaEntrega={fechaEntrega}
                 horarioEntrega={horarioEntrega}
+                entorno={entorno}
                 onBack={goBackToWizard}
                 onQuitarCombo={quitarCombo}
+                onRemoveItem={removeItem}
               />
             </div>
           )}
@@ -617,8 +643,10 @@ export default function Festin() {
                 selectedProducts={selectedProducts}
                 fechaEntrega={fechaEntrega}
                 horarioEntrega={horarioEntrega}
+                entorno={entorno}
                 onBack={goBackToWizard}
                 onQuitarCombo={quitarCombo}
+                onRemoveItem={removeItem}
               />
             </>
           )}
