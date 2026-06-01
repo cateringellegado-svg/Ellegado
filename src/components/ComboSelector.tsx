@@ -88,7 +88,7 @@ export default function ComboSelector({
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         {combos.map((combo) => {
           const isRecommended = combo.id === recommendedId;
           return (
@@ -96,33 +96,39 @@ export default function ComboSelector({
               key={combo.id}
               type="button"
               onClick={() => onSelect(combo)}
-              className={`group bg-white rounded-2xl p-6 shadow-lg border transition-all text-left cursor-pointer flex flex-col relative ${
+              className={`group rounded-2xl p-6 shadow-lg border transition-all text-left cursor-pointer flex flex-col relative ${
                 isRecommended
-                  ? "border-amber-400 ring-2 ring-amber-200 hover:shadow-xl hover:-translate-y-1"
-                  : "border-brand-copper/10 hover:shadow-xl hover:-translate-y-1"
+                  ? "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-400 ring-2 ring-amber-300 shadow-xl shadow-amber-200/50 scale-[1.05] z-10 hover:shadow-2xl hover:shadow-amber-300/50"
+                  : "bg-white border-brand-copper/10 saturate-[0.7] opacity-80 hover:saturate-100 hover:opacity-100 hover:shadow-xl hover:-translate-y-1"
               }`}
             >
               {isRecommended && (
-                <span className="absolute -top-3 -right-3 bg-amber-400 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1 z-10">
-                  <Star className="w-3 h-3" fill="currentColor" />
+                <span className="absolute -top-3.5 -right-3.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-full shadow-xl shadow-amber-300/50 flex items-center gap-1.5 z-20 animate-pulse">
+                  <Star className="w-3.5 h-3.5" fill="currentColor" />
                   Recomendado
                 </span>
               )}
               <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:bg-brand-copper/20 transition-colors ${
-                  isRecommended ? "bg-amber-100" : "bg-brand-copper/10"
+                className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${
+                  isRecommended ? "bg-amber-200/70" : "bg-brand-copper/10"
                 }`}
               >
                 <Package
                   className={`w-6 h-6 ${
-                    isRecommended ? "text-amber-600" : "text-brand-copper"
+                    isRecommended ? "text-amber-700" : "text-brand-copper"
                   }`}
                   strokeWidth={1.5}
                 />
               </div>
-              <h4 className="font-serif text-xl text-dark-elegant mb-2">
+              <h4 className="font-serif text-xl text-dark-elegant mb-1">
                 {combo.nombre}
               </h4>
+              {isRecommended && (
+                <p className="text-[10px] text-amber-700 font-medium mb-2 flex items-center gap-1">
+                  <Star className="w-3 h-3" fill="currentColor" />
+                  La opción más elegida por nuestros clientes
+                </p>
+              )}
               <p className="text-xs text-slate-500 mb-4 flex-grow leading-relaxed">
                 {combo.descripcion}
               </p>
@@ -144,7 +150,9 @@ export default function ComboSelector({
                   <span className="text-[10px] text-slate-500">
                     {COMBO_MINIMUMS[combo.id] ?? combo.personas_min}–{combo.personas_max} pers.
                   </span>
-                  <span className="font-serif text-lg text-brand-copper font-bold">
+                  <span className={`font-serif text-lg font-bold ${
+                    isRecommended ? "text-amber-700" : "text-brand-copper"
+                  }`}>
                     {formatARS(Math.round(combo.precio * factorAjuste))}
                   </span>
                 </div>
