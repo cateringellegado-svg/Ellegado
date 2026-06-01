@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import type { CotizacionSeleccion, Combo } from "@/types";
 import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 import { useToast } from "./Toast";
@@ -56,6 +56,12 @@ export default function CotizacionModal({
   const [creatingPreference, setCreatingPreference] = useState(false);
   const [whatsappBlocked, setWhatsappBlocked] = useState(false);
   const [showEscape, setShowEscape] = useState(false);
+
+  const initialization = useMemo(() => ({ preferenceId: preferenceId! }), [preferenceId]);
+  const handleWalletError = useCallback((error: unknown) => {
+    console.error("Wallet error:", error);
+    showToast("Error al cargar el botón de pago. Podés reservar por WhatsApp.", "warning");
+  }, [showToast]);
 
   const mpPublicKey = entorno === "prueba" ? MP_PUBLIC_KEY_TEST : MP_PUBLIC_KEY_PROD;
   const mpAvailable = !!mpPublicKey;
@@ -200,16 +206,18 @@ export default function CotizacionModal({
           if (prefRes.ok) {
             const prefJson = await prefRes.json();
             setPreferenceId(prefJson.id);
-            openWhatsApp();
+          } else {
+            let errMsg = "El pago online no está disponible temporalmente";
+            try {
+              const err = await prefRes.json();
+              errMsg = err.error || errMsg;
+            } catch {}
+            showToast(errMsg, "error");
           }
         } catch {
-          // MP falla — se sigue mostrando el método de pago como no disponible
+          showToast("Error de conexión con el servicio de pago. Intentá de nuevo o usá WhatsApp.", "error");
         }
         setCreatingPreference(false);
-      }
-
-      if (!mpAvailable) {
-        openWhatsApp();
       }
 
       setSubmitting(false);
@@ -336,25 +344,44 @@ export default function CotizacionModal({
               <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-3 text-center">
                 Método de Pago
               </p>
-              {mpAvailable && preferenceId ? (
-                <div className="mb-2">
-                  <Wallet key={preferenceId} initialization={{ preferenceId }} />
-                </div>
-              ) : mpAvailable && !submitted ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-                  <p className="text-xs font-semibold text-blue-700">Mercado Pago</p>
-                  <p className="text-[10px] text-blue-600 mt-0.5">Disponible después de confirmar tus datos</p>
-                </div>
-              ) : mpAvailable && submitted ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center animate-pulse">
-                  <p className="text-xs font-semibold text-blue-700">Mercado Pago</p>
-                  <p className="text-[10px] text-blue-600 mt-0.5">Generando enlace de pago...</p>
+
+              {/* Opción A: Mercado Pago */}
+              {mpAvailable ? (
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1 font-medium">Opción A — Mercado Pago</p>
+                  {preferenceId ? (
+                    <div className="mb-2">
+                      <Wallet key={preferenceId} initialization={initialization} onError={handleWalletError} />
+                    </div>
+                  ) : creatingPreference ? (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center animate-pulse">
+                      <p className="text-xs font-semibold text-blue-700">Mercado Pago</p>
+                      <p className="text-[10px] text-blue-600 mt-0.5">Generando enlace de pago...</p>
+                    </div>
+                  ) : !submitted ? (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                      <p className="text-xs font-semibold text-blue-700">Mercado Pago</p>
+                      <p className="text-[10px] text-blue-600 mt-0.5">Disponible después de confirmar tus datos</p>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
                   <p className="text-xs text-slate-500">Pago coordinar por WhatsApp</p>
                 </div>
               )}
+
+              {/* Opción B: WhatsApp — siempre visible */}
+              <div className="my-3">
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1 font-medium">Opción B — WhatsApp</p>
+                <button
+                  onClick={openWhatsApp}
+                  className="w-full bg-[#25D366] text-white font-semibold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm text-center"
+                >
+                  Reservar por WhatsApp
+                </button>
+              </div>
+
               <p className="text-[10px] text-slate-400 text-center mt-2">
                 También podés coordinar el pago por WhatsApp.
               </p>
@@ -410,10 +437,7 @@ export default function CotizacionModal({
 
           {/* Post-submit: botón manual WhatsApp + escape */}
           {submitted && !preferenceId && (
-            <div className="text-center space-y-3">
-              <a href={getWhatsAppUrl(config.contact.whatsapp, encodeURIComponent(`${WHATSAPP_MSG_PREFIX}\n\n*Productos:*\n${Object.values(cotizacion).filter(p => p.cantidad > 0 && p.precio > 0).map(p => `• ${p.nombre}: ${p.cantidad} u.`).join("\n")}\n\n*Total:* $${total.toLocaleString("es-AR")}\n\n*Anticipo (50%):* $${(anticipo ?? calcAnticipo(total)).toLocaleString("es-AR")}\n\nMi nombre es ${nombre}.`))} target="_blank" rel="noopener noreferrer" className="block w-full bg-[#25D366] text-white font-semibold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm text-center">
-                Ir a WhatsApp
-              </a>
+            <div className="text-center">
               <button onClick={onClose} className="w-full text-xs text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer">Cerrar</button>
             </div>
           )}
