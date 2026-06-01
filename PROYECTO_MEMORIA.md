@@ -35,6 +35,12 @@ Funcionalidades Críticas del Backend (El Cerebro):Orquestación de Reglas de Ne
 
 # Changelog
 
+## 2026-05-31 — Fix crítico RLS: role en app_metadata, no user_metadata
+- **Diagnóstico**: `auth.users.role = 'admin'` (editado manualmente) + `user_metadata.role = "admin"` → JWT con `role: admin` → PostgREST `SET ROLE admin` falla → `role "admin" does not exist` en cada write
+- **Fix**: `auth.users.role` restaurado a `'authenticated'` vía API; `"role":"admin"` movido de `user_metadata` a `app_metadata`; código actualizado (`login/page.tsx:35`, `proxy.ts:37`) para leer de `app_metadata.role`
+- **Regla documentada**: jamás usar `"role"` como key en `user_metadata` — conflicto con sistema de roles de PostgreSQL
+- **Validación**: TSC 0 err, 122/122 tests OK
+
 ## 2026-05-31 — Smart Scaling: upselling en gaps de combos + infra cerrada
 - `ComboSelector.tsx`: implementado banner de upselling que detecta automáticamente cuando el número de invitados cae en un gap (16-19, 26-29, 36-39, 46-49) y recomienda el combo superior
 - `ConsultantWizard.tsx`: corregido `getRecommendedCombo` que mapeaba thresholds incorrectos (16-17 → Esencia) ahora redirige al rango correcto (16-19 → Celebración)
@@ -83,6 +89,17 @@ Funcionalidades Críticas del Backend (El Cerebro):Orquestación de Reglas de Ne
 - Validación: si falta → response 503 "Supabase not configured"
 - ✅ Verificada manualmente por el usuario en Vercel Dashboard (Production, Preview, Development)
 - Riesgo cerrado: `SUPABASE_SERVICE_ROLE_KEY` operativa en los 3 entornos de Vercel
+
+### Diagnóstico y Fix Final: Escalado de Privilegios Admin
+
+| Aspecto | Detalle |
+|---|---|
+| **Error original** | `role "admin" does not exist` en writes del CMS |
+| **Causa raíz** | `auth.users.role` fue editado a `'admin'` por el usuario + `user_metadata.role = "admin"` → JWT generado con `role: "admin"` → PostgREST intenta `SET ROLE admin` → no existe → error |
+| **Fix aplicado** | `auth.users.role` restaurado a `'authenticated'` vía Auth Admin API; `"role":"admin"` movido a `app_metadata`; código actualizado para leer de `app_metadata.role` |
+| **Archivos cambiados** | `login/page.tsx:35`: `user_metadata.role` → `app_metadata.role`; `proxy.ts:37`: idem |
+| **Regla de oro** | **NUNCA** poner `"role"` como key en `user_metadata` — interfiere con el JWT `role` claim de PostgreSQL |
+| **Refresco** | Usuario debe cerrar sesión → volver a iniciar → el nuevo JWT tendrá `role: authenticated` (RLS funciona) + `app_metadata.role: admin` (app permite acceso) |
 
 ### Estrategia Comercial: Optimización de Menú (Smart Scaling)
 - Política: Se han eliminado los "gaps" de combos intermedios (16-19, 26-29, etc.).

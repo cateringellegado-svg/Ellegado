@@ -32,7 +32,7 @@ export default function AdminLogin() {
       }
 
       const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (currentUser?.user_metadata?.role !== "admin") {
+      if (currentUser?.app_metadata?.role !== "admin") {
         await supabase.auth.signOut();
         setError("Acceso denegado — no tienes permisos de administrador");
         setLoading(false);
