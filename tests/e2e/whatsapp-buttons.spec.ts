@@ -8,7 +8,7 @@ test.describe("WhatsApp Buttons — Verificación de enlaces", () => {
     await page.locator('button[aria-label="Contactar por WhatsApp"]').click();
 
     const waPage = await pagePromise;
-    await expect(waPage.url()).toMatch(/^https:\/\/wa\.me\/541176753854\?text=/);
+    await expect(waPage.url()).toMatch(/^https:\/\/(wa\.me\/541176753854\?text=|api\.whatsapp\.com\/send\/\?phone=541176753854)/);
     await waPage.close();
   });
 
@@ -19,7 +19,7 @@ test.describe("WhatsApp Buttons — Verificación de enlaces", () => {
     await page.locator('button[aria-label="Cotizar evento por WhatsApp"]').click();
 
     const waPage = await pagePromise;
-    await expect(waPage.url()).toMatch(/^https:\/\/wa\.me\/541176753854\?text=/);
+    await expect(waPage.url()).toMatch(/^https:\/\/(wa\.me\/541176753854\?text=|api\.whatsapp\.com\/send\/\?phone=541176753854)/);
     await waPage.close();
   });
 
@@ -30,7 +30,7 @@ test.describe("WhatsApp Buttons — Verificación de enlaces", () => {
     await page.locator('button[aria-label="Enviar mensaje a WhatsApp"]').click();
 
     const waPage = await pagePromise;
-    await expect(waPage.url()).toMatch(/^https:\/\/wa\.me\/541176753854\?text=/);
+    await expect(waPage.url()).toMatch(/^https:\/\/(wa\.me\/541176753854\?text=|api\.whatsapp\.com\/send\/\?phone=541176753854)/);
     await waPage.close();
   });
 

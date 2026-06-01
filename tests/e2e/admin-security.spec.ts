@@ -1,4 +1,37 @@
 import { test, expect } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
+
+test.beforeAll(async () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const email = process.env.E2E_ADMIN_EMAIL || "admin@example.com";
+  const password = process.env.E2E_ADMIN_PASSWORD || "password123";
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.warn("SUPABASE_SERVICE_ROLE_KEY not set — admin login tests may fail. Set it in .env or CI secrets.");
+    return;
+  }
+
+  const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  const { data: users } = await adminClient.auth.admin.listUsers();
+  const user = users?.users.find((u) => u.email === email);
+
+  if (user) {
+    await adminClient.auth.admin.updateUserById(user.id, {
+      app_metadata: { ...user.app_metadata, role: "admin" },
+    });
+  } else {
+    await adminClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      app_metadata: { role: "admin" },
+    });
+  }
+});
 
 test.describe("RLS — Seguridad de Bóveda (Admin)", () => {
   const adminRoutes = [
