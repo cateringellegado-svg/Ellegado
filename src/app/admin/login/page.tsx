@@ -40,7 +40,7 @@ export default function AdminLogin() {
       }
 
       const redirectTo = searchParams.get("redirect") || "/admin/financiero";
-      router.push(redirectTo);
+      window.location.assign(redirectTo);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Error al iniciar sesión";
       setError(message);
