@@ -7,6 +7,7 @@ import { WHATSAPP_NUMBER } from "@/lib/constants";
 import { uploadSiteImage, deleteSiteImage } from "@/lib/storage";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import IconPicker from "@/components/admin/IconPicker";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 interface CMSConfig {
   colors: Record<string, string>;
@@ -602,10 +603,9 @@ export default function CMSPage() {
               <div>
                 <h2 className="font-serif text-2xl text-dark-elegant mb-2">Políticas de Contratación</h2>
                 <p className="text-xs text-slate-500 mb-4">Se muestra en /politicas-contratacion y en el modal de cotización.</p>
-                <textarea rows={12} value={config.politicas_contratacion || ""} onChange={(e) => setConfig((p) => ({ ...p, politicas_contratacion: e.target.value }))} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm font-mono resize-y" />
-                <div className="mt-3 flex gap-3">
+                <RichTextEditor value={config.politicas_contratacion || ""} onChange={(html) => setConfig((p) => ({ ...p, politicas_contratacion: html }))} />
+                <div className="mt-3">
                   <button onClick={() => save("politicas_contratacion", config.politicas_contratacion)} disabled={saving} className="px-4 py-2 bg-brand-copper text-white rounded-lg text-xs font-medium hover:bg-brand-copper-light transition-colors cursor-pointer disabled:opacity-50">{saving ? "Guardando..." : "Guardar"}</button>
-                  <span className="text-[10px] text-slate-400 self-center">Soporta HTML básico (h2, p, ul, li, strong)</span>
                 </div>
               </div>
 
@@ -615,7 +615,7 @@ export default function CMSPage() {
               <div>
                 <h2 className="font-serif text-2xl text-dark-elegant mb-2">Políticas de Privacidad</h2>
                 <p className="text-xs text-slate-500 mb-4">Se muestra en /politicas-privacidad.</p>
-                <textarea rows={12} value={config.politicas_privacidad || ""} onChange={(e) => setConfig((p) => ({ ...p, politicas_privacidad: e.target.value }))} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm font-mono resize-y" />
+                <RichTextEditor value={config.politicas_privacidad || ""} onChange={(html) => setConfig((p) => ({ ...p, politicas_privacidad: html }))} />
                 <div className="mt-3">
                   <button onClick={() => save("politicas_privacidad", config.politicas_privacidad)} disabled={saving} className="px-4 py-2 bg-brand-copper text-white rounded-lg text-xs font-medium hover:bg-brand-copper-light transition-colors cursor-pointer disabled:opacity-50">{saving ? "Guardando..." : "Guardar"}</button>
                 </div>
@@ -627,7 +627,7 @@ export default function CMSPage() {
               <div>
                 <h2 className="font-serif text-2xl text-dark-elegant mb-2">Términos y Condiciones</h2>
                 <p className="text-xs text-slate-500 mb-4">Se muestra en /terminos-y-condiciones.</p>
-                <textarea rows={12} value={config.terminos_condiciones || ""} onChange={(e) => setConfig((p) => ({ ...p, terminos_condiciones: e.target.value }))} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm font-mono resize-y" />
+                <RichTextEditor value={config.terminos_condiciones || ""} onChange={(html) => setConfig((p) => ({ ...p, terminos_condiciones: html }))} />
                 <div className="mt-3">
                   <button onClick={() => save("terminos_condiciones", config.terminos_condiciones)} disabled={saving} className="px-4 py-2 bg-brand-copper text-white rounded-lg text-xs font-medium hover:bg-brand-copper-light transition-colors cursor-pointer disabled:opacity-50">{saving ? "Guardando..." : "Guardar"}</button>
                 </div>
