@@ -50,7 +50,7 @@ export default function CotizacionModal({
   const [email, setEmail] = useState("");
   const [aceptoTerminos, setAceptoTerminos] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [step, setStep] = useState<"form" | "payment">("form");
+  const [submitted, setSubmitted] = useState(false);
   const [cotizacionId, setCotizacionId] = useState<string | null>(null);
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [creatingPreference, setCreatingPreference] = useState(false);
@@ -179,8 +179,9 @@ export default function CotizacionModal({
         return;
       }
 
+      setSubmitted(true);
+
       // Paso 2: crear preferencia de Mercado Pago con el ID real de la cotización
-      let mpFailed = false;
       if (mpAvailable && cotId) {
         setCreatingPreference(true);
         try {
@@ -199,38 +200,27 @@ export default function CotizacionModal({
           if (prefRes.ok) {
             const prefJson = await prefRes.json();
             setPreferenceId(prefJson.id);
-            setStep("payment");
             openWhatsApp();
-            setSubmitting(false);
-            setCreatingPreference(false);
-            return;
-          } else {
-            mpFailed = true;
           }
         } catch {
-          mpFailed = true;
+          // MP falla — se sigue mostrando el método de pago como no disponible
         }
         setCreatingPreference(false);
       }
 
-      // Fallback: la cotización se guardó pero no se pudo crear el pago online
-      openWhatsApp();
-      showToast(
-        mpFailed
-          ? "Cotización guardada. Redirigiendo a WhatsApp para finalizar..."
-          : "Cotización enviada correctamente",
-        mpFailed ? "warning" : "success"
-      );
+      if (!mpAvailable) {
+        openWhatsApp();
+      }
+
       setSubmitting(false);
-      onClose();
     },
-    [cotizacion, total, anticipo, nombre, telefono, email, aceptoTerminos, modo, selectedCombo, onClose, showToast, openWhatsApp]
+    [cotizacion, total, anticipo, nombre, telefono, email, aceptoTerminos, modo, selectedCombo, onClose, showToast, openWhatsApp, mpAvailable, fechaEntrega]
   );
 
   useEffect(() => {
     if (!isOpen) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setStep("form");
+    setSubmitted(false);
     setPreferenceId(null);
     setCotizacionId(null);
     setWhatsappBlocked(false);
@@ -243,13 +233,13 @@ export default function CotizacionModal({
   }, [isOpen, onClose]);
 
   useEffect(() => {
-    if (step === "payment") {
+    if (submitted && preferenceId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowEscape(false);
       const timer = setTimeout(() => setShowEscape(true), 15000);
       return () => clearTimeout(timer);
     }
-  }, [step]);
+  }, [submitted, preferenceId]);
 
   if (!isOpen) return null;
 
@@ -296,246 +286,144 @@ export default function CotizacionModal({
           </svg>
         </button>
 
-        {step === "payment" && preferenceId ? (
-          <div className="text-center">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-600">
-              <svg
-                className="w-8 h-8"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h3 className="font-serif text-2xl text-dark-elegant mb-2">
-              Reserva Confirmada
-            </h3>
-            <p className="text-sm text-slate-600 mb-6">
-              Ya te enviamos la propuesta por WhatsApp. Ahora podés abonar la seña para asegurar tu fecha.
-            </p>
-
-            <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 mb-6">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-semibold text-amber-800">
-                  Anticipo (50%) — Seña
-                </span>
-                <span className="font-serif text-lg font-bold text-amber-700">
-                  {"$" + anticipoCalculado.toLocaleString("es-AR")}
-                </span>
-              </div>
-              <p className="text-[10px] text-amber-600">
-                Este monto confirma tu reserva. El saldo se coordina previo al evento.
-              </p>
-            </div>
-
-            {mpAvailable ? (
-              <div className="mb-4">
-                <Wallet initialization={{ preferenceId }} />
-              </div>
-            ) : (
-              <div className="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
-                <p className="text-xs text-blue-700 font-medium">
-                  Pago online no disponible para el entorno actual
-                </p>
-                <p className="text-[10px] text-blue-600 mt-1">
-                  Coordiná el pago directamente por WhatsApp con nuestro equipo.
-                </p>
-              </div>
-            )}
-
-            <p className="text-[10px] text-slate-400 mt-4">
-              También podés coordinar el pago por WhatsApp.
-            </p>
-
-            {whatsappBlocked && (
-              <a
-                href={getWhatsAppUrl(config.contact.whatsapp, encodeURIComponent(
-                  `${WHATSAPP_MSG_PREFIX}\n\n*Productos:*\n${Object.values(cotizacion).filter(p => p.cantidad > 0 && p.precio > 0).map(p => `• ${p.nombre}: ${p.cantidad} u.`).join("\n")}\n\n*Total:* $${total.toLocaleString("es-AR")}\n\n*Anticipo (50%):* $${(anticipo ?? calcAnticipo(total)).toLocaleString("es-AR")}\n\nMi nombre es ${nombre}.`
-                ))}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-block w-full bg-[#25D366] text-white font-semibold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm text-center"
-              >
-                Haz clic aquí para ir a WhatsApp
-              </a>
-            )}
-
-            {showEscape && (
-              <button
-                onClick={onClose}
-                className="mt-3 w-full text-sm text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer"
-              >
-                Cerrar / Verificar Manualmente — tu cotización fue guardada y te contactaremos
-              </button>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-brand-copper/10 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-copper">
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
+        <>
+          {/* Header */}
+          {submitted && preferenceId ? (
+            <div className="text-center mb-4">
+              <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 text-emerald-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="font-serif text-2xl text-dark-elegant mb-2">
-                Casi listo...
-              </h3>
-              <p className="text-sm text-slate-600">
-                Completa tus datos para enviarte la propuesta formal por WhatsApp.
+              <h3 className="font-serif text-xl text-dark-elegant mb-1">Reserva Confirmada</h3>
+              <p className="text-xs text-slate-600">Ya te enviamos la propuesta por WhatsApp.</p>
+            </div>
+          ) : !submitted && (
+            <div className="text-center mb-4">
+              <div className="w-12 h-12 bg-brand-copper/10 rounded-full flex items-center justify-center mx-auto mb-3 text-brand-copper">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="font-serif text-xl text-dark-elegant mb-1">Casi listo...</h3>
+              <p className="text-xs text-slate-600">Completa tus datos para recibir la propuesta formal.</p>
+            </div>
+          )}
+
+          {/* Resumen del presupuesto — siempre visible */}
+          <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 mb-4">
+            <div className="flex justify-between items-center mb-1 text-sm">
+              <span className="text-slate-600">Total del Presupuesto</span>
+              <span className="font-serif font-bold text-dark-elegant">
+                {"$" + total.toLocaleString("es-AR")}
+              </span>
+            </div>
+            <div className="h-px bg-amber-200/50 my-2" />
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-semibold text-amber-800">Anticipo (50%) — Seña</span>
+              <span className="font-serif text-lg font-bold text-amber-700">
+                {"$" + anticipoCalculado.toLocaleString("es-AR")}
+              </span>
+            </div>
+            <p className="text-[10px] text-amber-600 leading-relaxed text-center pt-1">
+              Este monto confirma tu reserva. El saldo se coordina previo al evento.
+            </p>
+          </div>
+
+          {/* Método de Pago — siempre visible cuando total > 0 */}
+          {total > 0 && (
+            <div className="border border-brand-copper/10 rounded-xl p-4 mb-4">
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-3 text-center">
+                Método de Pago
+              </p>
+              {mpAvailable && preferenceId ? (
+                <div className="mb-2">
+                  <Wallet key={preferenceId} initialization={{ preferenceId }} />
+                </div>
+              ) : mpAvailable && !submitted ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                  <p className="text-xs font-semibold text-blue-700">Mercado Pago</p>
+                  <p className="text-[10px] text-blue-600 mt-0.5">Disponible después de confirmar tus datos</p>
+                </div>
+              ) : mpAvailable && submitted ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center animate-pulse">
+                  <p className="text-xs font-semibold text-blue-700">Mercado Pago</p>
+                  <p className="text-[10px] text-blue-600 mt-0.5">Generando enlace de pago...</p>
+                </div>
+              ) : (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                  <p className="text-xs text-slate-500">Pago coordinar por WhatsApp</p>
+                </div>
+              )}
+              <p className="text-[10px] text-slate-400 text-center mt-2">
+                También podés coordinar el pago por WhatsApp.
               </p>
             </div>
+          )}
 
-            <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 mb-6">
-              <div className="text-center mb-3">
-                <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">
-                  Resumen del Presupuesto
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600">Total del Presupuesto</span>
-                  <span className="font-serif font-bold text-dark-elegant">
-                    {"$" + total.toLocaleString("es-AR")}
-                  </span>
-                </div>
-                <div className="h-px bg-amber-200/50" />
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-amber-800">
-                    Anticipo (50%) — Seña
-                  </span>
-                  <span className="font-serif text-lg font-bold text-amber-700">
-                    {"$" + anticipoCalculado.toLocaleString("es-AR")}
-                  </span>
-                </div>
-                <p className="text-[10px] text-amber-600 leading-relaxed text-center pt-1">
-                  Este monto confirma tu reserva. El saldo se coordina previo al evento.
-                </p>
-              </div>
+          {(quantityError || quantityWarning) && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-center">
+              <p className="text-xs font-medium text-red-700">{quantityError || quantityWarning}</p>
+              <p className="text-[10px] text-red-500 mt-1">Unidades en tu pedido: {totalUnits}</p>
             </div>
+          )}
 
-            {(quantityError || quantityWarning) && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-center">
-                <p className="text-xs font-medium text-red-700">
-                  {quantityError || quantityWarning}
-                </p>
-                <p className="text-[10px] text-red-500 mt-1">
-                  Unidades en tu pedido: {totalUnits}
-                </p>
-              </div>
-            )}
+          {/* Formulario — oculto después de submit exitoso */}
+          {!submitted && (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="cotizacion-nombre" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
-                  Nombre y Apellido *
-                </label>
-                <input
-                  id="cotizacion-nombre"
-                  name="nombre"
-                  type="text"
-                  required
-                  autoFocus
-                  autoComplete="name"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper"
-                />
+                <label htmlFor="cotizacion-nombre" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Nombre y Apellido *</label>
+                <input id="cotizacion-nombre" name="nombre" type="text" required autoFocus autoComplete="name" value={nombre} onChange={(e) => setNombre(e.target.value)} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" />
               </div>
               <div>
-                <label htmlFor="cotizacion-telefono" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
-                  Teléfono *
-                </label>
-                <input
-                  id="cotizacion-telefono"
-                  name="telefono"
-                  type="tel"
-                  required
-                  autoComplete="tel"
-                  value={telefono}
-                  onChange={(e) => setTelefono(e.target.value)}
-                  placeholder="+54 11 1234 5678"
-                  pattern="[\+]?[0-9\s\-]{7,20}"
-                  className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper"
-                />
+                <label htmlFor="cotizacion-telefono" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Teléfono *</label>
+                <input id="cotizacion-telefono" name="telefono" type="tel" required autoComplete="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="+54 11 1234 5678" pattern="[\+]?[0-9\s\-]{7,20}" className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" />
               </div>
               <div>
-                <label htmlFor="cotizacion-email" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
-                  Email
-                </label>
-                <input
-                  id="cotizacion-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Opcional"
-                  className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper"
-                />
+                <label htmlFor="cotizacion-email" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Email</label>
+                <input id="cotizacion-email" name="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Opcional" className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-copper" />
               </div>
               <details className="mt-4 group">
-                <summary className="text-xs text-brand-copper font-medium cursor-pointer hover:underline select-none">
-                  Ver políticas de contratación
-                </summary>
+                <summary className="text-xs text-brand-copper font-medium cursor-pointer hover:underline select-none">Ver políticas de contratación</summary>
                 <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 leading-relaxed space-y-3 max-h-60 overflow-y-auto">
                   <PoliticasContratacionText />
                 </div>
               </details>
-
               <div className="flex items-start gap-3 mt-4">
-                <input
-                  id="acepto-terminos"
-                  type="checkbox"
-                  checked={aceptoTerminos}
-                  onChange={(e) => setAceptoTerminos(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-brand-copper/30 text-brand-copper focus:ring-brand-copper cursor-pointer"
-                />
+                <input id="acepto-terminos" type="checkbox" checked={aceptoTerminos} onChange={(e) => setAceptoTerminos(e.target.checked)} className="mt-1 h-4 w-4 rounded border-brand-copper/30 text-brand-copper focus:ring-brand-copper cursor-pointer" />
                 <label htmlFor="acepto-terminos" className="text-[10px] text-slate-500 leading-relaxed cursor-pointer select-none">
                   Acepto las{" "}
-                  <a
-                    href="/politicas-contratacion"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline hover:text-brand-copper transition-colors"
-                  >
+                  <a href="/politicas-contratacion" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-copper transition-colors">
                     políticas de contratación
                   </a>{" "}
                   (cancelación y ajuste por inflación en reservas &gt; 30 días)
                 </label>
               </div>
-
-              <button
-                type="submit"
-                disabled={submitting || !aceptoTerminos}
-                className="w-full bg-[#25D366] text-white font-semibold py-4 rounded-xl shadow-lg shadow-[#25D366]/30 hover:scale-[1.02] transition-all duration-300 uppercase tracking-widest text-sm flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
+              <button type="submit" disabled={submitting || !aceptoTerminos} className="w-full bg-[#25D366] text-white font-semibold py-4 rounded-xl shadow-lg shadow-[#25D366]/30 hover:scale-[1.02] transition-all duration-300 uppercase tracking-widest text-sm flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.438 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z" />
                 </svg>
                 {submitting ? "Enviando..." : "Enviar a WhatsApp"}
               </button>
             </form>
-          </>
-        )}
+          )}
+
+          {/* Post-submit: botón manual WhatsApp + escape */}
+          {submitted && !preferenceId && (
+            <div className="text-center space-y-3">
+              <a href={getWhatsAppUrl(config.contact.whatsapp, encodeURIComponent(`${WHATSAPP_MSG_PREFIX}\n\n*Productos:*\n${Object.values(cotizacion).filter(p => p.cantidad > 0 && p.precio > 0).map(p => `• ${p.nombre}: ${p.cantidad} u.`).join("\n")}\n\n*Total:* $${total.toLocaleString("es-AR")}\n\n*Anticipo (50%):* $${(anticipo ?? calcAnticipo(total)).toLocaleString("es-AR")}\n\nMi nombre es ${nombre}.`))} target="_blank" rel="noopener noreferrer" className="block w-full bg-[#25D366] text-white font-semibold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm text-center">
+                Ir a WhatsApp
+              </a>
+              <button onClick={onClose} className="w-full text-xs text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer">Cerrar</button>
+            </div>
+          )}
+
+          {submitted && preferenceId && showEscape && (
+            <button onClick={onClose} className="mt-3 w-full text-sm text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer">
+              Cerrar / Verificar Manualmente — tu cotización fue guardada y te contactaremos
+            </button>
+          )}
+        </>
       </div>
     </div>
   );

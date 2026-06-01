@@ -110,7 +110,9 @@ describe("CotizacionModal", () => {
       });
     });
 
-    expect(mockShowToast).toHaveBeenCalledWith("Cotización enviada correctamente", "success");
+    // After submit: form is hidden, method de pago section visible
+    expect(screen.getByText("Método de Pago")).toBeInTheDocument();
+    expect(screen.queryByText("Enviar a WhatsApp")).not.toBeInTheDocument();
   });
 
   it("shows error toast when API returns error", async () => {
