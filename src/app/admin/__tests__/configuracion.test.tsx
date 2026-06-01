@@ -5,7 +5,7 @@ import ConfiguracionPage from "@/app/admin/configuracion/page";
 const mockUpsert = vi.fn().mockResolvedValue({ error: null });
 const mockSelect = vi.fn().mockReturnThis();
 const mockLimit = vi.fn().mockReturnThis();
-const mockSingle = vi.fn().mockResolvedValue({ data: { id: 1, factor_ajuste: 1.25, entorno: "produccion", mp_access_token: "", mp_access_token_test: "", capacidad_diaria_total: 0 }, error: null });
+const mockSingle = vi.fn().mockResolvedValue({ data: { id: 1, factor_ajuste: 1.25, entorno: "produccion", capacidad_diaria_total: 0 }, error: null });
 const mockInsert = vi.fn().mockResolvedValue({ error: null });
 const mockOrder = vi.fn().mockReturnThis();
 

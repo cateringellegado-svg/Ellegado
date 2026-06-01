@@ -8,8 +8,6 @@ import { fetchAdminLogs } from "@/lib/supabase";
 interface ConfigForm {
   factor_ajuste: number;
   entorno: "produccion" | "prueba";
-  mp_access_token: string;
-  mp_access_token_test: string;
   capacidad_diaria_total: number;
   salado: number;
   dulce: number;
@@ -23,8 +21,6 @@ interface ConfigForm {
 const DEFAULT_CONFIG: ConfigForm = {
   factor_ajuste: 1.0,
   entorno: "produccion",
-  mp_access_token: "",
-  mp_access_token_test: "",
   capacidad_diaria_total: 0,
   salado: 15000,
   dulce: 10000,
@@ -72,8 +68,6 @@ export default function ConfiguracionPage() {
             ...p,
             factor_ajuste: configRes.data.factor_ajuste ?? 1.0,
             entorno: configRes.data.entorno ?? "produccion",
-            mp_access_token: configRes.data.mp_access_token ?? "",
-            mp_access_token_test: configRes.data.mp_access_token_test ?? "",
             capacidad_diaria_total: configRes.data.capacidad_diaria_total ?? 0,
           }));
         }
@@ -112,8 +106,6 @@ export default function ConfiguracionPage() {
         { id: (await supabase.from("configuracion").select("id").limit(1).single()).data?.id || undefined,
           factor_ajuste: form.factor_ajuste,
           entorno: form.entorno,
-          mp_access_token: form.mp_access_token,
-          mp_access_token_test: form.mp_access_token_test,
           capacidad_diaria_total: form.capacidad_diaria_total,
         },
         { onConflict: "id" }
@@ -267,29 +259,8 @@ export default function ConfiguracionPage() {
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
             <h2 className="font-serif text-2xl text-dark-elegant mb-6">Credenciales de Mercado Pago</h2>
-            <p className="text-sm text-slate-500 mb-4">Guardá ambos tokens. El sistema usará automáticamente el que corresponda según el entorno seleccionado.</p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">ACCESS_TOKEN — Producción</label>
-                <input
-                  type="password"
-                  value={form.mp_access_token}
-                  onChange={(e) => update("mp_access_token", e.target.value)}
-                  className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-green-500 font-mono"
-                  placeholder="APP_USR-xxxxxxxxxxxxxxxxxxxxxx-xxxxxx"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">ACCESS_TOKEN_TEST — Sandbox</label>
-                <input
-                  type="password"
-                  value={form.mp_access_token_test}
-                  onChange={(e) => update("mp_access_token_test", e.target.value)}
-                  className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-500 font-mono"
-                  placeholder="TEST-xxxxxxxxxxxxxxxxxxxxxx-xxxxxx"
-                />
-              </div>
-            </div>
+            <p className="text-sm text-slate-500 mb-4">Las credenciales se gestionan exclusivamente desde las Variables de Entorno de Vercel (<code className="bg-cream px-1.5 py-0.5 rounded text-[10px] font-mono">MP_ACCESS_TOKEN</code>, <code className="bg-cream px-1.5 py-0.5 rounded text-[10px] font-mono">MP_ACCESS_TOKEN_TEST</code>, <code className="bg-cream px-1.5 py-0.5 rounded text-[10px] font-mono">NEXT_PUBLIC_MP_PUBLIC_KEY</code>, <code className="bg-cream px-1.5 py-0.5 rounded text-[10px] font-mono">MP_WEBHOOK_SECRET</code>).</p>
+            <p className="text-sm text-slate-500">El sistema selecciona automáticamente el token de <strong>producción</strong> o <strong>sandbox</strong> según el entorno elegido arriba.</p>
           </div>
         </div>
       )}

@@ -2,13 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import MercadoPagoConfig, { Preference } from "mercadopago";
 import { createClient } from "@supabase/supabase-js";
 
-interface ConfigData {
-  entorno?: string;
-  mp_access_token?: string;
-  mp_access_token_test?: string;
-}
-
-async function getConfig(): Promise<ConfigData | null> {
+async function getEntorno(): Promise<string> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -17,25 +11,24 @@ async function getConfig(): Promise<ConfigData | null> {
       const supabase = createClient(url, key);
       const { data } = await supabase
         .from("configuracion")
-        .select("entorno, mp_access_token, mp_access_token_test")
+        .select("entorno")
         .limit(1)
         .single();
-      return data as ConfigData | null;
+      return (data?.entorno as string) || "produccion";
     } catch (e) {
-      console.error("Error fetching MP config:", e);
-      throw e;
+      console.error("Error fetching MP entorno:", e);
     }
   }
-  return null;
+  return "produccion";
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const config = await getConfig();
-    const isTest = config?.entorno === "prueba";
+    const entorno = await getEntorno();
+    const isTest = entorno === "prueba";
     const accessToken = isTest
-      ? config?.mp_access_token_test || process.env.MP_ACCESS_TOKEN_TEST || ""
-      : config?.mp_access_token || process.env.MP_ACCESS_TOKEN || "";
+      ? process.env.MP_ACCESS_TOKEN_TEST || ""
+      : process.env.MP_ACCESS_TOKEN || "";
 
     if (!accessToken) {
       return NextResponse.json(
