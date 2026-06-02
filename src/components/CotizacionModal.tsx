@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import type { CotizacionSeleccion, Combo } from "@/types";
 import { useToast } from "./Toast";
 import { fetchConfiguracionCompleta } from "@/lib/supabase";
-import { MIN_PRODUCT_UNITS, COMBO_MINIMUMS } from "@/lib/constants";
+import { MIN_PRODUCT_UNITS } from "@/lib/constants";
 import { getWhatsAppUrl } from "@/lib/constants";
 import { useSiteConfig } from "@/lib/site-config";
 import { calcAnticipo } from "@/lib/formatters";

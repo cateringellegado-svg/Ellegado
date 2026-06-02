@@ -258,9 +258,8 @@ export default function ConfiguracionPage() {
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
-            <h2 className="font-serif text-2xl text-dark-elegant mb-6">Credenciales de Mercado Pago</h2>
-            <p className="text-sm text-slate-500 mb-4">Las credenciales se gestionan exclusivamente desde las Variables de Entorno de Vercel (<code className="bg-cream px-1.5 py-0.5 rounded text-[10px] font-mono">MP_ACCESS_TOKEN</code>, <code className="bg-cream px-1.5 py-0.5 rounded text-[10px] font-mono">MP_ACCESS_TOKEN_TEST</code>, <code className="bg-cream px-1.5 py-0.5 rounded text-[10px] font-mono">NEXT_PUBLIC_MP_PUBLIC_KEY</code>, <code className="bg-cream px-1.5 py-0.5 rounded text-[10px] font-mono">MP_WEBHOOK_SECRET</code>).</p>
-            <p className="text-sm text-slate-500">El sistema selecciona automáticamente el token de <strong>producción</strong> o <strong>sandbox</strong> según el entorno elegido arriba.</p>
+            <h2 className="font-serif text-2xl text-dark-elegant mb-6">Método de Pago</h2>
+            <p className="text-sm text-slate-500 mb-4">Los pagos se coordinan directamente con el cliente vía WhatsApp.</p>
           </div>
         </div>
       )}
