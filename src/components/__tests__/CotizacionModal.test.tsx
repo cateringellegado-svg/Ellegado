@@ -100,7 +100,7 @@ describe("CotizacionModal", () => {
     await act(async () => {
       fireEvent.click(screen.getByRole("checkbox"));
     });
-    fireEvent.click(screen.getByText("Enviar a WhatsApp"));
+    fireEvent.click(screen.getByText("Confirmar Datos"));
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith("/api/cotizaciones", {
@@ -110,9 +110,9 @@ describe("CotizacionModal", () => {
       });
     });
 
-    // After submit: form is hidden, method de pago section visible
-    expect(screen.getByText("Método de Pago")).toBeInTheDocument();
-    expect(screen.queryByText("Enviar a WhatsApp")).not.toBeInTheDocument();
+    // After submit: form is hidden, WhatsApp manual button visible
+    expect(screen.getByText("Abrir WhatsApp manualmente")).toBeInTheDocument();
+    expect(screen.queryByText("Confirmar Datos")).not.toBeInTheDocument();
   });
 
   it("shows error toast when API returns error", async () => {
@@ -130,7 +130,7 @@ describe("CotizacionModal", () => {
     await act(async () => {
       fireEvent.click(screen.getByRole("checkbox"));
     });
-    fireEvent.click(screen.getByText("Enviar a WhatsApp"));
+    fireEvent.click(screen.getByText("Confirmar Datos"));
 
     await waitFor(() => {
       expect(mockShowToast).toHaveBeenCalledWith("Error de validación", "error");
@@ -149,7 +149,7 @@ describe("CotizacionModal", () => {
     await act(async () => {
       fireEvent.click(screen.getByRole("checkbox"));
     });
-    fireEvent.click(screen.getByText("Enviar a WhatsApp"));
+    fireEvent.click(screen.getByText("Confirmar Datos"));
 
     await waitFor(() => {
       expect(mockShowToast).toHaveBeenCalledWith("Error de red. Verificá tu conexión e intentá de nuevo.", "error");

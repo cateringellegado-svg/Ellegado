@@ -54,14 +54,14 @@ export async function fetchConfiguracion() {
   const supabase = getClient();
   const { data, error } = await supabase
     .from("configuracion")
-    .select("factor_ajuste, entorno")
+    .select("factor_ajuste")
     .limit(1)
     .single();
   if (error) {
     console.error("Error fetching configuracion:", error);
     return null;
   }
-  return data as { factor_ajuste: number; entorno?: string };
+  return data as { factor_ajuste: number };
 }
 
 export async function checkComboCapacidad(comboId: string, fecha: string) {
@@ -91,7 +91,6 @@ export async function fetchConfiguracionCompleta() {
 
 export async function updateConfiguracionAdmin(values: {
   factor_ajuste?: number;
-  entorno?: "produccion" | "prueba";
   capacidad_diaria_total?: number;
 }) {
   const supabase = getClient();

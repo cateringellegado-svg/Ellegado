@@ -18,7 +18,6 @@ interface Props {
   selectedProducts: { id: string; cantidad: number; precio: number; subtotal: number; nombre: string }[];
   fechaEntrega: string;
   horarioEntrega: string;
-  entorno: string;
   onBack: () => void;
   onQuitarCombo: () => void;
   onRemoveItem: (productId: string) => void;
@@ -34,7 +33,6 @@ export default function SalesSummary({
   selectedProducts,
   fechaEntrega,
   horarioEntrega,
-  entorno,
   onBack,
   onQuitarCombo,
   onRemoveItem,
@@ -213,7 +211,6 @@ export default function SalesSummary({
         horarioEntrega={horarioEntrega}
         modo={modo}
         selectedCombo={selectedCombo}
-        entorno={entorno}
       />
     </>
   );

@@ -87,7 +87,6 @@ export default function Festin() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [factorAjuste, setFactorAjuste] = useState(1);
-  const [entorno, setEntorno] = useState<string>("produccion");
   const mounted = useRef(true);
   const [cotizacion, setCotizacion] = useState<CotizacionSeleccion>(() => {
     if (typeof window === "undefined") return {};
@@ -120,7 +119,6 @@ export default function Festin() {
         clearTimeout(safetyTimer);
         const factor = configData?.factor_ajuste ?? 1;
         setFactorAjuste(factor);
-        setEntorno(configData?.entorno ?? "produccion");
         setClasicos(clasicosData ?? FALLBACK_CLASICOS);
         setPremium(premiumData ?? []);
         setDulces(dulcesData ?? FALLBACK_DULCES);
@@ -549,7 +547,6 @@ export default function Festin() {
                 selectedProducts={selectedProducts}
                 fechaEntrega={fechaEntrega}
                 horarioEntrega={horarioEntrega}
-                entorno={entorno}
                 onBack={goBackToWizard}
                 onQuitarCombo={quitarCombo}
                 onRemoveItem={removeItem}
@@ -643,7 +640,6 @@ export default function Festin() {
                 selectedProducts={selectedProducts}
                 fechaEntrega={fechaEntrega}
                 horarioEntrega={horarioEntrega}
-                entorno={entorno}
                 onBack={goBackToWizard}
                 onQuitarCombo={quitarCombo}
                 onRemoveItem={removeItem}

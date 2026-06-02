@@ -23,7 +23,6 @@ interface Props {
   horarioEntrega?: string;
   modo?: "combo" | "personalizar";
   selectedCombo?: Combo | null;
-  entorno?: string;
 }
 
 export default function CotizacionModal({
@@ -36,7 +35,6 @@ export default function CotizacionModal({
   horarioEntrega,
   modo,
   selectedCombo,
-  entorno = "produccion",
 }: Props) {
   const config = useSiteConfig();
   const { showToast } = useToast();
@@ -159,29 +157,6 @@ export default function CotizacionModal({
 
       setSubmitted(true);
       setSubmitting(false);
-
-      const totalFormat = "$" + total.toLocaleString("es-AR");
-      const anticipoFormat =
-        anticipo != null
-          ? "$" + anticipo.toLocaleString("es-AR")
-          : "$" + calcAnticipo(total).toLocaleString("es-AR");
-      const fechaTexto = fechaEntrega
-        ? `\n*Fecha de entrega:* ${fechaEntrega}${horarioEntrega ? ` a las ${horarioEntrega} hrs` : ""}`
-        : "";
-      const productosTexto = productos
-        .map(
-          (p) =>
-            `• ${p.nombre}: ${p.cantidad} unidades ($${p.subtotal.toLocaleString("es-AR")})`
-        )
-        .join("\n");
-      const mensaje = `${WHATSAPP_MSG_PREFIX}\n\n*Productos solicitados:*\n${productosTexto}${fechaTexto}\n\n*Total del Presupuesto:* ${totalFormat}\n*Anticipo (50%):* ${anticipoFormat}\n\nMuchas gracias, quedo atento a su respuesta.\n\n_Acepto los términos de cancelación y la cláusula de ajuste por inflación en reservas mayores a 30 días._`;
-
-      setTimeout(() => {
-        window.location.href = getWhatsAppUrl(
-          config.contact.whatsapp,
-          mensaje
-        );
-      }, 300);
     },
     [
       cotizacion,
@@ -194,7 +169,6 @@ export default function CotizacionModal({
       fechaEntrega,
       horarioEntrega,
       anticipo,
-      config,
     ]
   );
 
@@ -279,7 +253,7 @@ export default function CotizacionModal({
                 Cotización Enviada
               </h3>
               <p className="text-xs text-slate-600">
-                Redirigiendo a WhatsApp...
+                Tu cotización fue registrada. Abrí WhatsApp para finalizar.
               </p>
             </div>
           ) : (
@@ -486,7 +460,7 @@ export default function CotizacionModal({
                   </svg>
                 </div>
                 <p className="font-semibold text-dark-elegant">
-                  ✅ ¡Cotización guardada con éxito! Redirigiendo a WhatsApp...
+                  ✅ ¡Cotización guardada con éxito!
                 </p>
               </div>
 

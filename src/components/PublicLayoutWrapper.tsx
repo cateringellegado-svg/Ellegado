@@ -7,7 +7,6 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import BackToTop from "@/components/BackToTop";
 import CookieConsent from "@/components/CookieConsent";
-import ModoPruebaBanner from "@/components/ModoPruebaBanner";
 import PaymentStatusHandler from "@/components/PaymentStatusHandler";
 
 export default function PublicLayoutWrapper({ children }: { children: React.ReactNode }) {
@@ -27,7 +26,6 @@ export default function PublicLayoutWrapper({ children }: { children: React.Reac
       <WhatsAppButton />
       <BackToTop />
       <CookieConsent />
-      <ModoPruebaBanner />
     </>
   );
 }

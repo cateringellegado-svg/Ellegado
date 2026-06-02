@@ -6,7 +6,7 @@ vi.mock("@/lib/supabase", () => ({
   supabase: null,
   fetchProductsByCategory: vi.fn().mockResolvedValue(null),
   fetchCombos: vi.fn().mockResolvedValue(null),
-  fetchConfiguracion: vi.fn().mockResolvedValue({ factor_ajuste: 1, entorno: "produccion" }),
+  fetchConfiguracion: vi.fn().mockResolvedValue({ factor_ajuste: 1 }),
   insertLead: vi.fn().mockResolvedValue(null),
 }));
 

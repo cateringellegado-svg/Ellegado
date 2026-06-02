@@ -7,7 +7,6 @@ import { fetchAdminLogs } from "@/lib/supabase";
 
 interface ConfigForm {
   factor_ajuste: number;
-  entorno: "produccion" | "prueba";
   capacidad_diaria_total: number;
   salado: number;
   dulce: number;
@@ -20,7 +19,6 @@ interface ConfigForm {
 
 const DEFAULT_CONFIG: ConfigForm = {
   factor_ajuste: 1.0,
-  entorno: "produccion",
   capacidad_diaria_total: 0,
   salado: 15000,
   dulce: 10000,
@@ -46,7 +44,7 @@ export default function ConfiguracionPage() {
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<AdminLogEntry[]>([]);
-  const [activeTab, setActiveTab] = useState<"financiera" | "entorno" | "operativa" | "logs">("financiera");
+  const [activeTab, setActiveTab] = useState<"financiera" | "operativa" | "logs">("financiera");
   const mountedRef = useRef(true);
 
   const loadLogs = useCallback(async () => {
@@ -67,7 +65,6 @@ export default function ConfiguracionPage() {
           setForm((p) => ({
             ...p,
             factor_ajuste: configRes.data.factor_ajuste ?? 1.0,
-            entorno: configRes.data.entorno ?? "produccion",
             capacidad_diaria_total: configRes.data.capacidad_diaria_total ?? 0,
           }));
         }
@@ -105,7 +102,6 @@ export default function ConfiguracionPage() {
       const { error: configError } = await supabase.from("configuracion").upsert(
         { id: (await supabase.from("configuracion").select("id").limit(1).single()).data?.id || undefined,
           factor_ajuste: form.factor_ajuste,
-          entorno: form.entorno,
           capacidad_diaria_total: form.capacidad_diaria_total,
         },
         { onConflict: "id" }
@@ -123,7 +119,7 @@ export default function ConfiguracionPage() {
 
       await supabase.from("admin_logs").insert({
         accion: "configuracion_actualizada",
-        detalle: `factor_ajuste=${form.factor_ajuste}, entorno=${form.entorno}, capacidad=${form.capacidad_diaria_total}`,
+        detalle: `factor_ajuste=${form.factor_ajuste}, capacidad=${form.capacidad_diaria_total}`,
       });
       setMsg("Configuración guardada correctamente");
       loadLogs();
@@ -141,22 +137,12 @@ export default function ConfiguracionPage() {
 
   const tabs = [
     { id: "financiera" as const, label: "Gestión Financiera", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
-    { id: "entorno" as const, label: "Entorno", icon: "M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.858 15.355-5.858 21.213 0" },
     { id: "operativa" as const, label: "Gestión Operativa", icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" },
     { id: "logs" as const, label: "Trazabilidad", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
   ];
 
   return (
     <>
-      {form.entorno === "prueba" && (
-        <div className="mb-6 bg-amber-50 border-2 border-amber-400 rounded-xl px-5 py-4 flex items-center gap-3">
-          <span className="text-2xl">🧪</span>
-          <div>
-            <p className="font-semibold text-amber-800 text-sm">Modo Prueba activo</p>
-            <p className="text-xs text-amber-600">Los pagos se procesan en el entorno Sandbox de Mercado Pago. No se están cobrando montos reales.</p>
-          </div>
-        </div>
-      )}
       <h1 className="font-serif text-4xl text-dark-elegant mb-8">Configuración General</h1>
 
       {loading ? (
@@ -208,58 +194,6 @@ export default function ConfiguracionPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "entorno" && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
-            <h2 className="font-serif text-2xl text-dark-elegant mb-6">Selector de Entorno</h2>
-            <p className="text-sm text-slate-500 mb-4">
-              Elegí si los pagos se procesan en producción (cobros reales) o en modo prueba (sandbox).
-            </p>
-            <div className="flex gap-4 mb-6">
-              <button
-                type="button"
-                onClick={() => update("entorno", "produccion")}
-                className={`flex-1 p-5 rounded-xl border-2 text-left transition-all cursor-pointer ${
-                  form.entorno === "produccion"
-                    ? "border-green-500 bg-green-50 shadow-md"
-                    : "border-slate-200 bg-white hover:border-slate-300"
-                }`}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${form.entorno === "produccion" ? "border-green-500" : "border-slate-300"}`}>
-                    {form.entorno === "produccion" && <div className="w-2.5 h-2.5 rounded-full bg-green-500" />}
-                  </div>
-                  <span className="font-semibold text-dark-elegant">Producción</span>
-                </div>
-                <p className="text-xs text-slate-500 pl-8">Cobros reales con tarjetas y transferencias</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => update("entorno", "prueba")}
-                className={`flex-1 p-5 rounded-xl border-2 text-left transition-all cursor-pointer ${
-                  form.entorno === "prueba"
-                    ? "border-amber-400 bg-amber-50 shadow-md"
-                    : "border-slate-200 bg-white hover:border-slate-300"
-                }`}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${form.entorno === "prueba" ? "border-amber-400" : "border-slate-300"}`}>
-                    {form.entorno === "prueba" && <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />}
-                  </div>
-                  <span className="font-semibold text-dark-elegant">Modo Prueba</span>
-                </div>
-                <p className="text-xs text-slate-500 pl-8">Sandbox — sin movimiento de dinero real</p>
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
-            <h2 className="font-serif text-2xl text-dark-elegant mb-6">Método de Pago</h2>
-            <p className="text-sm text-slate-500 mb-4">Los pagos se coordinan directamente con el cliente vía WhatsApp.</p>
           </div>
         </div>
       )}

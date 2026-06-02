@@ -38,7 +38,6 @@ export interface Combo {
 export interface Configuracion {
   id?: string;
   factor_ajuste: number;
-  entorno?: "produccion" | "prueba";
   capacidad_diaria_total?: number;
   updated_at?: string;
 }

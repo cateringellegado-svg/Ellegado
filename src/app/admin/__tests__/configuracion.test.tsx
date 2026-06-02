@@ -24,17 +24,17 @@ vi.mock("@/lib/supabase/client", () => ({
   }),
 }));
 
+vi.mock("@/lib/constants", () => ({
+  WHATSAPP_NUMBER: "541176753854",
+}));
+
 vi.mock("@/lib/supabase", () => ({
   fetchAdminLogs: vi.fn().mockResolvedValue([
     { id: "1", accion: "configuracion_actualizada", detalle: "factor_ajuste=1.25", usuario_email: "admin@test.com", created_at: new Date().toISOString() },
   ]),
 }));
 
-vi.mock("@/lib/constants", () => ({
-  WHATSAPP_NUMBER: "541176753854",
-}));
-
-describe("Configuración Page - Footer Schedule", () => {
+describe("Configuración Page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -52,7 +52,6 @@ describe("Configuración Page - Footer Schedule", () => {
     });
 
     expect(screen.getByText("Gestión Financiera")).toBeInTheDocument();
-    expect(screen.getByText("Entorno")).toBeInTheDocument();
     expect(screen.getByText("Gestión Operativa")).toBeInTheDocument();
     expect(screen.getByText("Trazabilidad")).toBeInTheDocument();
   });
@@ -80,11 +79,6 @@ describe("Configuración Page - Footer Schedule", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Gestión Financiera")).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByText("Entorno"));
-    await waitFor(() => {
-      expect(screen.getByText("Selector de Entorno")).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByText("Gestión Operativa"));
@@ -123,41 +117,4 @@ describe("Configuración Page - Footer Schedule", () => {
     });
   });
 
-  describe("entorno tab", () => {
-    it("shows production selected by default", async () => {
-      render(<ConfiguracionPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText("Entorno")).toBeInTheDocument();
-      });
-      fireEvent.click(screen.getByText("Entorno"));
-
-      await waitFor(() => {
-        expect(screen.getByText("Producción")).toBeInTheDocument();
-        expect(screen.getByText("Modo Prueba")).toBeInTheDocument();
-      });
-
-      // Should have the production radio selected
-      const prodGreenDot = document.querySelector(".bg-green-500");
-      expect(prodGreenDot).toBeTruthy();
-    });
-
-    it("switches to test mode", async () => {
-      render(<ConfiguracionPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText("Entorno")).toBeInTheDocument();
-      });
-      fireEvent.click(screen.getByText("Entorno"));
-
-      await waitFor(() => {
-        expect(screen.getByText("Modo Prueba")).toBeInTheDocument();
-      });
-      fireEvent.click(screen.getByText("Modo Prueba"));
-
-      await waitFor(() => {
-        expect(screen.getByText("🧪")).toBeInTheDocument();
-      });
-    });
-  });
 });
