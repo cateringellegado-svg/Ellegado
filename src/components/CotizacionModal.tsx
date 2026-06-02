@@ -423,7 +423,19 @@ export default function CotizacionModal({
 
               {preferenceId && (
                 <div>
+                  {(() => { console.log("🟢 Renderizando Wallet con preferenceId:", preferenceId, "| initialization:", { preferenceId }); return null; })()}
                   <Wallet key={preferenceId} initialization={initialization} onError={handleWalletError} />
+                  <div className="mt-3 text-center">
+                    <p className="text-xs text-slate-400 mb-1">¿No ves el botón de pago?</p>
+                    <a
+                      href={`https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=${preferenceId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm"
+                    >
+                      Pagar ahora manualmente
+                    </a>
+                  </div>
                 </div>
               )}
 
