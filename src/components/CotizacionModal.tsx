@@ -12,7 +12,6 @@ import { calcAnticipo } from "@/lib/formatters";
 import PoliticasContratacionText from "./legal/PoliticasContratacionText";
 
 const MP_PUBLIC_KEY_PROD = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY || "";
-const MP_PUBLIC_KEY_TEST = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY_TEST || "";
 let mpInitialized = false;
 
 const WHATSAPP_MSG_PREFIX =
@@ -63,15 +62,14 @@ export default function CotizacionModal({
     showToast("Error al cargar el botón de pago. Podés reservar por WhatsApp.", "warning");
   }, [showToast]);
 
-  const mpPublicKey = entorno === "prueba" ? MP_PUBLIC_KEY_TEST : MP_PUBLIC_KEY_PROD;
-  const mpAvailable = !!mpPublicKey;
+  const mpAvailable = !!MP_PUBLIC_KEY_PROD;
 
   useEffect(() => {
-    if (mpPublicKey && !mpInitialized) {
+    if (MP_PUBLIC_KEY_PROD && !mpInitialized) {
       mpInitialized = true;
-      initMercadoPago(mpPublicKey, { locale: "es-AR" });
+      initMercadoPago(MP_PUBLIC_KEY_PROD, { locale: "es-AR" });
     }
-  }, [mpPublicKey]);
+  }, []);
 
   const openWhatsApp = useCallback(() => {
     const productos = Object.values(cotizacion).filter(
@@ -135,7 +133,8 @@ export default function CotizacionModal({
         } catch {}
         showToast(errMsg, "error");
       }
-    } catch {
+    } catch (err) {
+      console.error("Error creating MP preference:", err);
       showToast("Error de conexión con el servicio de pago. Intentá de nuevo o usá WhatsApp.", "error");
     }
     setCreatingPreference(false);
