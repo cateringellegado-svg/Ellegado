@@ -111,13 +111,19 @@ export default function CotizacionModal({
     if (!mpAvailable) return;
     setCreatingPreference(true);
     try {
+      const price = anticipo ?? calcAnticipo(total);
+      if (!price || isNaN(price) || price <= 0) {
+        showToast("Error al calcular el anticipo. Usá WhatsApp para coordinar.", "error");
+        setCreatingPreference(false);
+        return;
+      }
       const prefRes = await fetch("/api/create-preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: modo === "combo" && selectedCombo ? selectedCombo.nombre : "Catering Personalizado",
           quantity: 1,
-          price: anticipo ?? calcAnticipo(total),
+          price,
           externalReference: cotId,
           cotizacionId: cotId,
         }),
@@ -129,6 +135,7 @@ export default function CotizacionModal({
         let errMsg = "El pago online no está disponible temporalmente";
         try {
           const err = await prefRes.json();
+          console.error("create-preference API error:", err);
           errMsg = err.error || errMsg;
         } catch {}
         showToast(errMsg, "error");

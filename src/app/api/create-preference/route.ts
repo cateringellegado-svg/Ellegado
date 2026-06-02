@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, quantity, price, externalReference, cotizacionId } = body;
 
-    if (!title || !quantity || !price) {
+    if (!title || !quantity || !price || isNaN(Number(price)) || Number(price) <= 0) {
       return NextResponse.json(
         { error: "Faltan datos: title, quantity, price" },
         { status: 400 }
