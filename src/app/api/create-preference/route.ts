@@ -73,7 +73,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ id: result.id }, { status: 201 });
+    return NextResponse.json({
+      id: result.id,
+      publicKey: process.env.NEXT_PUBLIC_MP_PUBLIC_KEY,
+    }, { status: 201 });
   } catch (err) {
     console.error("MP create preference error:", err);
     return NextResponse.json(

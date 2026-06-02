@@ -11,9 +11,6 @@ import { useSiteConfig } from "@/lib/site-config";
 import { calcAnticipo } from "@/lib/formatters";
 import PoliticasContratacionText from "./legal/PoliticasContratacionText";
 
-const MP_PUBLIC_KEY_PROD = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY || "";
-let mpInitialized = false;
-
 const WHATSAPP_MSG_PREFIX =
   "Hola El Legado, me gustaría solicitar una cotización de catering.";
 
@@ -55,19 +52,13 @@ export default function CotizacionModal({
   const [creatingPreference, setCreatingPreference] = useState(false);
   const [whatsappBlocked, setWhatsappBlocked] = useState(false);
   const [showEscape, setShowEscape] = useState(false);
+  const [mpKey, setMpKey] = useState<string | null>(null);
 
   const initialization = useMemo(() => ({ preferenceId: preferenceId! }), [preferenceId]);
   const handleWalletError = useCallback((error: unknown) => {
     console.error("Wallet error:", error);
     showToast("Error al cargar el botón de pago. Podés reservar por WhatsApp.", "warning");
   }, [showToast]);
-
-  useEffect(() => {
-    if (MP_PUBLIC_KEY_PROD && !mpInitialized) {
-      mpInitialized = true;
-      initMercadoPago(MP_PUBLIC_KEY_PROD, { locale: "es-AR" });
-    }
-  }, []);
 
   const openWhatsApp = useCallback(() => {
     const productos = Object.values(cotizacion).filter(
@@ -130,6 +121,10 @@ export default function CotizacionModal({
         const prefJson = await prefRes.json();
         console.log("2. Respuesta de la API de MP:", prefJson);
         setPreferenceId(prefJson.id);
+        setMpKey(prefJson.publicKey);
+        if (prefJson.publicKey) {
+          initMercadoPago(prefJson.publicKey, { locale: "es-AR" });
+        }
       } else {
         let errMsg = "El pago online no está disponible temporalmente";
         try {
@@ -246,6 +241,7 @@ export default function CotizacionModal({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSubmitted(false);
     setPreferenceId(null);
+    setMpKey(null);
     setCotizacionId(null);
     setWhatsappBlocked(false);
     setShowEscape(false);
@@ -265,7 +261,7 @@ export default function CotizacionModal({
     }
   }, [submitted, preferenceId]);
 
-  console.log("ESTADOS -> submitted:", submitted, " | preferenceId:", preferenceId, " | creatingPreference:", creatingPreference, " | publicKey:", process.env.NEXT_PUBLIC_MP_PUBLIC_KEY);
+  console.log("ESTADOS -> submitted:", submitted, " | preferenceId:", preferenceId, " | creatingPreference:", creatingPreference, " | mpKey:", mpKey);
   if (!isOpen) return null;
 
   const items = Object.values(cotizacion);
