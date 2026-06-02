@@ -109,6 +109,44 @@ export default function CotizacionModal({
     }
   }, [cotizacion, total, anticipo, fechaEntrega, horarioEntrega, nombre, config, showToast]);
 
+  const createMPPreference = useCallback(async (cotId: string) => {
+    if (!mpAvailable) return;
+    setCreatingPreference(true);
+    try {
+      const prefRes = await fetch("/api/create-preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: modo === "combo" && selectedCombo ? selectedCombo.nombre : "Catering Personalizado",
+          quantity: 1,
+          price: anticipo ?? calcAnticipo(total),
+          externalReference: cotId,
+          cotizacionId: cotId,
+        }),
+      });
+      if (prefRes.ok) {
+        const prefJson = await prefRes.json();
+        setPreferenceId(prefJson.id);
+      } else {
+        let errMsg = "El pago online no está disponible temporalmente";
+        try {
+          const err = await prefRes.json();
+          errMsg = err.error || errMsg;
+        } catch {}
+        showToast(errMsg, "error");
+      }
+    } catch {
+      showToast("Error de conexión con el servicio de pago. Intentá de nuevo o usá WhatsApp.", "error");
+    }
+    setCreatingPreference(false);
+  }, [mpAvailable, modo, selectedCombo, anticipo, total, showToast]);
+
+  const retryPreference = useCallback(() => {
+    if (cotizacionId && !creatingPreference) {
+      createMPPreference(cotizacionId);
+    }
+  }, [cotizacionId, creatingPreference, createMPPreference]);
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -169,7 +207,6 @@ export default function CotizacionModal({
             errMsg = err.error || errMsg;
           } catch {}
           showToast(errMsg, "error");
-          openWhatsApp();
           setSubmitting(false);
           return;
         }
@@ -179,50 +216,20 @@ export default function CotizacionModal({
         if (cotId) setCotizacionId(cotId);
       } catch {
         showToast("Error de red. Verificá tu conexión e intentá de nuevo.", "error");
-        openWhatsApp();
         setSubmitting(false);
-        onClose();
         return;
       }
 
       setSubmitted(true);
 
-      // Paso 2: crear preferencia de Mercado Pago con el ID real de la cotización
-      if (mpAvailable && cotId) {
-        setCreatingPreference(true);
-        try {
-          const prefRes = await fetch("/api/create-preference", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              title: modo === "combo" && selectedCombo ? selectedCombo.nombre : "Catering Personalizado",
-              quantity: 1,
-              price: anticipo ?? calcAnticipo(total),
-              externalReference: cotId,
-              cotizacionId: cotId,
-            }),
-          });
-
-          if (prefRes.ok) {
-            const prefJson = await prefRes.json();
-            setPreferenceId(prefJson.id);
-          } else {
-            let errMsg = "El pago online no está disponible temporalmente";
-            try {
-              const err = await prefRes.json();
-              errMsg = err.error || errMsg;
-            } catch {}
-            showToast(errMsg, "error");
-          }
-        } catch {
-          showToast("Error de conexión con el servicio de pago. Intentá de nuevo o usá WhatsApp.", "error");
-        }
-        setCreatingPreference(false);
+      // Paso 2: crear preferencia de Mercado Pago
+      if (cotId) {
+        await createMPPreference(cotId);
       }
 
       setSubmitting(false);
     },
-    [cotizacion, total, anticipo, nombre, telefono, email, aceptoTerminos, modo, selectedCombo, onClose, showToast, openWhatsApp, mpAvailable, fechaEntrega]
+    [cotizacion, total, nombre, telefono, email, aceptoTerminos, showToast, fechaEntrega, createMPPreference]
   );
 
   useEffect(() => {
@@ -338,65 +345,24 @@ export default function CotizacionModal({
             </p>
           </div>
 
-          {/* Método de Pago — siempre visible cuando total > 0 */}
-          {total > 0 && (
-            <div className="border border-brand-copper/10 rounded-xl p-4 mb-4">
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-3 text-center">
-                Método de Pago
-              </p>
-
-              {/* Opción A: Mercado Pago */}
-              {mpAvailable ? (
-                <div>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1 font-medium">Opción A — Mercado Pago</p>
-                  {preferenceId ? (
-                    <div className="mb-2">
-                      <Wallet key={preferenceId} initialization={initialization} onError={handleWalletError} />
-                    </div>
-                  ) : creatingPreference ? (
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center animate-pulse">
-                      <p className="text-xs font-semibold text-blue-700">Mercado Pago</p>
-                      <p className="text-[10px] text-blue-600 mt-0.5">Generando enlace de pago...</p>
-                    </div>
-                  ) : !submitted ? (
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-                      <p className="text-xs font-semibold text-blue-700">Mercado Pago</p>
-                      <p className="text-[10px] text-blue-600 mt-0.5">Disponible después de confirmar tus datos</p>
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-                  <p className="text-xs text-slate-500">Pago coordinar por WhatsApp</p>
-                </div>
-              )}
-
-              {/* Opción B: WhatsApp — siempre visible */}
-              <div className="my-3">
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1 font-medium">Opción B — WhatsApp</p>
-                <button
-                  onClick={openWhatsApp}
-                  className="w-full bg-[#25D366] text-white font-semibold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm text-center"
-                >
-                  Reservar por WhatsApp
-                </button>
-              </div>
-
-              <p className="text-[10px] text-slate-400 text-center mt-2">
-                También podés coordinar el pago por WhatsApp.
-              </p>
-            </div>
-          )}
-
-          {(quantityError || quantityWarning) && (
+          {(quantityError || quantityWarning) && !submitted && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-center">
               <p className="text-xs font-medium text-red-700">{quantityError || quantityWarning}</p>
               <p className="text-[10px] text-red-500 mt-1">Unidades en tu pedido: {totalUnits}</p>
             </div>
           )}
 
-          {/* Formulario — oculto después de submit exitoso */}
-          {!submitted && (
+          {/* Loading State */}
+          {(submitting || creatingPreference) && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center animate-pulse">
+              <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm font-semibold text-blue-700">Guardando reserva y generando opciones de pago...</p>
+              <p className="text-xs text-blue-500 mt-1">Esto puede tomar unos segundos</p>
+            </div>
+          )}
+
+          {/* Form State */}
+          {!submitted && !submitting && (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="cotizacion-nombre" className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Nombre y Apellido *</label>
@@ -426,26 +392,63 @@ export default function CotizacionModal({
                   (cancelación y ajuste por inflación en reservas &gt; 30 días)
                 </label>
               </div>
-              <button type="submit" disabled={submitting || !aceptoTerminos} className="w-full bg-[#25D366] text-white font-semibold py-4 rounded-xl shadow-lg shadow-[#25D366]/30 hover:scale-[1.02] transition-all duration-300 uppercase tracking-widest text-sm flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.438 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z" />
-                </svg>
-                {submitting ? "Enviando..." : "Enviar a WhatsApp"}
+              <button type="submit" disabled={submitting || !aceptoTerminos} className="w-full bg-dark-elegant text-white font-semibold py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-all duration-300 uppercase tracking-widest text-sm flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                Confirmar Datos
               </button>
+              <div className="text-center mt-2">
+                <button type="button" onClick={openWhatsApp} className="text-xs text-slate-500 hover:text-brand-copper underline underline-offset-2 transition-colors cursor-pointer">
+                  Prefiero contactar por WhatsApp
+                </button>
+              </div>
             </form>
           )}
 
-          {/* Post-submit: botón manual WhatsApp + escape */}
-          {submitted && !preferenceId && (
-            <div className="text-center">
-              <button onClick={onClose} className="w-full text-xs text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer">Cerrar</button>
-            </div>
-          )}
+          {/* Post-Submit States */}
+          {submitted && !submitting && !creatingPreference && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 text-emerald-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p className="font-semibold text-dark-elegant">✅ ¡Cotización guardada con éxito!</p>
+              </div>
 
-          {submitted && preferenceId && showEscape && (
-            <button onClick={onClose} className="mt-3 w-full text-sm text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer">
-              Cerrar / Verificar Manualmente — tu cotización fue guardada y te contactaremos
-            </button>
+              {preferenceId && mpAvailable && (
+                <div>
+                  <Wallet key={preferenceId} initialization={initialization} onError={handleWalletError} />
+                </div>
+              )}
+
+              {!preferenceId && mpAvailable && (
+                <button
+                  onClick={retryPreference}
+                  className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm cursor-pointer"
+                >
+                  Reintentar pago online
+                </button>
+              )}
+
+              <button
+                onClick={openWhatsApp}
+                className="w-full bg-[#25D366] text-white font-semibold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm text-center cursor-pointer"
+              >
+                Prefiero coordinar por WhatsApp
+              </button>
+
+              {preferenceId && showEscape && (
+                <button onClick={onClose} className="mt-3 w-full text-sm text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer">
+                  Cerrar / Verificar Manualmente — tu cotización fue guardada y te contactaremos
+                </button>
+              )}
+
+              {!preferenceId && (
+                <button onClick={onClose} className="w-full text-xs text-slate-500 hover:text-dark-elegant underline underline-offset-2 transition-colors cursor-pointer">
+                  Cerrar
+                </button>
+              )}
+            </div>
           )}
         </>
       </div>
