@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { cotizacionSchema } from "@/lib/schemas";
 
@@ -63,10 +64,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase
+    const cotId = crypto.randomUUID();
+    const { error } = await supabase
       .from("cotizaciones")
       .insert([
         {
+          id: cotId,
           tipo_evento: "Catering",
           num_invitados: parsed.data.total_unidades,
           servicios: parsed.data.productos,
@@ -77,8 +80,7 @@ export async function POST(request: NextRequest) {
           cliente_telefono: parsed.data.cliente_telefono,
           estado: "nueva",
         },
-      ])
-      .select("id");
+      ]);
 
     if (error) {
       console.error("Supabase insert error:", error);
@@ -88,7 +90,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, data }, { status: 201 });
+    return NextResponse.json({ success: true, data: [{ id: cotId }] }, { status: 201 });
   } catch {
     return NextResponse.json(
       { error: "Error interno del servidor" },
