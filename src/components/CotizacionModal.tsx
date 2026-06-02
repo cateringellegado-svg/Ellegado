@@ -106,6 +106,7 @@ export default function CotizacionModal({
   }, [cotizacion, total, anticipo, fechaEntrega, horarioEntrega, nombre, config, showToast]);
 
   const createMPPreference = useCallback(async (cotId: string) => {
+    console.log("1. Llamando a crear preferencia con ID:", cotId);
     setCreatingPreference(true);
     try {
       const price = anticipo ?? calcAnticipo(total);
@@ -127,12 +128,14 @@ export default function CotizacionModal({
       });
       if (prefRes.ok) {
         const prefJson = await prefRes.json();
+        console.log("2. Respuesta de la API de MP:", prefJson);
         setPreferenceId(prefJson.id);
       } else {
         let errMsg = "El pago online no está disponible temporalmente";
         try {
           const err = await prefRes.json();
           console.error("create-preference API error:", err);
+          console.log("3. Error de API de MP:", err);
           errMsg = err.error || errMsg;
         } catch {}
         showToast(errMsg, "error");
@@ -262,6 +265,7 @@ export default function CotizacionModal({
     }
   }, [submitted, preferenceId]);
 
+  console.log("ESTADOS -> submitted:", submitted, " | preferenceId:", preferenceId, " | creatingPreference:", creatingPreference, " | publicKey:", process.env.NEXT_PUBLIC_MP_PUBLIC_KEY);
   if (!isOpen) return null;
 
   const items = Object.values(cotizacion);
