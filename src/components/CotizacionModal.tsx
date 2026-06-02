@@ -62,8 +62,6 @@ export default function CotizacionModal({
     showToast("Error al cargar el botón de pago. Podés reservar por WhatsApp.", "warning");
   }, [showToast]);
 
-  const mpAvailable = !!MP_PUBLIC_KEY_PROD;
-
   useEffect(() => {
     if (MP_PUBLIC_KEY_PROD && !mpInitialized) {
       mpInitialized = true;
@@ -108,7 +106,6 @@ export default function CotizacionModal({
   }, [cotizacion, total, anticipo, fechaEntrega, horarioEntrega, nombre, config, showToast]);
 
   const createMPPreference = useCallback(async (cotId: string) => {
-    if (!mpAvailable) return;
     setCreatingPreference(true);
     try {
       const price = anticipo ?? calcAnticipo(total);
@@ -145,7 +142,7 @@ export default function CotizacionModal({
       showToast("Error de conexión con el servicio de pago. Intentá de nuevo o usá WhatsApp.", "error");
     }
     setCreatingPreference(false);
-  }, [mpAvailable, modo, selectedCombo, anticipo, total, showToast]);
+  }, [modo, selectedCombo, anticipo, total, showToast]);
 
   const retryPreference = useCallback(() => {
     if (cotizacionId && !creatingPreference) {
@@ -424,13 +421,13 @@ export default function CotizacionModal({
                 <p className="font-semibold text-dark-elegant">✅ ¡Cotización guardada con éxito!</p>
               </div>
 
-              {preferenceId && mpAvailable && (
+              {preferenceId && (
                 <div>
                   <Wallet key={preferenceId} initialization={initialization} onError={handleWalletError} />
                 </div>
               )}
 
-              {!preferenceId && mpAvailable && (
+              {!preferenceId && (
                 <button
                   onClick={retryPreference}
                   className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all text-sm cursor-pointer"
