@@ -15,7 +15,8 @@ if (supabaseUrl) {
 
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline' 'unsafe-eval';
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com;
+  script-src-elem 'self' 'unsafe-inline' https://sdk.mercadopago.com;
   style-src 'self' 'unsafe-inline';
   img-src 'self' blob: data: https:;
   font-src 'self';
@@ -23,7 +24,8 @@ const cspHeader = `
   base-uri 'self';
   form-action 'self' https:;
   frame-ancestors 'none';
-  connect-src ${connectSrc};
+  frame-src https://sdk.mercadopago.com;
+  connect-src ${connectSrc} https://api.mercadopago.com;
   ${!isDev ? "upgrade-insecure-requests;" : ""}
 `;
 
