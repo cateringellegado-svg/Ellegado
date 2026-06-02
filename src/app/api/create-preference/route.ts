@@ -73,9 +73,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    const publicKey = isTest
+      ? process.env.NEXT_PUBLIC_MP_PUBLIC_KEY_TEST
+      : process.env.NEXT_PUBLIC_MP_PUBLIC_KEY;
+
     return NextResponse.json({
       id: result.id,
-      publicKey: process.env.NEXT_PUBLIC_MP_PUBLIC_KEY,
+      publicKey,
     }, { status: 201 });
   } catch (err) {
     console.error("MP create preference error:", err);
