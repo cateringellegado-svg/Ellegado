@@ -182,28 +182,31 @@ export default function CotizacionModal({
       // Paso 1: crear la cotización en la base de datos
       let cotId: string | null = null;
       try {
+        const payload = {
+          total_unidades: productos.reduce((sum, p) => sum + p.cantidad, 0),
+          productos: productos.map((p) => ({
+            nombre: p.nombre,
+            cantidad: p.cantidad,
+            es_combo: p.esCombo || false,
+          })),
+          total,
+          fecha_entrega: fechaEntrega || "",
+          cliente_nombre: nombre,
+          cliente_telefono: telefono,
+          cliente_email: email || "",
+        };
+        console.log("Payload enviado a /api/cotizaciones:", JSON.stringify(payload, null, 2));
         const res = await fetch("/api/cotizaciones", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            total_unidades: productos.reduce((sum, p) => sum + p.cantidad, 0),
-            productos: productos.map((p) => ({
-              nombre: p.nombre,
-              cantidad: p.cantidad,
-              es_combo: p.esCombo || false,
-            })),
-            total,
-            fecha_entrega: fechaEntrega || "",
-            cliente_nombre: nombre,
-            cliente_telefono: telefono,
-            cliente_email: email || "",
-          }),
+          body: JSON.stringify(payload),
         });
 
         if (!res.ok) {
           let errMsg = "Error al enviar cotización";
           try {
             const err = await res.json();
+            console.error("API error details:", err);
             errMsg = err.error || errMsg;
           } catch {}
           showToast(errMsg, "error");

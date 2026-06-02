@@ -19,7 +19,9 @@ export const cotizacionSchema = z.object({
   total: z.number().nonnegative("El total no puede ser negativo"),
   fecha_entrega: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha de entrega inválida (YYYY-MM-DD)"),
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha de entrega inválida (YYYY-MM-DD)")
+    .optional()
+    .or(z.literal("")),
   cliente_nombre: z
     .string()
     .min(2, "El nombre debe tener al menos 2 caracteres")

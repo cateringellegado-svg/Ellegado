@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
           num_invitados: parsed.data.total_unidades,
           servicios: parsed.data.productos,
           presupuesto: parsed.data.total,
-          fecha_entrega: parsed.data.fecha_entrega,
+          fecha_entrega: parsed.data.fecha_entrega || null,
           cliente_nombre: parsed.data.cliente_nombre,
           cliente_email: parsed.data.cliente_email || null,
           cliente_telefono: parsed.data.cliente_telefono,
