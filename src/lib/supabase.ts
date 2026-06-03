@@ -43,13 +43,6 @@ export async function insertLead(tipo_evento: string, num_invitados: number | nu
   }
 }
 
-export async function fetchSiteConfig() {
-  const supabase = getClient();
-  const { data, error } = await supabase.from("site_config").select("*");
-  if (error) return null;
-  return data as { key: string; value: string }[];
-}
-
 export async function fetchConfiguracion() {
   const supabase = getClient();
   const { data, error } = await supabase
@@ -64,17 +57,6 @@ export async function fetchConfiguracion() {
   return data as { factor_ajuste: number };
 }
 
-export async function checkComboCapacidad(comboId: string, fecha: string) {
-  const supabase = getClient();
-  const { data, error } = await supabase
-    .rpc("check_combo_capacidad", { p_combo_id: comboId, p_fecha: fecha });
-  if (error) {
-    console.error("Error checking combo capacity:", error);
-    return null;
-  }
-  return data as { disponible: boolean; cupo_total: number; cupo_usado: number }[];
-}
-
 export async function fetchConfiguracionCompleta() {
   const supabase = getClient();
   const { data, error } = await supabase
@@ -87,20 +69,6 @@ export async function fetchConfiguracionCompleta() {
     return null;
   }
   return data as import("@/types").Configuracion;
-}
-
-export async function updateConfiguracionAdmin(values: {
-  factor_ajuste?: number;
-  capacidad_diaria_total?: number;
-}) {
-  const supabase = getClient();
-  const id = (await supabase.from("configuracion").select("id").limit(1).single()).data?.id;
-  if (!id) {
-    const { error: insertError } = await supabase.from("configuracion").insert([{ factor_ajuste: 1.0, ...values }]);
-    return { error: insertError };
-  }
-  const { error } = await supabase.from("configuracion").update(values).eq("id", id);
-  return { error };
 }
 
 export async function fetchAllCombosAdmin() {

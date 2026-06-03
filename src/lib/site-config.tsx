@@ -312,7 +312,7 @@ function tryParse(val: string | null, fallback: unknown) {
   try { return JSON.parse(val); } catch { return fallback; }
 }
 
-export function sanitizeText(val: string): string {
+function sanitizeText(val: string): string {
   return val.replace(/<[^>]*>/g, "").replace(/[<>]/g, "");
 }
 

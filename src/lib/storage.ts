@@ -52,7 +52,7 @@ export async function deleteMenuImage(url: string): Promise<void> {
   await supabase.storage.from(MENU_BUCKET).remove([fileName]);
 }
 
-export function getImageName(url: string): string {
+function getImageName(url: string): string {
   return getFileNameFromUrl(url);
 }
 

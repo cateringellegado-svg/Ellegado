@@ -11,10 +11,6 @@ export interface Producto {
   imagen_url?: string;
 }
 
-export interface ProductoConCategoria extends Producto {
-  categoria: "clasica" | "premium" | "dulce";
-}
-
 export interface ComboItem {
   id: string;
   nombre: string;
@@ -62,11 +58,6 @@ export interface CotizacionItem {
 
 export type CotizacionSeleccion = Record<string, CotizacionItem>;
 
-export interface SiteConfigRecord {
-  key: string;
-  value: string;
-}
-
 export interface Lead {
   id: string;
   tipo_evento: string;
@@ -74,7 +65,4 @@ export interface Lead {
   created_at: string;
 }
 
-export interface WhatsAppConfig {
-  phone: string;
-  messageTemplate: (productos: string, total: string, mensajePersonal: string) => string;
-}
+

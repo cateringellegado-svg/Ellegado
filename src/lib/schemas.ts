@@ -50,5 +50,5 @@ export const menuItemSchema = z.object({
   imagen_url: z.string().url().optional().nullable().or(z.literal("")),
 });
 
-export type CotizacionInput = z.infer<typeof cotizacionSchema>;
-export type MenuItemInput = z.infer<typeof menuItemSchema>;
+type CotizacionInput = z.infer<typeof cotizacionSchema>;
+type MenuItemInput = z.infer<typeof menuItemSchema>;
