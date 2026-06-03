@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { WHATSAPP_NUMBER } from "@/lib/constants";
 import { fetchAdminLogs } from "@/lib/supabase";
+import type { SocialLink } from "@/lib/site-config";
 
 interface ConfigForm {
   factor_ajuste: number;
@@ -44,7 +45,12 @@ export default function ConfiguracionPage() {
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<AdminLogEntry[]>([]);
-  const [activeTab, setActiveTab] = useState<"financiera" | "operativa" | "logs">("financiera");
+  const [activeTab, setActiveTab] = useState<"financiera" | "operativa" | "redes" | "logs">("financiera");
+  const [socialForm, setSocialForm] = useState<Record<string, SocialLink>>({
+    instagram: { url: "https://instagram.com/ellegado.catering", active: true },
+    facebook: { url: "https://facebook.com/ellegado.catering", active: true },
+    tiktok: { url: "", active: false },
+  });
   const mountedRef = useRef(true);
 
   const loadLogs = useCallback(async () => {
@@ -82,6 +88,21 @@ export default function ConfiguracionPage() {
             min_invitados: conf.min_invitados ?? DEFAULT_CONFIG.min_invitados,
             max_invitados: conf.max_invitados ?? DEFAULT_CONFIG.max_invitados,
           }));
+
+          const socialRaw = siteConfig.social ? JSON.parse(siteConfig.social) : null;
+          if (socialRaw) {
+            const migrated: Record<string, SocialLink> = {};
+            for (const key of ["instagram", "facebook", "tiktok"]) {
+              const v = socialRaw[key];
+              if (v && typeof v === "object" && "url" in v) {
+                migrated[key] = { url: String(v.url ?? ""), active: Boolean(v.active ?? !!v.url) };
+              } else {
+                const url = typeof v === "string" ? v : "";
+                migrated[key] = { url, active: !!url };
+              }
+            }
+            setSocialForm(migrated);
+          }
         }
       } catch (e) {
         console.error("Error loading config:", e);
@@ -117,6 +138,12 @@ export default function ConfiguracionPage() {
       );
       if (siteError) { setMsg("Error sitio: " + siteError.message); return; }
 
+      const { error: socialError } = await supabase.from("site_config").upsert(
+        { key: "social", value: JSON.stringify(socialForm) },
+        { onConflict: "key" }
+      );
+      if (socialError) { setMsg("Error redes: " + socialError.message); return; }
+
       await supabase.from("admin_logs").insert({
         accion: "configuracion_actualizada",
         detalle: `factor_ajuste=${form.factor_ajuste}, capacidad=${form.capacidad_diaria_total}`,
@@ -138,6 +165,7 @@ export default function ConfiguracionPage() {
   const tabs = [
     { id: "financiera" as const, label: "Gestión Financiera", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
     { id: "operativa" as const, label: "Gestión Operativa", icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" },
+    { id: "redes" as const, label: "Redes Sociales", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" },
     { id: "logs" as const, label: "Trazabilidad", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
   ];
 
@@ -235,6 +263,62 @@ export default function ConfiguracionPage() {
                 <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Máximo</label>
                 <input type="number" value={form.max_invitados} onChange={(e) => update("max_invitados", parseInt(e.target.value) || 300)} className="w-full bg-cream border border-brand-copper/20 rounded-lg px-4 py-3 text-sm" />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "redes" && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-brand-copper/10">
+            <h2 className="font-serif text-2xl text-dark-elegant mb-6">Redes Sociales</h2>
+            <p className="text-sm text-slate-500 mb-6">Activá o desactivá la visibilidad de cada red social en el footer. Si está desactivada, el icono desaparece por completo del DOM.</p>
+            <div className="space-y-6">
+              {(["instagram", "facebook", "tiktok"] as const).map((network) => {
+                const label = network === "instagram" ? "Instagram" : network === "facebook" ? "Facebook" : "TikTok";
+                return (
+                  <div key={network} className="flex flex-col gap-3 p-4 bg-cream rounded-xl border border-brand-copper/10">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-dark-elegant">{label}</span>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={socialForm[network]?.active ?? false}
+                        onClick={() =>
+                          setSocialForm((prev) => ({
+                            ...prev,
+                            [network]: { ...prev[network], active: !prev[network]?.active },
+                          }))
+                        }
+                        className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
+                          socialForm[network]?.active ? "bg-brand-copper" : "bg-slate-300"
+                        }`}
+                      >
+                        <span
+                          className={`block w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                            socialForm[network]?.active ? "translate-x-[22px]" : "translate-x-0.5"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">URL</label>
+                      <input
+                        type="text"
+                        value={socialForm[network]?.url ?? ""}
+                        onChange={(e) =>
+                          setSocialForm((prev) => ({
+                            ...prev,
+                            [network]: { ...prev[network], url: e.target.value },
+                          }))
+                        }
+                        placeholder={`https://${network}.com/...`}
+                        className="w-full bg-white border border-brand-copper/20 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand-copper"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

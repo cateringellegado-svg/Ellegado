@@ -52,10 +52,15 @@ export interface SiteFooter {
   mapUrl: string;
 }
 
+export interface SocialLink {
+  url: string;
+  active: boolean;
+}
+
 export interface SiteSocial {
-  instagram: string;
-  facebook: string;
-  tiktok: string;
+  instagram: SocialLink;
+  facebook: SocialLink;
+  tiktok: SocialLink;
 }
 
 export interface SiteContact {
@@ -201,9 +206,9 @@ const DEFAULT_FOOTER: SiteFooter = {
 };
 
 const DEFAULT_SOCIAL: SiteSocial = {
-  instagram: "https://instagram.com/ellegado.catering",
-  facebook: "https://facebook.com/ellegado.catering",
-  tiktok: "",
+  instagram: { url: "https://instagram.com/ellegado.catering", active: true },
+  facebook: { url: "https://facebook.com/ellegado.catering", active: true },
+  tiktok: { url: "", active: false },
 };
 
 const DEFAULT_CONTACT: SiteContact = {
@@ -311,6 +316,23 @@ export function sanitizeText(val: string): string {
   return val.replace(/<[^>]*>/g, "").replace(/[<>]/g, "");
 }
 
+function migrateSocial(raw: unknown): SiteSocial {
+  const data = (raw || {}) as Record<string, unknown>;
+  const keys = ["instagram", "facebook", "tiktok"] as const;
+  const result: Record<string, SocialLink> = {};
+  for (const key of keys) {
+    const v = data[key];
+    if (v && typeof v === "object" && "url" in (v as object)) {
+      const o = v as Record<string, unknown>;
+      result[key] = { url: String(o.url ?? ""), active: Boolean(o.active ?? !!o.url) };
+    } else {
+      const url = typeof v === "string" ? v : "";
+      result[key] = { url, active: !!url };
+    }
+  }
+  return result as unknown as SiteSocial;
+}
+
 export async function fetchSiteConfigFromDB(): Promise<SiteConfig> {
   const supabase = createClient();
   const { data } = await supabase.from("site_config").select("*");
@@ -325,7 +347,7 @@ export async function fetchSiteConfigFromDB(): Promise<SiteConfig> {
     about: tryParse(map.about, DEFAULT_ABOUT) as SiteAbout,
     festin: tryParse(map.festin, DEFAULT_FESTIN) as SiteFestin,
     footer: tryParse(map.footer, DEFAULT_FOOTER) as SiteFooter,
-    social: tryParse(map.social, DEFAULT_SOCIAL) as SiteSocial,
+    social: migrateSocial(tryParse(map.social, DEFAULT_SOCIAL)),
     contact: tryParse(map.contact, DEFAULT_CONTACT) as SiteContact,
     sections: tryParse(map.sections, DEFAULT_SECTIONS) as SiteSections,
     images: tryParse(map.images, DEFAULT_IMAGES) as SiteImages,
