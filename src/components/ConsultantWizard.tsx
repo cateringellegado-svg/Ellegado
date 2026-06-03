@@ -128,7 +128,7 @@ export default function ConsultantWizard({ onComplete, onSkip }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto mb-24">
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex flex-col items-center gap-2 mt-6 mb-10 w-full">
         <div className="flex items-center gap-2">
           {Array.from({ length: stepperCount }, (_, i) => i + 1).map((s) => (
             <div key={s} className="flex items-center">
