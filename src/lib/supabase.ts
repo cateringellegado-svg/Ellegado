@@ -48,6 +48,7 @@ export async function fetchConfiguracion() {
   const { data, error } = await supabase
     .from("configuracion")
     .select("factor_ajuste")
+    .order("id", { ascending: true })
     .limit(1)
     .single();
   if (error) {
@@ -62,6 +63,7 @@ export async function fetchConfiguracionCompleta() {
   const { data, error } = await supabase
     .from("configuracion")
     .select("*")
+    .order("id", { ascending: true })
     .limit(1)
     .single();
   if (error) {

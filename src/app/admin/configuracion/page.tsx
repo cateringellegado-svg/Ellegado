@@ -44,6 +44,7 @@ export default function ConfiguracionPage() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadedConfigId, setLoadedConfigId] = useState<string | null>(null);
   const [logs, setLogs] = useState<AdminLogEntry[]>([]);
   const [activeTab, setActiveTab] = useState<"financiera" | "operativa" | "redes" | "logs">("financiera");
   const [socialForm, setSocialForm] = useState<Record<string, SocialLink>>({
@@ -64,10 +65,11 @@ export default function ConfiguracionPage() {
       if (!supabase) { if (mountedRef.current) setLoading(false); return; }
       try {
         const [configRes, siteRes] = await Promise.all([
-          supabase.from("configuracion").select("*").limit(1).single(),
+          supabase.from("configuracion").select("*").order("id", { ascending: true }).limit(1).single(),
           supabase.from("site_config").select("*"),
         ]);
         if (configRes.data) {
+          setLoadedConfigId(configRes.data.id);
           setForm((p) => ({
             ...p,
             factor_ajuste: configRes.data.factor_ajuste ?? 1.0,
@@ -120,13 +122,15 @@ export default function ConfiguracionPage() {
     setSaving(true);
     setMsg("");
     try {
+      const configId = loadedConfigId || crypto.randomUUID();
       const { error: configError } = await supabase.from("configuracion").upsert(
-        { id: (await supabase.from("configuracion").select("id").limit(1).single()).data?.id || undefined,
+        { id: configId,
           factor_ajuste: form.factor_ajuste,
           capacidad_diaria_total: form.capacidad_diaria_total,
         },
         { onConflict: "id" }
       );
+      if (!configError) setLoadedConfigId(configId);
       if (configError) { setMsg("Error financiero: " + configError.message); return; }
 
       const { error: siteError } = await supabase.from("site_config").upsert(
